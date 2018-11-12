@@ -1,5 +1,4 @@
 package sample;
-
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -9,10 +8,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main extends Application {
 
@@ -27,17 +27,16 @@ public class Main extends Application {
 
     public static void main(String[] args) throws IOException {
 
-
-        File f = new File("C:\\Users\\refaeli.liron\\Documents\\הנדסת מערכות מידע\\שנה ג\\סמסטר א\\אחזור\\עזרים\\corpus\\corpus\\FB396001\\FB396001");
-        Document document = Jsoup.parse(new String(Files.readAllBytes(f.toPath())));
-        Elements elements = document.getElementsByTag("DOC");
-        for(Element element : elements)
+        int numOfLoops = 91;
+        List<String> listOfTexts = new ArrayList<String>();
+        ReadFile readFile = new ReadFile("C:\\Users\\david\\Desktop\\שנה ד\\סמסטר א\\אחזור\\מנוע\\corpus");
+        for(int i = 0; i < numOfLoops; i++)
         {
-            String name = element.getElementsByTag("DOCNO").text();
-            System.out.println(name);
-
-
+            listOfTexts = readFile.ReadFolder(20);
+            if (i == 90)
+             System.out.println(i);
         }
+
 
         //launch(args);
     }
