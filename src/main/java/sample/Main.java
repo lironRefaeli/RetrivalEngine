@@ -12,7 +12,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Main extends Application {
 
@@ -28,14 +30,35 @@ public class Main extends Application {
     public static void main(String[] args) throws IOException {
 
         int numOfLoops = 91;
+        Map<String,Integer> termsAndFrequencyCorpusMap = new HashMap<String, Integer>();
         List<String> listOfTexts = new ArrayList<String>();
-        ReadFile readFile = new ReadFile("C:\\Users\\david\\Desktop\\שנה ד\\סמסטר א\\אחזור\\מנוע\\corpus");
+
+        ReadFile readFile = new ReadFile("C:\\Users\\refaeli.liron\\Documents\\הנדסת מערכות מידע\\שנה ג\\סמסטר א\\אחזור\\עזרים\\corpus");
+        Parse parse = new Parse("C:\\Users\\refaeli.liron\\Desktop\\stopWords.txt");
+
         for(int i = 0; i < numOfLoops; i++)
         {
             listOfTexts = readFile.ReadFolder(20);
-            if (i == 90)
-             System.out.println(i);
+            for(int j = 0; j < listOfTexts.size(); j++)
+            {
+                Map<String,Integer> termsAndFrequencyMap = parse.ParsingDocument(listOfTexts.get(j));
+                for(String termKey :termsAndFrequencyMap.keySet())
+                {
+                    if(termsAndFrequencyCorpusMap.containsKey(termKey)) {
+                        termsAndFrequencyCorpusMap.put(termKey, termsAndFrequencyMap.get(termKey) + termsAndFrequencyCorpusMap.get(termKey));
+                        if (termKey.equals("liron"))
+                            System.out.println(termsAndFrequencyCorpusMap.get(termKey));
+                    }
+                    else
+                        termsAndFrequencyCorpusMap.put(termKey,termsAndFrequencyMap.get(termKey));
+                }
+
+
+            }
+
         }
+
+
 
 
         //launch(args);
