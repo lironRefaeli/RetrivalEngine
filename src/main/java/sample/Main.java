@@ -33,8 +33,7 @@ public class Main extends Application {
         for(int i = 0; i < numOfLoops; i++)
         {
             listOfTexts = readFile.ReadFolder(20);
-            if (i == 90)
-             System.out.println(i);
+            System.out.println(i);
         }
 
 
