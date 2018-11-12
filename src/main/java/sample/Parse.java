@@ -14,13 +14,12 @@ public class Parse {
 
     Parse(String stopWordsPath)
     {
-        stopWordsList = extractStopWords(stopWordsPath);
-        termsAndFrequencyMap = new HashMap<String, Integer>();
+        stopWordsList = ExtractStopWords(stopWordsPath);
     }
 
     public Map<String,Integer> ParsingDocument(String docText){
-
-        List<String> termsList = breakTextToTerms(docText);
+        termsAndFrequencyMap = new HashMap<String, Integer>();
+        List<String> termsList = BreakTextToTerms(docText);
 
         for(int i = 0; i < termsList.size(); i++)
         {
@@ -34,7 +33,30 @@ public class Parse {
         return termsAndFrequencyMap;
     }
 
-    private List<String> extractStopWords(String stopWordsPath) {
+     private List<String> BreakTextToTerms(String docText)
+    {
+        List<String> splited = new ArrayList(Arrays.asList(docText.split("\\s+")));
+        List<String> splitedWithoutStopWords = new ArrayList();
+
+        for (int i = 0; i < splited.size(); i++)
+        {
+            if(!IsStopWord(splited.get(i)))
+            {
+                splitedWithoutStopWords.add(splited.get(i));
+            }
+        }
+
+
+
+        return splitedWithoutStopWords;
+    }
+
+    boolean IsStopWord(String word)
+    {
+        return stopWordsList.contains(word);
+    }
+
+    private List<String> ExtractStopWords(String stopWordsPath) {
         Scanner s = null;
         try {
             s = new Scanner(new File(stopWordsPath));
@@ -48,27 +70,6 @@ public class Parse {
         s.close();
 
         return stopWordsList;
-    }
-
-     private List<String> breakTextToTerms(String docText)
-    {
-        List<String> splited = new ArrayList(Arrays.asList(docText.split("\\s+")));
-        List<String> splitedWithoutStopWords = new ArrayList();
-
-        for (int i = 0; i < splited.size(); i++)
-        {
-            if(!isStopWord(splited.get(i)))
-            {
-                splitedWithoutStopWords.add(splited.get(i));
-            }
-        }
-
-        return splitedWithoutStopWords;
-    }
-
-    boolean isStopWord(String word)
-    {
-        return stopWordsList.contains(word);
     }
 
 }

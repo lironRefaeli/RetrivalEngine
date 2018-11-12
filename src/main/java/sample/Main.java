@@ -33,8 +33,8 @@ public class Main extends Application {
         Map<String,Integer> termsAndFrequencyCorpusMap = new HashMap<String, Integer>();
         List<String> listOfTexts = new ArrayList<String>();
 
-        ReadFile readFile = new ReadFile("C:\\Users\\refaeli.liron\\Documents\\הנדסת מערכות מידע\\שנה ג\\סמסטר א\\אחזור\\עזרים\\corpus");
-        Parse parse = new Parse("C:\\Users\\refaeli.liron\\Desktop\\stopWords.txt");
+        ReadFile readFile = new ReadFile("C:\\Users\\david\\Desktop\\corpus");
+        Parse parse = new Parse("C:\\Users\\david\\Desktop\\StopWords.txt");
 
         for(int i = 0; i < numOfLoops; i++)
         {
@@ -44,18 +44,12 @@ public class Main extends Application {
                 Map<String,Integer> termsAndFrequencyMap = parse.ParsingDocument(listOfTexts.get(j));
                 for(String termKey :termsAndFrequencyMap.keySet())
                 {
-                    if(termsAndFrequencyCorpusMap.containsKey(termKey)) {
+                    if(termsAndFrequencyCorpusMap.containsKey(termKey))
                         termsAndFrequencyCorpusMap.put(termKey, termsAndFrequencyMap.get(termKey) + termsAndFrequencyCorpusMap.get(termKey));
-                        if (termKey.equals("liron"))
-                            System.out.println(termsAndFrequencyCorpusMap.get(termKey));
-                    }
                     else
-                        termsAndFrequencyCorpusMap.put(termKey,termsAndFrequencyMap.get(termKey));
+                        termsAndFrequencyCorpusMap.put(termKey, termsAndFrequencyMap.get(termKey));
                 }
-
-
             }
-
         }
 
 
