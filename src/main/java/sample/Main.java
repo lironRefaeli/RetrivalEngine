@@ -20,7 +20,7 @@ import java.util.Map;
 public class Main extends Application {
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
+    public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
         primaryStage.setTitle("Hello World");
         primaryStage.setScene(new Scene(root, 300, 275));
@@ -31,33 +31,54 @@ public class Main extends Application {
     public static void main(String[] args) throws IOException {
 
         int numOfLoops = 91;
-        Map<String,TermDataInMap> termsCorpusMap = new HashMap<String, TermDataInMap>();
+        Map<String, TermDataInMap> termsCorpusMap = new HashMap<String, TermDataInMap>();
         List<String> listOfTexts = new ArrayList<String>();
 
         ReadFile readFile = new ReadFile("C:\\Users\\david\\Desktop\\corpus");
         Parse parse = new Parse("C:\\Users\\david\\Desktop\\StopWords.txt");
 
-        for(int i = 0; i < numOfLoops; i++)
-        {
+        //loops over a chunk of Texts
+        for (int i = 0; i < numOfLoops; i++) {
             listOfTexts = readFile.ReadFolder(20);
-            for(int j = 0; j < listOfTexts.size(); j++)
-            {
-                Map<String,Integer> temporaryMap = parse.ParsingDocument(listOfTexts.get(j));
-                for(String termKey :temporaryMap.keySet())
-                {
-                    if(termsCorpusMap.containsKey(termKey)) {
-                        termsCorpusMap.get(termKey).numOfDocuments++;
-                        termsCorpusMap.get(termKey).totalTf += temporaryMap.get(termKey);
+
+            //loops over every text from one chunk
+            for (int j = 0; j < listOfTexts.size(); j++) {
+                Map<String, Integer> temporaryMap = parse.ParsingDocument(listOfTexts.get(j));
+                //loops over one text's terms
+                for (String term : temporaryMap.keySet()) {
+                    //NBA or GSW
+                    if (Parse.IsUpperCase(term)) {
+                        if (termsCorpusMap.containsKey(term)) {
+                            termsCorpusMap.get(term).totalTf += temporaryMap.get(term);
+                            termsCorpusMap.get(term).numOfDocuments++;
+                        } else
+                            termsCorpusMap.put(term, new TermDataInMap(temporaryMap.get(term), 1));
                     }
-                    else
-                        termsCorpusMap.put(termKey, new TermDataInMap(temporaryMap.get(termKey)));
+                    //liron or first
+                    else {
+                        //case term is "first" and we already have "FIRST" on the map
+                        //save the frequency of "FIRST", remove it from map and add frequency + 1 to "first"
+                        if (termsCorpusMap.containsKey(term.toUpperCase())) {
+                            TermDataInMap upperCaseTerm = termsCorpusMap.get(term.toUpperCase());
+                            termsCorpusMap.remove(term.toUpperCase());
+                            termsCorpusMap.put(term, new TermDataInMap(upperCaseTerm.totalTf + temporaryMap.get(term), upperCaseTerm.numOfDocuments + 1));
+                        }
+                        //we do not have "FIRST" in our map
+                        else {
+                            //we have "first" in our map
+                            if (termsCorpusMap.containsKey(term)) {
+                                termsCorpusMap.get(term).totalTf += temporaryMap.get(term);
+                                termsCorpusMap.get(term).numOfDocuments++;
+                            }
+                            //adds "first" to the map
+                            else
+                                termsCorpusMap.put(term, new TermDataInMap(temporaryMap.get(term), 1));
+                        }
+
+                    }
                 }
             }
+            //launch(args);
         }
-
-
-
-
-        //launch(args);
     }
 }

@@ -14,7 +14,7 @@ public class Parse {
 
     Parse(String stopWordsPath)
     {
-        stopWordsList = ExtractStopWords(stopWordsPath);
+        stopWordsList = ReadStopWordToList(stopWordsPath);
     }
 
     public Map<String,Integer> ParsingDocument(String docText) {
@@ -25,49 +25,301 @@ public class Parse {
 
      private void BreakTextToTerms(String docText)
     {
-       // docText = docText.replaceAll(",'`\\\\/\\(\\)\\[]","");
-        List<String> TermsOfDoc = new ArrayList(Arrays.asList(docText.split("\\s+|\\t|;|\\.|\\?|!|-|:|@|\\[|\\]|\\(|\\)|\\{|\\}|_|\\*|/")));
+        //cleaning the document before splitting (| is seperating between characters, and \\ is sometimes needed
+        docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|/","");
+        //splitting the document according to these delimiters - the second one is spaces
+        List<String> TermsOfDoc = new ArrayList(Arrays.asList(docText.split("\\n|\\s+|\\t|;|\\.|\\?|!|-|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*|/")));
+
         for(int i = 0; i < TermsOfDoc.size(); i++)
         {
+            //handles with stop-words or empty strings and also next terms after current term
             String term = TermsOfDoc.get(i);
-            String nextTerm = "";
-            if(IsStopWord(term))
+            if(IsStopWord(term) || term.equals(""))
                 continue;
-            if(i != TermsOfDoc.size() -1)
+            String nextTerm = "";
+            String secondNextTerm = "";
+            String thirdNextTerm = "";
+            if(i != TermsOfDoc.size()-1)
                 nextTerm = TermsOfDoc.get(i+1);
+            if(i != TermsOfDoc.size()-2)
+                secondNextTerm = TermsOfDoc.get(i+2);
+            if(i != TermsOfDoc.size()-3)
+                thirdNextTerm = TermsOfDoc.get(i+3);
 
-            if(term.contains(".")){
-                String[] termSplitedByPoint = new String[2];
+
+            //handles with dollar numbers
+            int value = 0;
+            if(IsNumeric(term))
+                value = Integer.parseInt(term);
+
+            //case "$450" or "450,000,000" or "$100 million" or "$100 billion"
+            if(term.charAt(0) == '$' && IsNumeric(term.substring(1)))
+            {
+                //case "$450"
+                if(value < 1000000)
+                {
+                    term = term.substring(1) + " Dollars";
+                    AddTermToMap(term);
+                    continue;
+                }
+                else
+                {
+                    //case "$100 million"
+                    if(nextTerm.equals("million"))
+                    {
+                        term = term.substring(1);
+                        term = term + " M Dollars";
+                        AddTermToMap(term);
+                        i++;
+                        continue;
+                    }
+                    //"$100 billion"
+                    if(nextTerm.equals("billion"))
+                    {
+                        term = term.substring(1);
+                        term = term + "000 M Dollars";
+                        AddTermToMap(term);
+                        i++;
+                        continue;
+                    }
+                    //"450,000,000"
+                    else
+                    {
+                        term = term.substring(1);
+                        DeleteTheZeros(term);
+                        term = term + " M Dollars";
+                        AddTermToMap(term);
+                        continue;
+                    }
+
+
+                }
+            }
+            // case "1,000,000 Dollars"
+            if(IsNumeric(term) && nextTerm.equals("Dollars"))
+            {
+                DeleteTheZeros(term);
+                term = term + " M Dollars";
+                i++;
+                AddTermToMap(term);
+                continue;
+            }
+            //case "20.6m Dollars"
+            if(IsNumeric(term.substring(0,term.length()-1)) && term.charAt(term.length()-1) == 'm' && nextTerm.equals("Dollars"))
+            {
+                term = term.substring(0,term.length()-1) + " M Dollars";
+                i++;
+                AddTermToMap(term);
+                continue;
+            }
+            //case "100bn Dollars"
+            if(IsNumeric(term.substring(0,term.length()-2)) && term.substring(term.length()-2,term.length()).equals("bn") && nextTerm.equals("Dollars"))
+            {
+                term = term.substring(0,term.length()-2) + "000 M Dollars";
+                i++;
+                AddTermToMap(term);
+                continue;
+            }
+            //case "100 billion U.S. dollars"
+            if(IsNumeric(term) && nextTerm.equals("billion") && secondNextTerm.equals("U.S.") && thirdNextTerm.equals("dollars"))
+            {
+                term = term + "000 M Dollars";
+                i = i + 3;
+                AddTermToMap(term);
+                continue;
+            }
+            //case "100 million U.S. dollars"
+            if(IsNumeric(term) && nextTerm.equals("million") && secondNextTerm.equals("U.S.") && thirdNextTerm.equals("dollars"))
+            {
+                term = term + " M Dollars";
+                i = i + 3;
+                AddTermToMap(term);
+                continue;
+            }
+            //case "1 trillion U.S. dollars"
+            if(IsNumeric(term) && nextTerm.equals("trillion") && secondNextTerm.equals("U.S.") && thirdNextTerm.equals("dollars"))
+            {
+                term = term + "000000 M Dollars";
+                i = i + 3;
+                AddTermToMap(term);
+                continue;
+            }
+
+
+            //handles numbers that need to have "%" next to them - handles every case
+            if(IsNumeric(term) && (nextTerm.equals("percent") || nextTerm.equals("percentage")))
+            {
+                term = term + "%";
+                i++;
+                AddTermToMap(term);
+                continue;
+            }
+
+
+            //handles with numbers with point in them
+            else if(term.contains("."))
+            {
+                String[] termSplittedByPoint = new String[2];
                 for(int j = 0; j < term.length(); j++)
                 {
                     if(term.charAt(j) == '.')
                     {
-                        termSplitedByPoint[0] = term.substring(0,j);
-                        termSplitedByPoint[1] = term.substring(j+1);
+                        termSplittedByPoint[0] = term.substring(0,j);
+                        termSplittedByPoint[1] = term.substring(j+1);
                     }
                 }
-                if(isNumeric(termSplitedByPoint[0]) && isNumeric(termSplitedByPoint[1])) {
-                    System.out.println(termSplitedByPoint[0] + " " + termSplitedByPoint[1]);
-                    term = HandleNumbersWithPoint(termSplitedByPoint[0], termSplitedByPoint[1]);
+                if(IsNumeric(termSplittedByPoint[0]) && termSplittedByPoint[0].length() >= 4 && IsNumeric(termSplittedByPoint[1]))
+                {
+                    term = HandleNumbersWithPoint(termSplittedByPoint[0], termSplittedByPoint[1]);
+                    AddTermToMap(term);
+                    continue;
                 }
+
             }
 
-           if(isNumeric(term))
+            //handling with regular numbers, with or without a word after
+           else if(IsNumeric(term))
            {
-               //only number
-               term = HandleNumbersThatHadComma(term);
-
                //123 Thousand to 123K
                if(nextTerm.equals("Thousand"))
+               {
                    term = term + 'K';
+                   i++;
+                   AddTermToMap(term);
+                   continue;
+               }
                if(nextTerm.equals("Million"))
+               {
                    term = term + 'M';
+                   i++;
+                   AddTermToMap(term);
+                   continue;
+               }
                if(nextTerm.equals("Billion") || nextTerm.equals("Trillion"))
+               {
                    term = term + 'B';
+                   i++;
+                   AddTermToMap(term);
+                   continue;
+               }
+               //only a number
+               else if(term.length() >= 4)
+               {
+                   term = HandleRegularNumbers(term);
+                   AddTermToMap(term);
+                   continue;
+               }
+
 
            }
+
+           //case "35 3/4"
+           if(IsNumeric(term) && nextTerm.contains("/"))
+           {
+               int indexOfSlash = nextTerm.indexOf("/");
+               if(IsNumeric(nextTerm.substring(0,indexOfSlash)) && IsNumeric(nextTerm.substring(indexOfSlash+1)))
+               {
+                   term = term + nextTerm;
+                   i++;
+                   AddTermToMap(term);
+                   continue;
+               }
+           }
+           //case 204 or any other regular number under 1000, also 35.66
+           if(IsNumeric(term))
+           {
+               AddTermToMap(term);
+               continue;
+           }
+
         }
     }
+
+    private void AddTermToMap(String term) {
+        //NBA or GSW
+        if(IsUpperCase(term))
+        {
+            if(termsAndFrequencyMap.containsKey(term))
+                termsAndFrequencyMap.put(term, termsAndFrequencyMap.get(term) + 1);
+            else
+                termsAndFrequencyMap.put(term, 1);
+        }
+        //Liron or State
+        else if(!IsUpperCase(term) && FirstIsUpperCase(term.charAt(0)))
+        {
+            //map contains liron or state
+            if(termsAndFrequencyMap.containsKey(term.toLowerCase()))
+            {
+                termsAndFrequencyMap.put(term.toLowerCase(), termsAndFrequencyMap.get(term.toLowerCase()) + 1);
+            }
+            else
+            {   //map contains LIRON or STATE
+                if(termsAndFrequencyMap.containsKey(term.toUpperCase()))
+                    termsAndFrequencyMap.put(term.toUpperCase(), termsAndFrequencyMap.get(term.toUpperCase()) + 1);
+                //add Liron as LIRON
+                else
+                    termsAndFrequencyMap.put(term.toUpperCase(), 1);
+            }
+
+        }
+        //liron or first
+        else if(IsLowerCase(term))
+        {
+            //case term is "first" and we already have "FIRST" on the map
+            //save the frequency of "FIRST", remove it from map and add frequency + 1 to "first"
+            if(termsAndFrequencyMap.containsKey(term.toUpperCase()))
+            {
+                int frequencyOfUpperCase = termsAndFrequencyMap.get(term.toUpperCase());
+                termsAndFrequencyMap.remove(term.toUpperCase());
+                termsAndFrequencyMap.put(term, frequencyOfUpperCase + 1);
+            }
+            //we do not have "FIRST" in our map
+            else
+            {
+                //we have "first" in our map
+                if(termsAndFrequencyMap.containsKey(term))
+                    termsAndFrequencyMap.put(term, termsAndFrequencyMap.get(term) + 1);
+                //adds "first" to the map
+                else
+                    termsAndFrequencyMap.put(term, 1);
+            }
+
+        }
+    }
+
+
+    //checks if a word is all UpperCases using ASCII
+    public static boolean IsUpperCase(String term)
+    {
+        for(int i = 0; i < term.length(); i++)
+        {
+            char c = term.charAt(i);
+            if(c < 65 || c > 90)
+                return false;
+        }
+        return true;
+    }
+
+    public static boolean FirstIsUpperCase(char firstCharOfTerm)
+    {
+            if(firstCharOfTerm < 65 || firstCharOfTerm > 90)
+                return false;
+        return true;
+    }
+
+    //checks if a word is all LowerCases using ASCII
+    public static boolean IsLowerCase(String term)
+    {
+        for(int i = 0; i < term.length(); i++)
+        {
+            char c = term.charAt(i);
+            if(c < 97 || c > 122)
+                return false;
+        }
+        return true;
+    }
+
+
 
     private static String HandleNumbersWithPoint(String beforePoint, String afterPoint)
     {
@@ -84,7 +336,7 @@ public class Parse {
 
     }
 
-    private String HandleNumbersThatHadComma(String number)
+    private String HandleRegularNumbers(String number)
     {
         if(number.length() == 4)
         {
@@ -201,8 +453,8 @@ public class Parse {
         return number;
     }
 
-
-    private static boolean isNumeric(String word)
+    //can read regular numbers and also numbers with dots.
+    private static boolean IsNumeric(String word)
     {
         try
         {
@@ -220,7 +472,7 @@ public class Parse {
         return stopWordsList.contains(word);
     }
 
-    private List<String> ExtractStopWords(String stopWordsPath) {
+    private List<String> ReadStopWordToList(String stopWordsPath) {
         Scanner s = null;
         try {
             s = new Scanner(new File(stopWordsPath));

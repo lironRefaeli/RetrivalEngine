@@ -8,8 +8,8 @@ public class TermDataInMap {
     public int totalTf;
 
 
-    public TermDataInMap(Integer tfOfFirstDocument) {
-        totalTf = tfOfFirstDocument;
-        numOfDocuments = 1;
+    public TermDataInMap(Integer totalTf, Integer numOfDocuments) {
+        this.totalTf = totalTf;
+        this.numOfDocuments = numOfDocuments;
     }
 }
