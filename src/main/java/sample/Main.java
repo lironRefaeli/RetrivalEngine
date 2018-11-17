@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 public class Main extends Application {
 
     @Override
@@ -30,7 +31,7 @@ public class Main extends Application {
     public static void main(String[] args) throws IOException {
 
         int numOfLoops = 91;
-        Map<String,Integer> termsAndFrequencyCorpusMap = new HashMap<String, Integer>();
+        Map<String,TermDataInMap> termsCorpusMap = new HashMap<String, TermDataInMap>();
         List<String> listOfTexts = new ArrayList<String>();
 
         ReadFile readFile = new ReadFile("C:\\Users\\david\\Desktop\\corpus");
@@ -41,13 +42,15 @@ public class Main extends Application {
             listOfTexts = readFile.ReadFolder(20);
             for(int j = 0; j < listOfTexts.size(); j++)
             {
-                Map<String,Integer> termsAndFrequencyMap = parse.ParsingDocument(listOfTexts.get(j));
-                for(String termKey :termsAndFrequencyMap.keySet())
+                Map<String,Integer> temporaryMap = parse.ParsingDocument(listOfTexts.get(j));
+                for(String termKey :temporaryMap.keySet())
                 {
-                    if(termsAndFrequencyCorpusMap.containsKey(termKey))
-                        termsAndFrequencyCorpusMap.put(termKey, termsAndFrequencyMap.get(termKey) + termsAndFrequencyCorpusMap.get(termKey));
+                    if(termsCorpusMap.containsKey(termKey)) {
+                        termsCorpusMap.get(termKey).numOfDocuments++;
+                        termsCorpusMap.get(termKey).totalTf += temporaryMap.get(termKey);
+                    }
                     else
-                        termsAndFrequencyCorpusMap.put(termKey, termsAndFrequencyMap.get(termKey));
+                        termsCorpusMap.put(termKey, new TermDataInMap(temporaryMap.get(termKey)));
                 }
             }
         }
