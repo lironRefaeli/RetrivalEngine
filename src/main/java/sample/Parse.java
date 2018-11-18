@@ -488,4 +488,42 @@ public class Parse {
         return stopWordsList;
     }
 
+    public void ParsingCorpusMap(Map<String, Integer> termsAndFrequencyCorpusMap) {
+        for(String termKey :termsAndFrequencyCorpusMap.keySet())
+        {
+            //the second character
+
+            if(Character.isUpperCase(termKey.charAt(1)))
+            {
+                //THE - do nothing
+            }
+            else if(Character.isUpperCase(termKey.charAt(0)))
+            {
+                //The - check if it's in stop word
+                String termKeyUpperCase = termKey.toUpperCase();
+                String termKeyLowerCase = termKey.toLowerCase();
+
+                if(stopWordsList.contains(termKeyLowerCase))
+                    termsAndFrequencyCorpusMap.remove(termKey);
+                else if(termsAndFrequencyCorpusMap.containsKey(termKeyLowerCase))
+                {
+                    termsAndFrequencyCorpusMap.put(termKeyLowerCase, termsAndFrequencyCorpusMap.get(termKey) + termsAndFrequencyCorpusMap.get(termKeyLowerCase));
+                    termsAndFrequencyCorpusMap.remove(termKey);
+                }
+                else if(termsAndFrequencyCorpusMap.containsKey(termKeyUpperCase))
+                {
+                    termsAndFrequencyCorpusMap.put(termKeyUpperCase, termsAndFrequencyCorpusMap.get(termKey) + termsAndFrequencyCorpusMap.get(termKeyLowerCase));
+                    termsAndFrequencyCorpusMap.remove(termKey);
+                }
+                else
+                {
+                    termsAndFrequencyCorpusMap.put(termKeyLowerCase, termsAndFrequencyCorpusMap.get(termKey));
+                    termsAndFrequencyCorpusMap.remove(termKey);
+                }
+
+            }
+
+
+        }
+    }
 }

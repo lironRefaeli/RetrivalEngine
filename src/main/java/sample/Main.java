@@ -27,23 +27,41 @@ public class Main extends Application {
         primaryStage.show();
     }
 
+    static public int returnMaxTf(Map<String, Integer> temporaryMap)
+    {
+        int maxTf=0;
+        for(int i = 0; i <temporaryMap.size(); i++)
+        {
+            //to do - find the max tf
+        }
+
+        return maxTf;
+    }
+
 
     public static void main(String[] args) throws IOException {
 
         int numOfLoops = 91;
         Map<String, TermDataInMap> termsCorpusMap = new HashMap<String, TermDataInMap>();
+        Map<String, DocTermDataInMap> docsCorpusMap = new HashMap<String, DocTermDataInMap>();
         List<String> listOfTexts = new ArrayList<String>();
+        List<String> listOfDocsNumbers = new ArrayList<String>();
+        List<String> listOfDocsCities = new ArrayList<String>();
 
-        ReadFile readFile = new ReadFile("C:\\Users\\david\\Desktop\\corpus");
-        Parse parse = new Parse("C:\\Users\\david\\Desktop\\StopWords.txt");
+        ReadFile readFile = new ReadFile("C:\\Users\\refaeli.liron\\Desktop\\corpus");
+        Parse parse = new Parse("C:\\Users\\refaeli.liron\\Desktop\\corpus\\StopWords.txt");
 
         //loops over a chunk of Texts
         for (int i = 0; i < numOfLoops; i++) {
             listOfTexts = readFile.ReadFolder(20);
+            listOfDocsNumbers = readFile.getDocNumbersList();
+            listOfDocsCities = readFile.getDocCitiesList();
 
             //loops over every text from one chunk
             for (int j = 0; j < listOfTexts.size(); j++) {
                 Map<String, Integer> temporaryMap = parse.ParsingDocument(listOfTexts.get(j));
+                docsCorpusMap.put(listOfDocsNumbers.get(j), new DocTermDataInMap(returnMaxTf(temporaryMap), temporaryMap.size(), listOfDocsCities.get(j)));
+
                 //loops over one text's terms
                 for (String term : temporaryMap.keySet()) {
                     //NBA or GSW
@@ -80,5 +98,7 @@ public class Main extends Application {
             }
             //launch(args);
         }
+
+
     }
 }
