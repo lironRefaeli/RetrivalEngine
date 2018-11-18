@@ -2,6 +2,7 @@ package sample;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.time.Month;
 import java.util.*;
 
 /**
@@ -11,10 +12,15 @@ public class Parse {
 
     List<String> stopWordsList;
     Map<String, Integer> termsAndFrequencyMap;
+    Stemmer stemmer;
+    static List<String> monthsNames;
+    private boolean useStemmer;
 
     Parse(String stopWordsPath)
     {
         stopWordsList = ReadStopWordToList(stopWordsPath);
+        InitMonthsNames();
+        useStemmer = true;
     }
 
     public Map<String,Integer> ParsingDocument(String docText) {
@@ -23,12 +29,12 @@ public class Parse {
         return termsAndFrequencyMap;
     }
 
-     private void BreakTextToTerms(String docText)
+    private void BreakTextToTerms(String docText)
     {
         //cleaning the document before splitting (| is seperating between characters, and \\ is sometimes needed
         docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|/","");
         //splitting the document according to these delimiters - the second one is spaces
-        List<String> TermsOfDoc = new ArrayList(Arrays.asList(docText.split("\\n|\\s+|\\t|;|\\.|\\?|!|-|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*|/")));
+        List<String> TermsOfDoc = new ArrayList(Arrays.asList(docText.split("\\n|\\s+|\\t|;|\\.|\\?|!|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*|/")));
 
         for(int i = 0; i < TermsOfDoc.size(); i++)
         {
@@ -46,6 +52,82 @@ public class Parse {
             if(i != TermsOfDoc.size()-3)
                 thirdNextTerm = TermsOfDoc.get(i+3);
 
+
+            //word-word, word-word-word, number-word, word-number, number-number
+            //length bigger than 5 because we want al least 2 words with the "-"
+            //we do not want "-" or "--" to be terms
+            if(term.contains("-") && term.length() >= 5)
+            {
+                if(useStemmer)
+                    CallStemmer(term);
+                AddTermToMap(term);
+
+                continue;
+            }
+
+            //Between 18 and 24
+            if((term.equals("Between") || term.equals("between")) && IsNumeric(nextTerm) && secondNextTerm.equals("and") && IsNumeric(thirdNextTerm))
+            {
+                term = term + nextTerm + secondNextTerm + thirdNextTerm;
+                i = i +3;
+                AddTermToMap(term);
+                continue;
+            }
+
+            //First additional rule: 100 Kilometers or 100 kilometers
+            if(IsNumeric(term) && (nextTerm.equals("Kilometers") || nextTerm.equals("kilometers") || nextTerm.equals("km")))
+            {
+                term = term + "km";
+                i++;
+                AddTermToMap(term);
+                continue;
+            }
+
+            //Second additional rule
+            //Dates: "14 May 1994"
+            if(IsNumeric(term) && monthsNames.contains(nextTerm.toUpperCase()) && IsNumeric(secondNextTerm))
+            {
+                if(term.length() == 1)
+                    term = "0" + GetMonthNumber(nextTerm) + "-0" + term + "-" + secondNextTerm;
+                else
+                    term = "0" + GetMonthNumber(nextTerm) + "-" + term + "-" + secondNextTerm;
+                i = i + 2;
+                AddTermToMap(term);
+                continue;
+            }
+
+
+            //Dates: "14 May/MAY/may"
+            if(IsNumeric(term) && monthsNames.contains(nextTerm.toUpperCase()))
+            {
+                //the day number is 4
+                if(term.length() == 1)
+                    term = "0" + GetMonthNumber(nextTerm) + "-0" + term;
+                else
+                    term = "0" + GetMonthNumber(nextTerm) + "-" + term;
+                i++;
+                AddTermToMap(term);
+                continue;
+            }
+
+            if(monthsNames.contains(term.toUpperCase()) && IsNumeric(nextTerm))
+            {
+                if(term.length() == 1)
+                    term = "0" + GetMonthNumber(term) + "-0" + nextTerm;
+                else
+                    term = "0" + GetMonthNumber(term) + "-" + nextTerm;
+                i++;
+                AddTermToMap(term);
+                continue;
+            }
+
+            if(monthsNames.contains(term.toUpperCase()) && IsNumeric(nextTerm))
+            {
+                term = nextTerm + "-0" + GetMonthNumber(term);
+                i++;
+                AddTermToMap(term);
+                continue;
+            }
 
             //handles with dollar numbers
             int value = 0;
@@ -178,59 +260,59 @@ public class Parse {
             }
 
             //handling with regular numbers, with or without a word after
-           else if(IsNumeric(term))
-           {
-               //123 Thousand to 123K
-               if(nextTerm.equals("Thousand"))
-               {
-                   term = term + 'K';
-                   i++;
-                   AddTermToMap(term);
-                   continue;
-               }
-               if(nextTerm.equals("Million"))
-               {
-                   term = term + 'M';
-                   i++;
-                   AddTermToMap(term);
-                   continue;
-               }
-               if(nextTerm.equals("Billion") || nextTerm.equals("Trillion"))
-               {
-                   term = term + 'B';
-                   i++;
-                   AddTermToMap(term);
-                   continue;
-               }
-               //only a number
-               else if(term.length() >= 4)
-               {
-                   term = HandleRegularNumbers(term);
-                   AddTermToMap(term);
-                   continue;
-               }
+            else if(IsNumeric(term))
+            {
+                //123 Thousand to 123K
+                if(nextTerm.equals("Thousand"))
+                {
+                    term = term + 'K';
+                    i++;
+                    AddTermToMap(term);
+                    continue;
+                }
+                if(nextTerm.equals("Million"))
+                {
+                    term = term + 'M';
+                    i++;
+                    AddTermToMap(term);
+                    continue;
+                }
+                if(nextTerm.equals("Billion") || nextTerm.equals("Trillion"))
+                {
+                    term = term + 'B';
+                    i++;
+                    AddTermToMap(term);
+                    continue;
+                }
+                //only a number
+                else if(term.length() >= 4)
+                {
+                    term = HandleRegularNumbers(term);
+                    AddTermToMap(term);
+                    continue;
+                }
 
 
-           }
+            }
 
-           //case "35 3/4"
-           if(IsNumeric(term) && nextTerm.contains("/"))
-           {
-               int indexOfSlash = nextTerm.indexOf("/");
-               if(IsNumeric(nextTerm.substring(0,indexOfSlash)) && IsNumeric(nextTerm.substring(indexOfSlash+1)))
-               {
-                   term = term + nextTerm;
-                   i++;
-                   AddTermToMap(term);
-                   continue;
-               }
-           }
-           //case 204 or any other regular number under 1000, also 35.66
-           if(IsNumeric(term))
-           {
-               AddTermToMap(term);
-               continue;
-           }
+            //case "35 3/4"
+            if(IsNumeric(term) && nextTerm.contains("/"))
+            {
+                int indexOfSlash = nextTerm.indexOf("/");
+                if(IsNumeric(nextTerm.substring(0,indexOfSlash)) && IsNumeric(nextTerm.substring(indexOfSlash+1)))
+                {
+                    term = term + nextTerm;
+                    i++;
+                    AddTermToMap(term);
+                    continue;
+                }
+            }
+            //case 204 or any other regular number under 1000, also 35.66
+            if(IsNumeric(term))
+            {
+                AddTermToMap(term);
+                continue;
+            }
 
         }
     }
@@ -256,7 +338,7 @@ public class Parse {
             {   //map contains LIRON or STATE
                 if(termsAndFrequencyMap.containsKey(term.toUpperCase()))
                     termsAndFrequencyMap.put(term.toUpperCase(), termsAndFrequencyMap.get(term.toUpperCase()) + 1);
-                //add Liron as LIRON
+                    //add Liron as LIRON
                 else
                     termsAndFrequencyMap.put(term.toUpperCase(), 1);
             }
@@ -279,12 +361,17 @@ public class Parse {
                 //we have "first" in our map
                 if(termsAndFrequencyMap.containsKey(term))
                     termsAndFrequencyMap.put(term, termsAndFrequencyMap.get(term) + 1);
-                //adds "first" to the map
+                    //adds "first" to the map
                 else
                     termsAndFrequencyMap.put(term, 1);
             }
 
         }
+    }
+
+    //Get "MAY" or "May" or "may" and return "5"
+    private static int GetMonthNumber(String monthName) {
+        return Month.valueOf(monthName.toUpperCase()).getValue();
     }
 
 
@@ -302,8 +389,8 @@ public class Parse {
 
     public static boolean FirstIsUpperCase(char firstCharOfTerm)
     {
-            if(firstCharOfTerm < 65 || firstCharOfTerm > 90)
-                return false;
+        if(firstCharOfTerm < 65 || firstCharOfTerm > 90)
+            return false;
         return true;
     }
 
@@ -340,11 +427,11 @@ public class Parse {
     {
         if(number.length() == 4)
         {
-           number = DeleteTheZeros(number);
-           if(number.length() > 1)
-             return number.charAt(0) + '.' + number.substring(1) + 'K';
-           else
-               return number.charAt(0) + "K";
+            number = DeleteTheZeros(number);
+            if(number.length() > 1)
+                return number.charAt(0) + '.' + number.substring(1) + 'K';
+            else
+                return number.charAt(0) + "K";
         }
         if(number.length() == 5)
         {
@@ -352,7 +439,7 @@ public class Parse {
             if(number.length() > 2)
                 return number.substring(0,2) + '.' + number.substring(2) + 'K';
             else
-            return number.substring(0,2) + 'K';
+                return number.substring(0,2) + 'K';
         }
         if(number.length() == 6)
         {
@@ -488,42 +575,43 @@ public class Parse {
         return stopWordsList;
     }
 
-    public void ParsingCorpusMap(Map<String, Integer> termsAndFrequencyCorpusMap) {
-        for(String termKey :termsAndFrequencyCorpusMap.keySet())
-        {
-            //the second character
+    private void InitMonthsNames()
+    {
+        monthsNames.add("JANUARY");
+        monthsNames.add("FEBRUARY");
+        monthsNames.add("MARCH");
+        monthsNames.add("APRIL");
+        monthsNames.add("MAY");
+        monthsNames.add("JUNE");
+        monthsNames.add("JULY");
+        monthsNames.add("AUGUST");
+        monthsNames.add("SEPTEMBER");
+        monthsNames.add("OCTOBER");
+        monthsNames.add("NOVEMBER");
+        monthsNames.add("DECEMBER");
 
-            if(Character.isUpperCase(termKey.charAt(1)))
-            {
-                //THE - do nothing
-            }
-            else if(Character.isUpperCase(termKey.charAt(0)))
-            {
-                //The - check if it's in stop word
-                String termKeyUpperCase = termKey.toUpperCase();
-                String termKeyLowerCase = termKey.toLowerCase();
-
-                if(stopWordsList.contains(termKeyLowerCase))
-                    termsAndFrequencyCorpusMap.remove(termKey);
-                else if(termsAndFrequencyCorpusMap.containsKey(termKeyLowerCase))
-                {
-                    termsAndFrequencyCorpusMap.put(termKeyLowerCase, termsAndFrequencyCorpusMap.get(termKey) + termsAndFrequencyCorpusMap.get(termKeyLowerCase));
-                    termsAndFrequencyCorpusMap.remove(termKey);
-                }
-                else if(termsAndFrequencyCorpusMap.containsKey(termKeyUpperCase))
-                {
-                    termsAndFrequencyCorpusMap.put(termKeyUpperCase, termsAndFrequencyCorpusMap.get(termKey) + termsAndFrequencyCorpusMap.get(termKeyLowerCase));
-                    termsAndFrequencyCorpusMap.remove(termKey);
-                }
-                else
-                {
-                    termsAndFrequencyCorpusMap.put(termKeyLowerCase, termsAndFrequencyCorpusMap.get(termKey));
-                    termsAndFrequencyCorpusMap.remove(termKey);
-                }
-
-            }
-
-
-        }
+        //Short writing
+        monthsNames.add("JAN");
+        monthsNames.add("FEB");
+        monthsNames.add("MAR");
+        monthsNames.add("APR");
+        monthsNames.add("MAY");
+        monthsNames.add("JUN");
+        monthsNames.add("JUL");
+        monthsNames.add("AUG");
+        monthsNames.add("SEP");
+        monthsNames.add("OCT");
+        monthsNames.add("NOV");
+        monthsNames.add("DEC");
     }
+
+    private void CallStemmer(String term)
+    {
+        for(int i = 0; i < term.length(); i++)
+        {
+            stemmer.add(term.charAt(i));
+        }
+        stemmer.stem();
+    }
+
 }
