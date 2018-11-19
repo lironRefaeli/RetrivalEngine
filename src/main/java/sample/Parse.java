@@ -374,7 +374,6 @@ public class Parse {
         return Month.valueOf(monthName.toUpperCase()).getValue();
     }
 
-
     //checks if a word is all UpperCases using ASCII
     public static boolean IsUpperCase(String term)
     {
@@ -405,8 +404,6 @@ public class Parse {
         }
         return true;
     }
-
-
 
     private static String HandleNumbersWithPoint(String beforePoint, String afterPoint)
     {
@@ -577,6 +574,8 @@ public class Parse {
 
     private void InitMonthsNames()
     {
+        monthsNames = new ArrayList<String>();
+
         monthsNames.add("JANUARY");
         monthsNames.add("FEBRUARY");
         monthsNames.add("MARCH");
