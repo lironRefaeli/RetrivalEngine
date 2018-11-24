@@ -5,6 +5,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +36,7 @@ import java.util.Map;
         int numOfLoops = 91; //number of loops in order to go through all the corpus' folders
         Map<String, TermDataInMap> termsCorpusMap = new HashMap<String, TermDataInMap>(); //a map that includes all the terms in the corpus
         Map<String, DocTermDataInMap> docsCorpusMap = new HashMap<String, DocTermDataInMap>();//a map that includes all the terms in the corpus
+        Map<String, String> postingMap = new HashMap<String, String>();// a map that includes posting data about the chunk of files
 
         //lists that will save documents content: texts, docsNumbers, cities.
         List<String> listOfTexts = new ArrayList<String>();
@@ -66,9 +70,11 @@ import java.util.Map;
                     //NBA or GSW
                     if (Parse.IsUpperCase(term)) {
                         if (termsCorpusMap.containsKey(term)) {
+                            //increasing frequency
                             termsCorpusMap.get(term).totalTf += temporaryMap.get(term);
                             termsCorpusMap.get(term).numOfDocuments++;
                         } else
+                            //creating new record in termsCorpusMap
                             termsCorpusMap.put(term, new TermDataInMap(temporaryMap.get(term), 1));
                     }
                     //liron or first
@@ -94,6 +100,37 @@ import java.util.Map;
 
                     }
                 }
+
+                //updating the posting map after finishing parsing a text
+                for (String term : temporaryMap.keySet())
+                {
+                    //checking if posting map contains the term
+                    if(!postingMap.containsKey(term))
+                    {
+                        //creating new record
+                        postingMap.put(term, listOfDocsNumbers.get(j)+"~"+temporaryMap.get(term)+",");
+                    }
+                    else
+                    {
+                        //deleting old record and creating new one
+                        String postingOldData = postingMap.get(term);
+                        postingMap.remove(term);
+                        postingMap.put(term, postingOldData+listOfDocsNumbers.get(j)+"~"+temporaryMap.get(term)+",");
+                    }
+                }
+
+                //creating posting file and saving it in postingFilesFolder - his name is posting+the number of the loop
+                BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\refaeli.liron\\IdeaProjects\\RetrivalEngine_LD\\src\\main\\java\\postingFiles\\posting"+i));
+                //adding to the file all the term+posting data from posting map
+                for (String term : postingMap.keySet())
+                {
+                    //the structure is - "term*docNum~tf,"
+                    String data = term+"*"+postingMap.get(term);
+                    writer.write(data);
+                }
+                //closing the file
+                writer.close();
+
             }
 
         }
