@@ -32,8 +32,6 @@ public class Parse {
 
     private void BreakTextToTerms(String docText)
     {
-
-
         //cleaning the document before splitting (| is seperating between characters, and \\ is sometimes needed
         docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|","");
         //splitting the document according to these delimiters - the second one is spaces

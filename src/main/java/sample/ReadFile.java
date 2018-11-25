@@ -33,9 +33,6 @@ public class ReadFile {
         {
             nextFolderToReadIndex = 0;
             filesPaths = new ArrayList<String>();
-
-            listOfTexts = new ArrayList<String>();
-
             //creating an object File from the input path, in order to read the content of the given folder
             final File folder = new File(mainFolderPath);
             //sending the File object to a function that will create a list of all the file's paths in the given folder
@@ -70,6 +67,7 @@ public class ReadFile {
         public  List<String> ReadFolder(int numOfFoldersToReadFrom) throws IOException {
 
             //for new chunk we are restart the lists
+            listOfTexts = new ArrayList<String>();
             listOfDocsNumbers = new ArrayList<String>();
             listOfDocsCities = new ArrayList<String>();
 
@@ -106,7 +104,7 @@ public class ReadFile {
                     //adding all the documents' cities in the file to the listOfCities
                     String city = element.getElementsByTag("F").toString();
                     // if there isn't an information about the city, we will add empty string to the list.
-                    if(!city.equals("")) {
+                    if(!city.equals("") && city.contains("<f p=\"104\">")) {
                         city = city.substring(city.indexOf("<f p=\"104\">", city.indexOf("</f>")));
                         if (city.length() > 15) {
                             city = city.substring(city.indexOf("\n "), city.indexOf(" \n"));
