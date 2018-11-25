@@ -44,7 +44,7 @@ public class Indexer {
             List<String> listOfTexts = readFile.ReadFolder(16);
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
             List<String> listOfDocsCities = readFile.getDocCitiesList();
-            Map<String, String> postingMap = new HashMap<String, String>();// a map that includes posting data about the chunk of files
+            Map<String, String> postingMap = new TreeMap<String, String>();// a map that includes posting data about the chunk of files
 
             //loops over every text from one chunk
             for (int j = 0; j < listOfTexts.size(); j++) {
@@ -121,14 +121,12 @@ public class Indexer {
 
     private void WriteToTempPosting(Map<String,String> postingMap, int numOfChunck) throws IOException {
         //creating posting file and saving it in postingFilesFolder - his name is posting+the number of the loop
-        TreeMap<String, String> sortedPostingMap = SortByKey(postingMap);
         File file = new File(pathToDisk + "\\posting_" + numOfChunck);
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-        //adding to the file all the term+posting data from posting map
-        for (String term : sortedPostingMap.keySet())
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file));        //adding to the file all the term+posting data from posting map
+        for (String term : postingMap.keySet())
         {
             //the structure is - "term*docNum~tf,"
-            String data = term + "*" + sortedPostingMap.get(term);
+            String data = term + "*" + postingMap.get(term);
             writer.write(data);
             writer.newLine();
         }
