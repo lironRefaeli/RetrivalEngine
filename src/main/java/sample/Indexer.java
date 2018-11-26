@@ -33,7 +33,7 @@ public class Indexer {
     public void Play() throws IOException {
 
         final long startTime = System.nanoTime();
-        int numOfChunks = 8; //number of loops in order to go through all the corpus' folders
+        int numOfChunks = 2; //number of loops in order to go through all the corpus' folders
 
 
         //the number of loop is determined by the numOfChunks parameter
@@ -41,7 +41,7 @@ public class Indexer {
             System.out.println("start loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
 
             //lists that will save documents content: texts, docsNumbers, cities.
-            List<String> listOfTexts = readFile.ReadFolder(12);
+            List<String> listOfTexts = readFile.ReadFolder(8);
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
             List<String> listOfDocsCities = readFile.getDocCitiesList();
             Map<String, String> postingMap = new TreeMap<String, String>();// a map that includes posting data about the chunk of files
@@ -65,7 +65,7 @@ public class Indexer {
                             termsCorpusMap.get(term).numOfDocuments++;
                         } else
                             //creating new record in termsCorpusMap
-                            termsCorpusMap.put(term, new TermDataInMap(temporaryMap.get(term), 1));
+                            termsCorpusMap.put(term, new TermDataInMap(temporaryMap.get(term), 12));
                     }
                     //liron or first
                     else if (Parse.IsLowerCase(term)) {
