@@ -3,8 +3,8 @@ package sample;
 public class TermDataInMap {
 
     public int numOfDocuments;
-    private int pointerToPostingLine;
-    private double idf;
+    public int pointerToPostingLine;
+    public double idf;
     public int totalTf;
 
 

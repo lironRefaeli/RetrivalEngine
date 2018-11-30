@@ -23,6 +23,7 @@ public class Indexer {
     ExecutorService pool;
     ConcurrentLinkedQueue<File> queueOfTempPostingFiles;
     final long startTime = System.nanoTime();
+    int NumberOfDocsInCorpus = 0;
 
 
     public Indexer(ReadFile readFile, Parse parser, String pathToDisk) {
@@ -54,8 +55,18 @@ public class Indexer {
             //lists that will save documents content: texts, docsNumbers, cities.
             List<String> listOfTexts = readFile.ReadFolder(8);
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
+            NumberOfDocsInCorpus += listOfDocsNumbers.size();
             List<String> listOfDocsCities = readFile.getDocCitiesList();
-            Map<String, String> postingMap = new TreeMap<String, String>();// a map that includes posting data about the chunk of files
+            // a map that includes posting data about the chunk of files
+            Map<String, String> postingMap = new TreeMap<>(
+                    new Comparator<String>() {
+                        @Override
+                        public int compare(String o1, String o2) {
+
+                            return o1.toLowerCase().compareTo(o2.toLowerCase());
+                        }
+                    }
+            );
 
             //loops over every text from one chunk
             for (int j = 0; j < listOfTexts.size(); j++) {
@@ -68,9 +79,16 @@ public class Indexer {
                 //docsCorpusMap.put(listOfDocsNumbers.get(j), new DocTermDataInMap(returnMaxTf(temporaryMap), temporaryMap.size(), listOfDocsCities.get(j)));
                 //loops over one text's terms and merging temporaryMap to termsCorpusMap
                 for (String term : temporaryMap.keySet()) {
+
+
                     //NBA or GSW
                     if (Parse.IsUpperCase(term)) {
-                        if (termsCorpusMap.containsKey(term)) {
+                        if(termsCorpusMap.containsKey(term.toLowerCase()))
+                        {
+                            termsCorpusMap.get(term.toLowerCase()).totalTf += temporaryMap.get(term);
+                            termsCorpusMap.get(term.toLowerCase()).numOfDocuments++;
+                        }
+                        else if (termsCorpusMap.containsKey(term)) {
                             //increasing frequency
                             termsCorpusMap.get(term).totalTf += temporaryMap.get(term);
                             termsCorpusMap.get(term).numOfDocuments++;
@@ -110,19 +128,36 @@ public class Indexer {
                     }
 
                 }
-
                 //updating the posting map after finishing parsing a text
                 for (String term : temporaryMap.keySet()) {
-                    //checking if posting map contains the term
-                    if (!postingMap.containsKey(term)) {
-                        //creating new record
-                        postingMap.put(term, listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
-                    } else {
-                        //deleting old record and creating new one
-                        String postingOldData = postingMap.get(term);
-                        postingMap.remove(term);
-                        postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+
+                    if(termsCorpusMap.containsKey(term.toLowerCase()))
+                    {
+                        //checking if posting map contains the term
+                        if (!postingMap.containsKey(term.toLowerCase())) {
+                            //creating new record
+                            postingMap.put(term.toLowerCase(), listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                        } else {
+                            //deleting old record and creating new one
+                            String postingOldData = postingMap.get(term.toLowerCase());
+                            postingMap.remove(term.toLowerCase());
+                            postingMap.put(term.toLowerCase(), postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                        }
                     }
+                    else
+                    {
+                        //checking if posting map contains the term
+                        if (!postingMap.containsKey(term)) {
+                            //creating new record
+                            postingMap.put(term, listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                        } else {
+                            //deleting old record and creating new one
+                            String postingOldData = postingMap.get(term);
+                            postingMap.remove(term);
+                            postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                        }
+                    }
+
                 }
             }
             WriteToTempPosting(postingMap, i);
@@ -134,8 +169,6 @@ public class Indexer {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-
 
 
     }
@@ -166,7 +199,7 @@ public class Indexer {
 
             }
 
-            pool.awaitTermination(3, TimeUnit.SECONDS);
+            pool.awaitTermination(10, TimeUnit.SECONDS);
 
             System.out.println("num of files that were merged: " + numberOfFiles + " - time: " + (System.nanoTime() - startTime) / 1000000000.0);
 
@@ -177,7 +210,10 @@ public class Indexer {
         }
 
         System.out.println("done merging all files - time: " + (System.nanoTime() - startTime) / 1000000000.0);
-
+        pool.shutdown();
+        while (!pool.awaitTermination(24L, TimeUnit.HOURS)) {
+            System.out.println("Not yet. Still waiting for termination");
+        }
         splitMergedFile();
 
 
@@ -185,29 +221,36 @@ public class Indexer {
 
     public void splitMergedFile() throws IOException {
 
+        int lineCounter = 1;
+        String splitedLine[] = new String[2];
         File folder = new File("C:\\Users\\refaeli.liron\\IdeaProjects\\RetrivalEngine_LD\\src\\main\\java\\postingFiles");
 
-        if(folder.listFiles().length == 1) {
+        if (folder.listFiles().length == 1) {
             for (final File fileEntry : folder.listFiles()) {
 
                 Scanner fileReader = new Scanner(fileEntry);
-                String nextLine = "";
+                String nextLineInFile = "";
 
                 //spliting to symbols
                 File symbolFile = new File("C:\\Users\\refaeli.liron\\IdeaProjects\\RetrivalEngine_LD\\src\\main\\java\\postingFiles\\symbols");
                 FileWriter fw1 = new FileWriter(symbolFile);
                 BufferedWriter bw1 = new BufferedWriter(fw1);
 
-                while (fileReader.hasNext()) {
-                    nextLine = fileReader.next();
-                    if (!(nextLine.toLowerCase().charAt(0) >= 97 && nextLine.toLowerCase().charAt(0) <= 122)) {
-                        bw1.write(nextLine);
+                while (fileReader.hasNextLine()) {
+                    nextLineInFile = fileReader.nextLine();
+                    if (!(nextLineInFile.toLowerCase().charAt(0) >= 97 && nextLineInFile.toLowerCase().charAt(0) <= 122)) {
+                        bw1.write(nextLineInFile);
+                        splitedLine = nextLineInFile.split("\\*");
+                        termsCorpusMap.get(splitedLine[0]).pointerToPostingLine = lineCounter;
+                        termsCorpusMap.get(splitedLine[0]).idf = Math.log10(NumberOfDocsInCorpus/(termsCorpusMap.get(splitedLine[0]).numOfDocuments));
+                        lineCounter++;
                         bw1.newLine();
                     } else {
                         break;
                     }
                 }
                 bw1.close();
+                lineCounter = 1;
 
                 //spliting to characters
                 for (int i = 97; i <= 122; i++) {
@@ -216,15 +259,29 @@ public class Indexer {
                     FileWriter fw = new FileWriter(file);
                     BufferedWriter bw = new BufferedWriter(fw);
 
-                    if (!nextLine.equals("") && nextLine.toLowerCase().charAt(0) == firstChar) {
-                        bw.write(nextLine);
+                    if (!nextLineInFile.equals("") && nextLineInFile.toLowerCase().charAt(0) == firstChar) {
+                        bw.write(nextLineInFile);
+                        splitedLine = nextLineInFile.split("\\*");
+                        termsCorpusMap.get(splitedLine[0]).pointerToPostingLine = lineCounter;
+                        termsCorpusMap.get(splitedLine[0]).idf = Math.log10(NumberOfDocsInCorpus/(termsCorpusMap.get(splitedLine[0]).numOfDocuments));
+                        lineCounter++;
                         bw.newLine();
                     }
 
-                    while (fileReader.hasNext()) {
-                        nextLine = fileReader.next();
-                        if (nextLine.toLowerCase().charAt(0) == firstChar) {
-                            bw.write(nextLine);
+                    while (fileReader.hasNextLine()) {
+                        nextLineInFile = fileReader.nextLine();
+                        if (nextLineInFile.toLowerCase().charAt(0) == firstChar) {
+                            bw.write(nextLineInFile);
+                            splitedLine = nextLineInFile.split("\\*");
+                            try{
+                                termsCorpusMap.get(splitedLine[0]).pointerToPostingLine = lineCounter;
+                            }
+                            catch(NullPointerException e)
+                            {
+                                System.out.println(splitedLine[0]);
+                            }
+                            termsCorpusMap.get(splitedLine[0]).idf = Math.log10(NumberOfDocsInCorpus/(termsCorpusMap.get(splitedLine[0]).numOfDocuments));
+                            lineCounter++;
                             bw.newLine();
                         } else {
                             break;
@@ -232,13 +289,26 @@ public class Indexer {
                     }
 
                     bw.close();
+                    lineCounter = 1;
                 }
+
+
+                fileReader.close();
+                fileEntry.delete();
+
+
             }
+
+            System.out.println("spliting was done - time: " + (System.nanoTime() - startTime) / 1000000000.0);
+
+            for (Map.Entry<String, TermDataInMap> entry : termsCorpusMap.entrySet())
+            {
+                System.out.println(entry.getKey() + "/" + entry.getValue().idf);
+            }
+
+
+
         }
-
-        System.out.println("spliting was done - time: " + (System.nanoTime() - startTime) / 1000000000.0);
-
-
     }
 }
 

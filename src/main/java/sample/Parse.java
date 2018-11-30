@@ -25,7 +25,7 @@ public class Parse {
         stopWordsList = ReadStopWordToList(stopWordsPath);
         InitMonthsNames();
         stemmer = new Stemmer();
-        useStemmer = true;
+        useStemmer = false;
     }
 
     public Map<String, Integer> ParsingDocument(String docText) {
@@ -36,7 +36,7 @@ public class Parse {
 
     private void BreakTextToTerms(String docText) {
         //cleaning the document before splitting (| is seperating between characters, and \\ is sometimes needed
-        docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|\\.\\.\\.|\\.\\.|", "");
+        docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|\\.\\.\\.|\\.\\.|\\||", "");
         //splitting the document according to these delimiters - the second one is spaces
         //List<String> TermsOfDoc = new ArrayList(Arrays.asList(docText.split("\\n|\\s+|\\t|;|\\.|\\?|!|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*|/")));
         TermsOfDoc = new ArrayList(Arrays.asList(docText.split("\\n|\\s+|\\t|;|\\?|!|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*")));
@@ -45,6 +45,8 @@ public class Parse {
         for (int i = 0; i < TermsOfDoc.size(); i++) {
             //handles with stop-words or empty strings and also next terms after current term
             term = TermsOfDoc.get(i);
+
+
             if ((IsStopWord(term.toLowerCase()) || term.equals("")))
                 continue;
             if (i + 1 <= TermsOfDoc.size() - 1)
@@ -55,7 +57,7 @@ public class Parse {
             if (IsNumeric(term))
                 i = HandleWithNumbers(i);
             else
-               i = HandleWithStrings(i);
+                i = HandleWithStrings(i);
         }
     }
 
@@ -63,7 +65,7 @@ public class Parse {
     private int HandleWithNumbers(int index)
     {
         // case "1,000,000 Dollars"
-        if (nextTerm.equals("Dollars"))
+        if (nextTerm.equals("Dollars") &&  Double.parseDouble(term) > 1000000)
         {
             term = DeleteTheZeros(term);
             term = term + "M Dollars";
@@ -89,11 +91,18 @@ public class Parse {
                      termSplittedByPoint[1] = term.substring(j + 1);
                  }
              }
+
              if (IsNumeric(termSplittedByPoint[0]) && termSplittedByPoint[0].length() >= 4 && IsNumeric(termSplittedByPoint[1])) {
                  term = HandleNumbersWithPoint(termSplittedByPoint[0], termSplittedByPoint[1]);
-                 AddTermNumberToMap(term);
-                 return index;
              }
+
+             if(nextTerm.equals("Dollars")) {
+                 term = term + " Dollars";
+                 index++;
+             }
+             AddTermNumberToMap(term);
+             return index;
+
         }
         //handling with regular numbers, with or without a word after
         else {
@@ -187,13 +196,27 @@ public class Parse {
 
             //Second additional rule
             //Dates: "14 May 1994"
+
             if (monthsNames.contains(nextTerm.toUpperCase())) {
+                int monthNum;
                 CreateSecondAndThirdTerm(index);
                 if (IsNumeric(secondNextTerm) && secondNextTerm.length() > 2) {
                     if (term.length() == 1)
-                        term = "0" + GetMonthNumber(nextTerm) + "-0" + term + "-" + secondNextTerm;
+                    {
+                        monthNum = GetMonthNumber(nextTerm);
+                        if(monthNum < 10)
+                            term = "0" + GetMonthNumber(nextTerm) + "-0" + term + "-" + secondNextTerm;
+                        else
+                            term = GetMonthNumber(nextTerm) + "-0" + term + "-" + secondNextTerm;
+                    }
                     else
-                        term = "0" + GetMonthNumber(nextTerm) + "-" + term + "-" + secondNextTerm;
+                    {
+                        monthNum = GetMonthNumber(nextTerm);
+                        if(monthNum < 10)
+                            term = "0" + GetMonthNumber(nextTerm) + "-" + term + "-" + secondNextTerm;
+                        else
+                            term = GetMonthNumber(nextTerm) + "-" + term + "-" + secondNextTerm;
+                    }
                     index = index + 2;
                     AddTermNumberToMap(term);
                     return index;
@@ -202,9 +225,22 @@ public class Parse {
                 else {
                     //the day number is 4
                     if (term.length() == 1)
-                        term = "0" + GetMonthNumber(nextTerm) + "-0" + term;
+                    {
+                        monthNum = GetMonthNumber(nextTerm);
+                        if(monthNum < 10)
+                            term = "0" + GetMonthNumber(nextTerm) + "-0" + term;
+                        else
+                            term = GetMonthNumber(nextTerm) + "-0" + term;
+                    }
                     else
-                        term = "0" + GetMonthNumber(nextTerm) + "-" + term;
+                    {
+                        monthNum = GetMonthNumber(nextTerm);
+                        if(monthNum < 10)
+                            term = "0" + GetMonthNumber(nextTerm) + "-" + term;
+                        else
+                            term = GetMonthNumber(nextTerm) + "-" + term;
+                    }
+
                     index++;
                     AddTermNumberToMap(term);
                     return index;
@@ -303,7 +339,7 @@ public class Parse {
         }
 
         //case "100bn Dollars"
-        if (term.length() >= 2 && IsNumeric(term.substring(0, term.length() - 2)) && term.substring(term.length() - 2, term.length()).equals("bn") && nextTerm.equals("Dollars")) {
+        if (term.length() >= 2 && IsNumeric(term.substring(0, term.length() - 2)) && term.substring(term.length() - 2).equals("bn") && nextTerm.equals("Dollars")) {
             term = term.substring(0, term.length() - 2) + "000 M Dollars";
             index++;
             AddTermToMap(term);
@@ -337,6 +373,9 @@ public class Parse {
     }
     private  void AddTermNumberToMap(String term)
     {
+        if(term.charAt(term.length()-1) == '.')
+            term = term.substring(0,term.length()-1);
+
         if(useStemmer)
             term = CallStemmer(term);
 
@@ -347,12 +386,20 @@ public class Parse {
     }
 
     private void AddTermToMap(String term) {
+
+        if(term.charAt(term.length()-1) == '.' || term.charAt(term.length()-1) == '-' )
+            term = term.substring(0,term.length()-1);
+
         if(useStemmer)
             term = CallStemmer(term);
         //NBA or GSW
         if(IsUpperCase(term))
         {
-            if(termsAndFrequencyMap.containsKey(term))
+            if(termsAndFrequencyMap.containsKey(term.toLowerCase()))
+            {
+                termsAndFrequencyMap.put(term.toLowerCase(), termsAndFrequencyMap.get(term.toLowerCase()) + 1);
+            }
+            else if(termsAndFrequencyMap.containsKey(term))
                 termsAndFrequencyMap.put(term, termsAndFrequencyMap.get(term) + 1);
             else
                 termsAndFrequencyMap.put(term, 1);
@@ -375,6 +422,7 @@ public class Parse {
             }
 
         }
+
         //liron or first
         else if(IsLowerCase(term))
         {
@@ -444,6 +492,10 @@ public class Parse {
         for(int i = 0; i < term.length(); i++)
         {
             char c = term.charAt(i);
+            if(c == 45)
+                continue;
+            if(c == 36)
+                continue;
             if(c < 65 || c > 90)
                 return false;
         }
@@ -463,7 +515,12 @@ public class Parse {
         for(int i = 0; i < term.length(); i++)
         {
             char c = term.charAt(i);
-            if(c < 97 || c > 122)
+
+            if(c == 45)
+                continue;
+            if(c == 36)
+                continue;
+            if(c < 97 || c > 122 )
                 return false;
         }
         return true;
