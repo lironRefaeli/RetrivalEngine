@@ -5,9 +5,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
-public class MergeFiles {
+public class MergeFiles implements Runnable {
 
-    int counterNameOfFile;
+    static int counterNameOfFile = 1;
     boolean text1Flag = true;
     boolean text2Flag = true;
     String curString1 = "";
@@ -18,19 +18,25 @@ public class MergeFiles {
     Scanner fileReader2;
     String pathToDisk;
     BufferedWriter bw;
+    Indexer indexer;
+    static Object lock = new Object();
 
-    public MergeFiles(String pathToDisk) throws IOException
+    public MergeFiles(String pathToDisk, Indexer indexer) throws IOException
     {
-        counterNameOfFile = 1;
+
         this.pathToDisk = pathToDisk;
+        this.indexer = indexer;
     }
 
     public File margeTwoFiles(File file1, File file2) throws IOException {
         fileReader1 = new Scanner(file1);
         fileReader2 = new Scanner(file2);
+        File outFile;
+        synchronized (lock) {
+            outFile = new File(pathToDisk + "\\mergedFile" + counterNameOfFile);
+            counterNameOfFile++;
+        }
 
-        File outFile = new File(pathToDisk + "\\mergedFile" + counterNameOfFile);
-        counterNameOfFile++;
         FileWriter fw = new FileWriter(outFile);
         bw = new BufferedWriter(fw);
 
@@ -146,13 +152,20 @@ public class MergeFiles {
         return true;
     }
 
-/*
+
     public void run() {
+
         try {
-            margeTwoFiles();
+            //todo added if
+            if(indexer.queueOfTempPostingFiles.size() >= 2) {
+                final File firstFile = indexer.queueOfTempPostingFiles.poll();
+                final File secondFile = indexer.queueOfTempPostingFiles.poll();
+                indexer.queueOfTempPostingFiles.add(margeTwoFiles(firstFile,secondFile));
+
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
-    */
 }

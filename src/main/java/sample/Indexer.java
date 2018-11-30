@@ -3,13 +3,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class is building the inverted index.
@@ -24,27 +22,28 @@ public class Indexer {
     int numOfChunks;
     ExecutorService pool;
     ConcurrentLinkedQueue<File> queueOfTempPostingFiles;
+    final long startTime = System.nanoTime();
+
 
     public Indexer(ReadFile readFile, Parse parser, String pathToDisk) {
-        numOfChunks = 8;
+        numOfChunks = 227;
         this.readFile = readFile;
         this.parser = parser;
         this.pathToDisk = pathToDisk;
         termsCorpusMap = new HashMap<String, TermDataInMap>();
         docsCorpusMap = new HashMap<String, DocTermDataInMap>();
         try {
-            mergeFiles = new MergeFiles(pathToDisk);
+            mergeFiles = new MergeFiles(pathToDisk, this);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        pool = Executors.newFixedThreadPool(10);
+        pool = Executors.newFixedThreadPool(20);
         queueOfTempPostingFiles = new ConcurrentLinkedQueue();
     }
 
 
     public void Play() throws IOException {
 
-        final long startTime = System.nanoTime();
         //number of loops in order to go through all the corpus' folders
 
 
@@ -53,7 +52,7 @@ public class Indexer {
             System.out.println("start loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
 
             //lists that will save documents content: texts, docsNumbers, cities.
-            List<String> listOfTexts = readFile.ReadFolder(1);
+            List<String> listOfTexts = readFile.ReadFolder(8);
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
             List<String> listOfDocsCities = readFile.getDocCitiesList();
             Map<String, String> postingMap = new TreeMap<String, String>();// a map that includes posting data about the chunk of files
@@ -66,7 +65,7 @@ public class Indexer {
                 Map<String, Integer> temporaryMap = parser.ParsingDocument(listOfTexts.get(j));
 
                 //after parsing the text, we will creating new record in the docs Map
-                docsCorpusMap.put(listOfDocsNumbers.get(j), new DocTermDataInMap(returnMaxTf(temporaryMap), temporaryMap.size(), listOfDocsCities.get(j)));
+                //docsCorpusMap.put(listOfDocsNumbers.get(j), new DocTermDataInMap(returnMaxTf(temporaryMap), temporaryMap.size(), listOfDocsCities.get(j)));
                 //loops over one text's terms and merging temporaryMap to termsCorpusMap
                 for (String term : temporaryMap.keySet()) {
                     //NBA or GSW
@@ -127,18 +126,26 @@ public class Indexer {
                 }
             }
             WriteToTempPosting(postingMap, i);
-            System.out.println("end loop number: "+ i +" time: "+(System.nanoTime()-startTime)/1000000000.0);
+            System.out.println("end loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
         }
-        mergeTempPostingFiles();
+        try {
+            mergeTempPostingFiles();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
+
+
     }
 
-    private void WriteToTempPosting(Map<String,String> postingMap, int numOfChunck) throws IOException {
+    private void WriteToTempPosting(Map<String, String> postingMap, int numOfChunck) throws IOException {
         //creating posting file and saving it in postingFilesFolder - his name is posting+the number of the loop
         File file = new File(pathToDisk + "\\posting_" + numOfChunck);
         queueOfTempPostingFiles.add(file);
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));        //adding to the file all the term+posting data from posting map
-        for (String term : postingMap.keySet())
-        {
+        for (String term : postingMap.keySet()) {
             //the structure is - "term*docNum~tf,"
             String data = term + "*" + postingMap.get(term);
             writer.write(data);
@@ -148,43 +155,100 @@ public class Indexer {
         writer.close();
     }
 
-    public void mergeTempPostingFiles()
-    {
-        Thread mergeThread = null;
-        for(int i = 0; i < queueOfTempPostingFiles.size(); i = i + 2)
-        {
-            final File firstFile = queueOfTempPostingFiles.poll();
-            final File secondFile = queueOfTempPostingFiles.poll();
-            mergeThread = new Thread(){
-                public void run()
-                {
-                    try {
-                        queueOfTempPostingFiles.add(mergeFiles.margeTwoFiles(firstFile,secondFile));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            };
-            mergeThread.start();
+    int numberOfFiles = 227; // = 227
+
+    public void mergeTempPostingFiles() throws IOException, InterruptedException {
+
+        while (numberOfFiles > 1) {
+            for (int i = 0; i < numberOfFiles / 2; i++) {
+
+                pool.execute(new MergeFiles(pathToDisk, this));
+
+            }
+
+            pool.awaitTermination(3, TimeUnit.SECONDS);
+
+            System.out.println("num of files that were merged: " + numberOfFiles + " - time: " + (System.nanoTime() - startTime) / 1000000000.0);
+
+            if (numberOfFiles % 2 != 0)
+                numberOfFiles = numberOfFiles / 2 + 1;
+            else
+                numberOfFiles = numberOfFiles / 2;
         }
-        try {
-            mergeThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        if(queueOfTempPostingFiles.size() > 1)
-             mergeTempPostingFiles();
-        else
-            System.out.println("Hellooo");
+
+        System.out.println("done merging all files - time: " + (System.nanoTime() - startTime) / 1000000000.0);
+
+        splitMergedFile();
+
+
     }
 
+    public void splitMergedFile() throws IOException {
 
+        File folder = new File("C:\\Users\\refaeli.liron\\IdeaProjects\\RetrivalEngine_LD\\src\\main\\java\\postingFiles");
+
+        if(folder.listFiles().length == 1) {
+            for (final File fileEntry : folder.listFiles()) {
+
+                Scanner fileReader = new Scanner(fileEntry);
+                String nextLine = "";
+
+                //spliting to symbols
+                File symbolFile = new File("C:\\Users\\refaeli.liron\\IdeaProjects\\RetrivalEngine_LD\\src\\main\\java\\postingFiles\\symbols");
+                FileWriter fw1 = new FileWriter(symbolFile);
+                BufferedWriter bw1 = new BufferedWriter(fw1);
+
+                while (fileReader.hasNext()) {
+                    nextLine = fileReader.next();
+                    if (!(nextLine.toLowerCase().charAt(0) >= 97 && nextLine.toLowerCase().charAt(0) <= 122)) {
+                        bw1.write(nextLine);
+                        bw1.newLine();
+                    } else {
+                        break;
+                    }
+                }
+                bw1.close();
+
+                //spliting to characters
+                for (int i = 97; i <= 122; i++) {
+                    char firstChar = (char) i;
+                    File file = new File("C:\\Users\\refaeli.liron\\IdeaProjects\\RetrivalEngine_LD\\src\\main\\java\\postingFiles\\" + firstChar);
+                    FileWriter fw = new FileWriter(file);
+                    BufferedWriter bw = new BufferedWriter(fw);
+
+                    if (!nextLine.equals("") && nextLine.toLowerCase().charAt(0) == firstChar) {
+                        bw.write(nextLine);
+                        bw.newLine();
+                    }
+
+                    while (fileReader.hasNext()) {
+                        nextLine = fileReader.next();
+                        if (nextLine.toLowerCase().charAt(0) == firstChar) {
+                            bw.write(nextLine);
+                            bw.newLine();
+                        } else {
+                            break;
+                        }
+                    }
+
+                    bw.close();
+                }
+            }
+        }
+
+        System.out.println("spliting was done - time: " + (System.nanoTime() - startTime) / 1000000000.0);
+
+
+    }
+}
+
+/*
 
     /**
      * the function is calculating the maximum term's frequency (max_tf) in a text
      * @param temporaryMap
      * @return
-     */
+
     private int returnMaxTf(Map<String, Integer> temporaryMap)
     {
         int maxTf = -1;
@@ -195,7 +259,10 @@ public class Indexer {
         }
         return maxTf;
     }
-}
+  */
+
+
+
 
 
 
