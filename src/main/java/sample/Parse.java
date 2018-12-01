@@ -35,7 +35,7 @@ public class Parse {
 
     public Map<String, Integer> ParsingDocument(String docText, String docNum) {
 
-        termsAndFrequencyMap = new HashMap<String, Integer>();
+        termsAndFrequencyMap = new HashMap<>();
         BreakTextToTerms(docText, docNum);
 
         return termsAndFrequencyMap;
@@ -45,29 +45,21 @@ public class Parse {
         //cleaning the document before splitting (| is seperating between characters, and \\ is sometimes needed
         docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|", "");
         //splitting the document according to these delimiters - the second one is spaces
-        //List<String> TermsOfDoc = new ArrayList(Arrays.asList(docText.split("\\n|\\s+|\\t|;|\\.|\\?|!|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*|/")));
         TermsOfDoc = new ArrayList(Arrays.asList(docText.split("\\n|\\s+|\\t|;|\\?|!|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*")));
-        //todo if the term ocontains "."
 
         for (int i = 0; i < TermsOfDoc.size(); i++) {
             //handles with stop-words or empty strings and also next terms after current term
             term = TermsOfDoc.get(i);
-
-
-
             if((IsStopWord(term.toLowerCase()) || term.equals("")))
                 continue;
             if (i + 1 <= TermsOfDoc.size() - 1)
                 nextTerm = TermsOfDoc.get(i + 1);
-
-
-
             if (IsNumeric(term))
                 i = HandleWithNumbers(i);
             else
             {
                 //if(Indexer.ListOfAllCities.contains(term.toUpperCase()))
-                 //   updateCitiesInCorpus(docNum, i);
+                //    updateCitiesInCorpus(docNum, i);
                 i = HandleWithStrings(i);
             }
 

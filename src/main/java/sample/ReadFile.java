@@ -8,9 +8,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import java.nio.file.Files;
-import java.util.Queue;
-
-import static java.lang.System.out;
 
 /**
  * The class is extracting documents from a specific corpus.
@@ -22,7 +19,7 @@ public class ReadFile {
     int nextFolderToReadIndex; //pointer to the next folder to extract it's content
     private List<String> filesPaths; //list of all the file's paths in the given folder
     private List<String> listOfDocsNumbers; //list of all the documents' numbers in the files
-    private List<String> listOfAllCities; //list of all the documents' cities in the files
+    private List<String> listOfCities; //list of all the documents' cities in the files
     private List<String> listOfTexts; //list of all the documents' texts in the files
 
     /**
@@ -30,12 +27,11 @@ public class ReadFile {
      */
     ReadFile(String mainFolderPath) {
         nextFolderToReadIndex = 0;
-        filesPaths = new ArrayList<String>();
+        filesPaths = new ArrayList<>();
         //creating an object File from the input path, in order to read the content of the given folder
         final File folder = new File(mainFolderPath);
         //sending the File object to a function that will create a list of all the file's paths in the given folder
         listFilesForFolder(folder);
-        listOfAllCities = new ArrayList<>();
     }
 
     /**
@@ -67,8 +63,9 @@ public class ReadFile {
     public List<String> ReadFolder(int numOfFoldersToReadFrom) throws IOException {
 
         //for new chunk we are restart the lists
-        listOfTexts = new ArrayList<String>();
-        listOfDocsNumbers = new ArrayList<String>();
+        listOfTexts = new ArrayList<>();
+        listOfDocsNumbers = new ArrayList<>();
+        listOfCities = new ArrayList<>();
 
         //reading the texts in a folder from the chunk folders.
         for (int i = nextFolderToReadIndex; i < nextFolderToReadIndex + numOfFoldersToReadFrom; i++) {
@@ -100,19 +97,39 @@ public class ReadFile {
             //adding all the docsNumbers in the file to the listOfDocsNumbers
             listOfDocsNumbers.add(element.getElementsByTag("DOCNO").text());
 
+            //adding all the documents' cities in the file to the listOfCities
+            String city = element.getElementsByTag("F").toString();
+            // if there isn't an information about the city, we will add empty string to the list.
+            if (!city.equals("") && city.contains("<f p=\"104\">")) {
+                city = city.substring(city.indexOf("<f p=\"104\">", city.indexOf("</f>")));
+                if (city.length() > 15) {
+                    city = city.substring(city.indexOf("\n "), city.indexOf(" \n"));
+                    city = city.replaceAll("\n", "");
+                    String cityline[] = city.split(" ");
+                    city = cityline[2].toUpperCase();
+
+                }
+            }
+            listOfCities.add(city);
+
 
         }
     }
-
-
     /**
      * @return listOfDocsNumbers
      */
-    public List<String> getDocNumbersList() {
+    public List<String> getDocNumbersList()
+    {
         return listOfDocsNumbers;
     }
 
+    public List<String> getListOfCities()
+    {
+       return listOfCities;
+    }
+}
 
+/*
     public List<String> ListOfAllCities() throws IOException {
         for (int i = 0; i < filesPaths.size(); i++) {
             File f = new File(filesPaths.get(i));
@@ -132,12 +149,12 @@ public class ReadFile {
 
                     }
                 }
-
-                listOfAllCities.add(city);
+                listOfCities.add(city);
             }
         }
-        return listOfAllCities;
+        return listOfCities;
     }
 
 }
+*/
 

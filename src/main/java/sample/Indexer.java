@@ -15,40 +15,32 @@ import java.util.concurrent.TimeUnit;
  * This class is building the inverted index.
  */
 public class Indexer {
-    ReadFile readFile;
-    Parse parser;
-    String pathToDisk;
-    Map<String, TermDataInMap> termsCorpusMap; //a map that includes all the terms in the corpus
-    Map<String, DocTermDataInMap> docsCorpusMap; //a map that includes all the terms in the corpus
-    //Map<String, CityInMap> citiesInCorpus; //a map that includes all the cities in the corpus and external data about them from API connection
-    MergeFiles mergeFiles;
-    int numOfChunks;
-    ExecutorService pool;
-    ConcurrentLinkedQueue<File> queueOfTempPostingFiles;
-    final long startTime = System.nanoTime();
-    int NumberOfDocsInCorpus = 0;
-    public static List<String> ListOfAllCities;
+    public int numOfTempPostingFiles;
+    public int NumberOfDocsInCorpus;
+    public ReadFile readFile;
+    public Parse parser;
+    public String pathToDisk;
+    public MergeFiles mergeFiles;
+    public ExecutorService pool;
+    public Map<String, TermDataInMap> termsCorpusMap; //a map that includes all the terms in the corpus
+    public Map<String, DocTermDataInMap> docsCorpusMap; //a map that includes all the terms in the corpus
     public static Map<String, CityInMap> citiesInCorpus;
-
+    public ConcurrentLinkedQueue<File> queueOfTempPostingFiles;
+    public final long startTime = System.nanoTime();
 
 
     public Indexer(ReadFile readFile, Parse parser, String pathToDisk) {
-        numOfChunks = 5;
+        NumberOfDocsInCorpus = 0;
+        numOfTempPostingFiles = 57;
         this.readFile = readFile;
         this.parser = parser;
         this.pathToDisk = pathToDisk;
-        termsCorpusMap = new HashMap<String, TermDataInMap>();
-        docsCorpusMap = new HashMap<String, DocTermDataInMap>();
-        try {
-            mergeFiles = new MergeFiles(pathToDisk, this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        pool = Executors.newFixedThreadPool(100);
+        termsCorpusMap = new HashMap<>();
+        docsCorpusMap = new HashMap<>();
         queueOfTempPostingFiles = new ConcurrentLinkedQueue();
         citiesInCorpus = new HashMap<>();
         try {
-            ListOfAllCities = readFile.ListOfAllCities();
+            mergeFiles = new MergeFiles(pathToDisk, this);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -56,19 +48,32 @@ public class Indexer {
 
 
     public void Play() throws IOException {
-
-        //number of loops in order to go through all the corpus' folders
-
-
         //the number of loop is determined by the numOfChunks parameter
-        for (int i = 0; i < numOfChunks; i++) {
+        for (int i = 0; i < numOfTempPostingFiles; i++) {
             System.out.println("start loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
-
-            //lists that will save documents content: texts, docsNumbers, cities.
-            List<String> listOfTexts = readFile.ReadFolder(2);
+            List<String> listOfTexts = readFile.ReadFolder(8); //list of Documents' texts
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
+            List<String> ListOfCities = readFile.getListOfCities();
+            NumberOfDocsInCorpus += listOfDocsNumbers.size();
+            /*
+            JSON_reader Jread = new JSON_reader();
+            Map<String,String> ContainsAllCitiesAndInformation = new HashMap<>();
+            for(int k = 0; k < ListOfAllCities.size(); k++) {
+                try {
+                    if(!ListOfAllCities.get(k).equals(""))
+                    {
+                        String data = Jread.connectionToApi(ListOfAllCities.get(k));
+                        if(data == null)
+                            continue;
+                        ContainsAllCitiesAndInformation.put(ListOfAllCities.get(k), data);
+                    }
+                } catch (JSONException e) {
+                   continue;
+                }
+            }
+            WriteCitiesAndInformationMapToFile(ContainsAllCitiesAndInformation);
+            */
 
-            // a map that includes posting data about the chunk of files
             Map<String, String> postingMap = new TreeMap<>(
                     new Comparator<String>() {
                         @Override
@@ -78,22 +83,16 @@ public class Indexer {
                         }
                     }
             );
+            int maxTermFreqPerDoc = 0;
 
             //loops over every text from one chunk
             for (int j = 0; j < listOfTexts.size(); j++) {
-
-
                 //for every text we will build temporaryMap in order to save all the terms and their frequency (tf) by Parse object
                 Map<String, Integer> temporaryMap = parser.ParsingDocument(listOfTexts.get(j), listOfDocsNumbers.get(j));
+                //after parsing the text, we will creating new record in the docs Map
+                docsCorpusMap.put(listOfDocsNumbers.get(j),
+                        new DocTermDataInMap(maxTermFreqPerDoc, temporaryMap.size(), ListOfCities.get(j)));
 
-                for (String key: temporaryMap.keySet()
-                     ) {
-                    System.out.println(key);
-
-                }
-
-
-                int maxTermFreqPerDoc = 0;
                 //loops over one text's terms and merging temporaryMap to termsCorpusMap
                 for (String term : temporaryMap.keySet()) {
 
@@ -123,7 +122,8 @@ public class Indexer {
                         if (termsCorpusMap.containsKey(term.toUpperCase())) {
                             TermDataInMap upperCaseTerm = termsCorpusMap.get(term.toUpperCase());
                             termsCorpusMap.remove(term.toUpperCase());
-                            termsCorpusMap.put(term, new TermDataInMap(upperCaseTerm.totalTf + temporaryMap.get(term), upperCaseTerm.numOfDocuments + 1));
+                            termsCorpusMap.put(term, new TermDataInMap(upperCaseTerm.totalTf + temporaryMap.get(term),
+                                    upperCaseTerm.numOfDocuments + 1));
                         }
                         //we do not have "FIRST" in our map
                         else {
@@ -148,12 +148,6 @@ public class Indexer {
                     }
 
                 }
-
-
-                //after parsing the text, we will creating new record in the docs Map
-                docsCorpusMap.put(listOfDocsNumbers.get(j), new DocTermDataInMap(maxTermFreqPerDoc, temporaryMap.size(), ListOfAllCities.get(NumberOfDocsInCorpus+j)));
-
-
                 //updating the posting map after finishing parsing a text
                 for (String term : temporaryMap.keySet()) {
 
@@ -187,8 +181,6 @@ public class Indexer {
                 }
             }
             WriteToTempPosting(postingMap, i);
-            NumberOfDocsInCorpus += listOfDocsNumbers.size();
-
             System.out.println("end loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
         }
         try {
@@ -197,17 +189,24 @@ public class Indexer {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-
     }
 
-
+    private void WriteCitiesAndInformationMapToFile(Map<String,String> containsAllCitiesAndInformation) throws IOException {
+        File file = new File(pathToDisk + "\\dataFile");
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        for ( String key : containsAllCitiesAndInformation.keySet() ) {
+            String oneLine = key + "*" + containsAllCitiesAndInformation.get(key);
+            writer.write(oneLine);
+            writer.newLine();
+        }
+        writer.close();
+    }
 
     private void WriteToTempPosting(Map<String, String> postingMap, int numOfChunck) throws IOException {
         //creating posting file and saving it in postingFilesFolder - his name is posting+the number of the loop
         File file = new File(pathToDisk + "\\posting_" + numOfChunck);
         queueOfTempPostingFiles.add(file);
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file));        //adding to the file all the term+posting data from posting map
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
         for (String term : postingMap.keySet()) {
             //the structure is - "term*docNum~tf,"
             String data = term + "*" + postingMap.get(term);
@@ -218,52 +217,25 @@ public class Indexer {
         writer.close();
     }
 
-    int numberOfFiles = 5; // = 227
 
     public void mergeTempPostingFiles() throws IOException, InterruptedException {
-
-
-        while(numberOfFiles > 1) {
-            for (int i = 0; i < numberOfFiles/2 ; i++) {
+        while(numOfTempPostingFiles > 1) {
+            pool = Executors.newFixedThreadPool(numOfTempPostingFiles/2 + 1);
+            for (int i = 0; i < numOfTempPostingFiles/2 ; i++) {
                 pool.execute(new MergeFiles(pathToDisk, this));
 
             }
-            pool.awaitTermination(5, TimeUnit.SECONDS);
-            if (numberOfFiles % 2 != 0)
-                numberOfFiles = numberOfFiles / 2 + 1;
+            pool.shutdown();
+            pool.awaitTermination(1, TimeUnit.DAYS);
+            if (numOfTempPostingFiles % 2 != 0)
+                numOfTempPostingFiles = numOfTempPostingFiles / 2 + 1;
             else
-                numberOfFiles = numberOfFiles / 2;
+                numOfTempPostingFiles = numOfTempPostingFiles / 2;
         }
-
         pool.shutdown();
         pool.awaitTermination(1, TimeUnit.DAYS);
         System.out.println("done merging all files - time: " + (System.nanoTime() - startTime) / 1000000000.0);
-
-/*
-
-        while (numberOfFiles > 1) {
-            for (int i = 0; i < numberOfFiles / 2; i++) {
-
-                pool.execute(new MergeFiles(pathToDisk, this));
-
-            }
-
-
-            System.out.println("num of files that were merged: " + numberOfFiles + " - time: " + (System.nanoTime() - startTime) / 1000000000.0);
-
-            if (numberOfFiles % 2 != 0)
-                numberOfFiles = numberOfFiles / 2 + 1;
-            else
-                numberOfFiles = numberOfFiles / 2;
-        }
-        pool.awaitTermination(10, TimeUnit.SECONDS);
-        System.out.println("done merging all files - time: " + (System.nanoTime() - startTime) / 1000000000.0);
-        pool.shutdown();
-        while (!pool.awaitTermination(24L, TimeUnit.HOURS)) {
-            System.out.println("Not yet. Still waiting for termination");
-        }
-        */
-        //splitMergedFile();
+        splitMergedFile();
 
 
     }
@@ -361,6 +333,32 @@ public class Indexer {
     }
 
 }
+
+/*
+
+        while (numberOfFiles > 1) {
+            for (int i = 0; i < numberOfFiles / 2; i++) {
+
+                pool.execute(new MergeFiles(pathToDisk, this));
+
+            }
+
+
+            System.out.println("num of files that were merged: " + numberOfFiles + " - time: " + (System.nanoTime() - startTime) / 1000000000.0);
+
+            if (numberOfFiles % 2 != 0)
+                numberOfFiles = numberOfFiles / 2 + 1;
+            else
+                numberOfFiles = numberOfFiles / 2;
+        }
+        pool.awaitTermination(10, TimeUnit.SECONDS);
+        System.out.println("done merging all files - time: " + (System.nanoTime() - startTime) / 1000000000.0);
+        pool.shutdown();
+        while (!pool.awaitTermination(24L, TimeUnit.HOURS)) {
+            System.out.println("Not yet. Still waiting for termination");
+        }
+        */
+
 
 
 

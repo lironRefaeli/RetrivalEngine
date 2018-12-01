@@ -39,6 +39,7 @@ public class MergeFiles implements Runnable {
             counterNameOfFile++;
         }
 
+
         FileWriter fw = new FileWriter(outFile);
         bw = new BufferedWriter(fw);
 
@@ -86,8 +87,6 @@ public class MergeFiles implements Runnable {
 
             if(!text2Flag)
                 bw.write(curString2);
-
-
         }
 
 
@@ -116,10 +115,6 @@ public class MergeFiles implements Runnable {
     private void compareBetweenTwoTerms() throws IOException {
 
         extractStrings();
-        if(splitedCurString1[0].equals("GOVERNMENT-FUNDED") || splitedCurString1[0].equals("GOVERNMENT-FUNDED"))
-        {
-            System.out.println();
-        }
         if (splitedCurString1[0].toLowerCase().compareTo(splitedCurString2[0].toLowerCase()) < 0) {
             bw.write(curString1);
             text1Flag = true;
@@ -133,7 +128,6 @@ public class MergeFiles implements Runnable {
         //curString1 == curString2
         else{
             String newString = "";
-
             if((IsUpperCase(splitedCurString1[0]) && IsLowerCase(splitedCurString2[0])) || (IsUpperCase(splitedCurString2[0]) && IsLowerCase(splitedCurString1[0])))
                 newString = splitedCurString1[0].toLowerCase() + "*" + splitedCurString1[1] + splitedCurString2[1];
             //todo to think about it
@@ -189,7 +183,6 @@ public class MergeFiles implements Runnable {
     public void run() {
 
         try {
-            //todo added if
             if(indexer.queueOfTempPostingFiles.size() >= 2) {
                 final File firstFile = indexer.queueOfTempPostingFiles.poll();
                 final File secondFile = indexer.queueOfTempPostingFiles.poll();
