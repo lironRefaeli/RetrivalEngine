@@ -1,6 +1,10 @@
 package sample;
-import java.io.File;
-import java.io.FileNotFoundException;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.*;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.time.Month;
 import java.util.*;
 
@@ -21,6 +25,7 @@ public class Parse {
     private String thirdNextTerm = "";
     private List<String> TermsOfDoc;
 
+
     Parse(String stopWordsPath) {
         stopWordsList = ReadStopWordToList(stopWordsPath);
         InitMonthsNames();
@@ -28,15 +33,17 @@ public class Parse {
         useStemmer = false;
     }
 
-    public Map<String, Integer> ParsingDocument(String docText) {
+    public Map<String, Integer> ParsingDocument(String docText, String docNum) {
+
         termsAndFrequencyMap = new HashMap<String, Integer>();
-        BreakTextToTerms(docText);
+        BreakTextToTerms(docText, docNum);
+
         return termsAndFrequencyMap;
     }
 
-    private void BreakTextToTerms(String docText) {
+    private void BreakTextToTerms(String docText, String docNum) {
         //cleaning the document before splitting (| is seperating between characters, and \\ is sometimes needed
-        docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|\\.\\.\\.|\\.\\.|\\||", "");
+        docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|", "");
         //splitting the document according to these delimiters - the second one is spaces
         //List<String> TermsOfDoc = new ArrayList(Arrays.asList(docText.split("\\n|\\s+|\\t|;|\\.|\\?|!|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*|/")));
         TermsOfDoc = new ArrayList(Arrays.asList(docText.split("\\n|\\s+|\\t|;|\\?|!|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*")));
@@ -47,7 +54,8 @@ public class Parse {
             term = TermsOfDoc.get(i);
 
 
-            if ((IsStopWord(term.toLowerCase()) || term.equals("")))
+
+            if((IsStopWord(term.toLowerCase()) || term.equals("")))
                 continue;
             if (i + 1 <= TermsOfDoc.size() - 1)
                 nextTerm = TermsOfDoc.get(i + 1);
@@ -57,8 +65,90 @@ public class Parse {
             if (IsNumeric(term))
                 i = HandleWithNumbers(i);
             else
+            {
+                //if(Indexer.ListOfAllCities.contains(term.toUpperCase()))
+                 //   updateCitiesInCorpus(docNum, i);
                 i = HandleWithStrings(i);
+            }
+
         }
+    }
+
+    public void updateCitiesInCorpus(String docNum, int position) {
+        if(!Indexer.citiesInCorpus.containsKey(term.toUpperCase()))
+        {
+            CityInMap cityInfo = null;
+            //connection to the API
+            try {
+                cityInfo = connectionToApi(term);
+                List<Integer> positionsList = new ArrayList<>();
+                positionsList.add(position);
+                cityInfo.placementsInDocs.put(docNum,positionsList);
+
+
+            } catch (FileNotFoundException e) {
+                //System.out.println("parser.city");
+                cityInfo = null;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if(cityInfo != null)
+                Indexer.citiesInCorpus.put(term.toUpperCase(),cityInfo);
+        }
+        else
+        {
+                if(Indexer.citiesInCorpus.get(term.toUpperCase()).placementsInDocs.containsKey(docNum))
+                {
+                    Indexer.citiesInCorpus.get(term.toUpperCase()).placementsInDocs.get(docNum).add(position);
+                }
+                else
+                {
+                    List<Integer> positionsList = new ArrayList<>();
+                    positionsList.add(position);
+                    Indexer.citiesInCorpus.get(term.toUpperCase()).placementsInDocs.put(docNum,positionsList);
+                }
+        }
+
+    }
+
+    private CityInMap connectionToApi(String cityName) throws JSONException, IOException {
+
+
+        JSONObject json = readJsonFromUrl("https://restcountries.eu/rest/v2/capital/" + cityName);
+
+        String currencies = json.get("currencies").toString();
+        JSONObject jsonCurrencies = new JSONObject(currencies.substring(1,currencies.length()-1));
+
+
+        CityInMap cityInfo = new CityInMap(json.get("name").toString(), jsonCurrencies.get("code").toString(), json.get("population").toString());
+        return cityInfo;
+    }
+
+    private JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
+
+        InputStream is = new URL(url).openStream();
+        try {
+            BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+            String jsonText = readAll(rd);
+            jsonText = jsonText.substring(1,jsonText.length()-1);
+            JSONObject json = new JSONObject(jsonText);
+            return json;
+        } finally {
+            is.close();
+        }
+    }
+
+    private String readAll(Reader rd) throws IOException {
+
+        StringBuilder sb = new StringBuilder();
+        int cp;
+        while ((cp = rd.read()) != -1) {
+            sb.append((char) cp);
+        }
+        return sb.toString();
     }
 
 
@@ -373,7 +463,8 @@ public class Parse {
     }
     private  void AddTermNumberToMap(String term)
     {
-        if(term.charAt(term.length()-1) == '.')
+
+        if(term.charAt(term.length()-1) == '.' || term.charAt(term.length()-1) == '-' )
             term = term.substring(0,term.length()-1);
 
         if(useStemmer)
@@ -387,8 +478,10 @@ public class Parse {
 
     private void AddTermToMap(String term) {
 
+
         if(term.charAt(term.length()-1) == '.' || term.charAt(term.length()-1) == '-' )
             term = term.substring(0,term.length()-1);
+
 
         if(useStemmer)
             term = CallStemmer(term);

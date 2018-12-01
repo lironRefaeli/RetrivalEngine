@@ -15,7 +15,8 @@
 <?import javafx.scene.text.Font?>
 
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.mainController">
+<?import java.net.URL?>
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.mainController" >
 
     <children>
         <ImageView fitHeight="538.0" fitWidth="709.0" layoutX="-95.0" layoutY="4.0" pickOnBounds="true" preserveRatio="true">
@@ -44,7 +45,7 @@
                 <TextField fx:id="corpusPath" prefHeight="25.0" prefWidth="136.0" GridPane.columnIndex="1" />
                 <Label text="The DISK path:" GridPane.rowIndex="1" />
                 <TextField fx:id="diskPath"  prefHeight="0.0" prefWidth="190.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" >
                     <buttons>
                         <ChoiceBox id="languages" prefWidth="150.0" />
                     </buttons></ButtonBar>
@@ -70,7 +71,7 @@
                 </ButtonBar>
                 <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
                     <buttons>
-                        <Button mnemonicParsing="false" text="restart" />
+                        <Button mnemonicParsing="false" text="restart"  />
                     </buttons>
                 </ButtonBar>
                 <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
@@ -91,6 +92,7 @@
             </font>
         </Label>
     </children>
+
 
 
 </AnchorPane>

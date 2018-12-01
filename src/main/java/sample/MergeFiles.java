@@ -31,6 +31,8 @@ public class MergeFiles implements Runnable {
     public File margeTwoFiles(File file1, File file2) throws IOException {
         fileReader1 = new Scanner(file1);
         fileReader2 = new Scanner(file2);
+        System.out.println(file1.getName()+"+"+file2.getName());
+
         File outFile;
         synchronized (lock) {
             outFile = new File(pathToDisk + "\\mergedFile" + counterNameOfFile);
@@ -94,6 +96,7 @@ public class MergeFiles implements Runnable {
         fileReader2.close();
         file1.delete();
         file2.delete();
+        System.out.println(outFile.getName()+" was complete");
         return outFile;
     }
 

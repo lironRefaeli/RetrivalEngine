@@ -20,7 +20,9 @@ import java.util.Map;
             FXMLLoader fxmlLoader = new FXMLLoader();
             Parent root = fxmlLoader.load(getClass().getResource("/mainWindow.fxml").openStream());
             primaryStage.setTitle("mainWindow");
-            primaryStage.setScene(new Scene(root, 1000, 1000));
+            Scene scene = new Scene(root, 610, 320);
+            scene.getStylesheets().add(getClass().getResource("/cssTemplate.css").toExternalForm());
+            primaryStage.setScene(scene);
             primaryStage.show();
 
 

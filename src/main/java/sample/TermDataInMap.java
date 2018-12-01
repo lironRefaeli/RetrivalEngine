@@ -6,6 +6,7 @@ public class TermDataInMap {
     public int pointerToPostingLine;
     public double idf;
     public int totalTf;
+    public String placementsInCorpus;
 
 
     public TermDataInMap(Integer totalTf, Integer numOfDocuments) {
