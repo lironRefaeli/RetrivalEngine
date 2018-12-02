@@ -21,7 +21,7 @@ public class MergeFiles implements Runnable {
     Indexer indexer;
     static Object lock = new Object();
 
-    public MergeFiles(String pathToDisk, Indexer indexer) throws IOException
+    public MergeFiles(String pathToDisk, Indexer indexer)
     {
 
         this.pathToDisk = pathToDisk;

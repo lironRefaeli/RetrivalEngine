@@ -39,11 +39,7 @@ public class Indexer {
         docsCorpusMap = new HashMap<>();
         queueOfTempPostingFiles = new ConcurrentLinkedQueue();
         citiesInCorpus = new HashMap<>();
-        try {
-            mergeFiles = new MergeFiles(pathToDisk, this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        mergeFiles = new MergeFiles(pathToDisk, this);
     }
 
 
@@ -55,24 +51,7 @@ public class Indexer {
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
             List<String> ListOfCities = readFile.getListOfCities();
             NumberOfDocsInCorpus += listOfDocsNumbers.size();
-            /*
-            JSON_reader Jread = new JSON_reader();
-            Map<String,String> ContainsAllCitiesAndInformation = new HashMap<>();
-            for(int k = 0; k < ListOfAllCities.size(); k++) {
-                try {
-                    if(!ListOfAllCities.get(k).equals(""))
-                    {
-                        String data = Jread.connectionToApi(ListOfAllCities.get(k));
-                        if(data == null)
-                            continue;
-                        ContainsAllCitiesAndInformation.put(ListOfAllCities.get(k), data);
-                    }
-                } catch (JSONException e) {
-                   continue;
-                }
-            }
-            WriteCitiesAndInformationMapToFile(ContainsAllCitiesAndInformation);
-            */
+            //CreateCitiesAndInformationFile(); //function for creating the cities and information file if needed
 
             Map<String, String> postingMap = new TreeMap<>(
                     new Comparator<String>() {
@@ -84,7 +63,6 @@ public class Indexer {
                     }
             );
             int maxTermFreqPerDoc = 0;
-
             //loops over every text from one chunk
             for (int j = 0; j < listOfTexts.size(); j++) {
                 //for every text we will build temporaryMap in order to save all the terms and their frequency (tf) by Parse object
@@ -189,17 +167,6 @@ public class Indexer {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    private void WriteCitiesAndInformationMapToFile(Map<String,String> containsAllCitiesAndInformation) throws IOException {
-        File file = new File(pathToDisk + "\\dataFile");
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-        for ( String key : containsAllCitiesAndInformation.keySet() ) {
-            String oneLine = key + "*" + containsAllCitiesAndInformation.get(key);
-            writer.write(oneLine);
-            writer.newLine();
-        }
-        writer.close();
     }
 
     private void WriteToTempPosting(Map<String, String> postingMap, int numOfChunck) throws IOException {
@@ -332,7 +299,48 @@ public class Indexer {
         }
     }
 
+    private void CreateCitiesAndInformationFile() throws IOException {
+        List<String> listOfAllCitiesInCorpus = new ArrayList<>();
+        try {
+            listOfAllCitiesInCorpus = readFile.ReadAllCitiesFromCorpusForCreatingInfoFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        JSON_reader Jread = new JSON_reader();
+        Map<String,String> ContainsAllCitiesAndInformation = new HashMap<>();
+        for(int k = 0; k < listOfAllCitiesInCorpus.size(); k++) {
+            try {
+                if(!listOfAllCitiesInCorpus.get(k).equals(""))
+                {
+                    String data = Jread.connectionToApi(listOfAllCitiesInCorpus.get(k));
+                    if(data == null)
+                        continue;
+                    ContainsAllCitiesAndInformation.put(listOfAllCitiesInCorpus.get(k), data);
+                }
+            } catch (JSONException e) {
+               continue;
+            }
+        }
+        WriteCitiesAndInformationMapToFile(ContainsAllCitiesAndInformation);
+
+
+    }
+
+    private void WriteCitiesAndInformationMapToFile(Map<String,String> containsAllCitiesAndInformation) throws IOException {
+        File file = new File(pathToDisk + "\\CitiesAndInformationFile");
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        for ( String key : containsAllCitiesAndInformation.keySet() ) {
+            String oneLine = key + "*" + containsAllCitiesAndInformation.get(key);
+            writer.write(oneLine);
+            writer.newLine();
+        }
+        writer.close();
+    }
+
+
 }
+
+
 
 /*
 

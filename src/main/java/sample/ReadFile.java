@@ -127,10 +127,8 @@ public class ReadFile {
     {
        return listOfCities;
     }
-}
 
-/*
-    public List<String> ListOfAllCities() throws IOException {
+    public List<String> ReadAllCitiesFromCorpusForCreatingInfoFile() throws IOException {
         for (int i = 0; i < filesPaths.size(); i++) {
             File f = new File(filesPaths.get(i));
             Document document = Jsoup.parse(new String(Files.readAllBytes(f.toPath())));
@@ -156,5 +154,4 @@ public class ReadFile {
     }
 
 }
-*/
 

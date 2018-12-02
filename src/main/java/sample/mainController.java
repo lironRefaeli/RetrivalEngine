@@ -23,11 +23,12 @@ public class mainController {
 
         String pathToCorpus = "C:\\Users\\david\\Desktop\\Tests\\corpusTest";
         String pathToDisk = "C:\\Users\\david\\Desktop\\Tests\\postingFiles";
+        String pathToCitiesAndInformationFile = pathToDisk + "\\CitiesAndInformationFile";
         //String pathToCorpus = corpusPath.getText();
         //String pathToDisk = diskPath.getText();
 
         ReadFile readFile = new ReadFile(pathToCorpus);
-        Parse parser = new Parse(pathToCorpus + "\\stop_words.txt");
+        Parse parser = new Parse(pathToCorpus + "\\stop_words.txt", pathToCitiesAndInformationFile);
         final Indexer indexer = new Indexer(readFile, parser, pathToDisk);
         Thread indexerThread = new Thread(){
             public void run()
