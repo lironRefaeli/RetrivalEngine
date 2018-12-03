@@ -16,29 +16,28 @@ import java.util.concurrent.TimeUnit;
  */
 public class Indexer {
     public int numOfTempPostingFiles;
-    public int NumberOfDocsInCorpus;
+    static public int NumberOfDocsInCorpus;
     public ReadFile readFile;
     public Parse parser;
     public String pathToDisk;
     public MergeFiles mergeFiles;
     public ExecutorService pool;
-    public Map<String, TermDataInMap> termsCorpusMap; //a map that includes all the terms in the corpus
+    public static Map<String, TermDataInMap> termsCorpusMap; //a map that includes all the terms in the corpus
     public Map<String, DocTermDataInMap> docsCorpusMap; //a map that includes all the terms in the corpus
-    public static Map<String, CityInMap> citiesInCorpus;
+    public static Map<String, CityInMap> citiesInCorpus = new HashMap<>();
     public ConcurrentLinkedQueue<File> queueOfTempPostingFiles;
     public final long startTime = System.nanoTime();
 
 
     public Indexer(ReadFile readFile, Parse parser, String pathToDisk) {
         NumberOfDocsInCorpus = 0;
-        numOfTempPostingFiles = 57;
+        numOfTempPostingFiles = 4;
         this.readFile = readFile;
         this.parser = parser;
         this.pathToDisk = pathToDisk;
         termsCorpusMap = new HashMap<>();
         docsCorpusMap = new HashMap<>();
         queueOfTempPostingFiles = new ConcurrentLinkedQueue();
-        citiesInCorpus = new HashMap<>();
         mergeFiles = new MergeFiles(pathToDisk, this);
     }
 
@@ -47,7 +46,8 @@ public class Indexer {
         //the number of loop is determined by the numOfChunks parameter
         for (int i = 0; i < numOfTempPostingFiles; i++) {
             System.out.println("start loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
-            List<String> listOfTexts = readFile.ReadFolder(8); //list of Documents' texts
+            int maxTermFreqPerDoc = 0;
+            List<String> listOfTexts = readFile.ReadFolder(3); //list of Documents' texts
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
             List<String> ListOfCities = readFile.getListOfCities();
             NumberOfDocsInCorpus += listOfDocsNumbers.size();
@@ -62,7 +62,6 @@ public class Indexer {
                         }
                     }
             );
-            int maxTermFreqPerDoc = 0;
             //loops over every text from one chunk
             for (int j = 0; j < listOfTexts.size(); j++) {
                 //for every text we will build temporaryMap in order to save all the terms and their frequency (tf) by Parse object
@@ -73,19 +72,20 @@ public class Indexer {
 
                 //loops over one text's terms and merging temporaryMap to termsCorpusMap
                 for (String term : temporaryMap.keySet()) {
-
                     //for calculating maxTf
-                    if(temporaryMap.get(term) > maxTermFreqPerDoc)
+                    if (temporaryMap.get(term) > maxTermFreqPerDoc)
                         maxTermFreqPerDoc = temporaryMap.get(term);
 
+                    boolean termIsUpperCase = Parse.IsUpperCase(term);
+                    boolean termIsLowerCase = Parse.IsLowerCase(term);
+                    String termUpperCase = term.toUpperCase();
+                    String termLowerCase = term.toLowerCase();
                     //NBA or GSW
-                    if (Parse.IsUpperCase(term)) {
-                        if(termsCorpusMap.containsKey(term.toLowerCase()))
-                        {
-                            termsCorpusMap.get(term.toLowerCase()).totalTf += temporaryMap.get(term);
-                            termsCorpusMap.get(term.toLowerCase()).numOfDocuments++;
-                        }
-                        else if (termsCorpusMap.containsKey(term)) {
+                    if (termIsUpperCase) {
+                        if (termsCorpusMap.containsKey(termLowerCase)) {
+                            termsCorpusMap.get(termLowerCase).totalTf += temporaryMap.get(term);
+                            termsCorpusMap.get(termLowerCase).numOfDocuments++;
+                        } else if (termsCorpusMap.containsKey(term)) {
                             //increasing frequency
                             termsCorpusMap.get(term).totalTf += temporaryMap.get(term);
                             termsCorpusMap.get(term).numOfDocuments++;
@@ -94,14 +94,14 @@ public class Indexer {
                             termsCorpusMap.put(term, new TermDataInMap(temporaryMap.get(term), 1));
                     }
                     //liron or first
-                    else if (Parse.IsLowerCase(term)) {
+                    else if (termIsLowerCase) {
                         //case term is "first" and we already have "FIRST" on the map
                         //save the frequency of "FIRST", remove it from map and add frequency + 1 to "first"
-                        if (termsCorpusMap.containsKey(term.toUpperCase())) {
-                            TermDataInMap upperCaseTerm = termsCorpusMap.get(term.toUpperCase());
-                            termsCorpusMap.remove(term.toUpperCase());
-                            termsCorpusMap.put(term, new TermDataInMap(upperCaseTerm.totalTf + temporaryMap.get(term),
-                                    upperCaseTerm.numOfDocuments + 1));
+                        if (termsCorpusMap.containsKey(termUpperCase)) {
+                            TermDataInMap dataOfupperCaseTerm = termsCorpusMap.get(termUpperCase);
+                            termsCorpusMap.remove(termUpperCase);
+                            termsCorpusMap.put(term, new TermDataInMap(dataOfupperCaseTerm.totalTf + temporaryMap.get(term),
+                                    dataOfupperCaseTerm.numOfDocuments++));
                         }
                         //we do not have "FIRST" in our map
                         else {
@@ -125,8 +125,19 @@ public class Indexer {
                             termsCorpusMap.put(term, new TermDataInMap(temporaryMap.get(term), 1));
                     }
 
-                }
-                //updating the posting map after finishing parsing a text
+                    //first time from that term in this chunk
+                    if (!postingMap.containsKey(termLowerCase))
+                        postingMap.put(termLowerCase, listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                        //deleting old record and creating new one
+                    else {
+                        String postingOldData = postingMap.get(termLowerCase);
+                        postingMap.put(termLowerCase, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                    }
+
+                }//End of looping on temporary map and inserts it's values to corpusMap
+
+
+                /*
                 for (String term : temporaryMap.keySet()) {
 
                     if(termsCorpusMap.containsKey(term.toLowerCase()))
@@ -155,23 +166,28 @@ public class Indexer {
                             postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
                         }
                     }
-
                 }
-            }
-            WriteToTempPosting(postingMap, i);
+                */
+
+
+            }//End of internal loop - every loop is for one text
+
+            WriteToTempPosting(postingMap, i); //write the posting map to a temporary posting file
             System.out.println("end loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
-        }
+
+        }//End of external loop - every loop is for one chunk of files (probably 8 files)
+
+        //After creating all temporary posting time, it's time to merge them to one big temporary file
         try {
             mergeTempPostingFiles();
-
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    private void WriteToTempPosting(Map<String, String> postingMap, int numOfChunck) throws IOException {
+    private void WriteToTempPosting(Map<String, String> postingMap, int numOftempPostingFile) throws IOException {
         //creating posting file and saving it in postingFilesFolder - his name is posting+the number of the loop
-        File file = new File(pathToDisk + "\\posting_" + numOfChunck);
+        File file = new File(pathToDisk + "\\posting_" + numOftempPostingFile);
         queueOfTempPostingFiles.add(file);
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
         for (String term : postingMap.keySet()) {
@@ -180,15 +196,13 @@ public class Indexer {
             writer.write(data);
             writer.newLine();
         }
-        //closing the file
         writer.close();
     }
 
-
     public void mergeTempPostingFiles() throws IOException, InterruptedException {
-        while(numOfTempPostingFiles > 1) {
-            pool = Executors.newFixedThreadPool(numOfTempPostingFiles/2 + 1);
-            for (int i = 0; i < numOfTempPostingFiles/2 ; i++) {
+        while (numOfTempPostingFiles > 2) {
+            pool = Executors.newFixedThreadPool(numOfTempPostingFiles / 2 + 1);
+            for (int i = 0; i < numOfTempPostingFiles / 2; i++) {
                 pool.execute(new MergeFiles(pathToDisk, this));
 
             }
@@ -207,22 +221,30 @@ public class Indexer {
 
     }
 
-    public void splitMergedFile() throws IOException {
+    public void splitMergedFile() throws IOException
+    {
+        List<File> twoLastFiles = new ArrayList<>();
+        File folder = new File(pathToDisk);
+        //we know we only have two files left on that folder
+        for (final File fileEntry : folder.listFiles())
+            twoLastFiles.add(fileEntry);
+        mergeFiles.margeTwoLastFilesAndCreatePermanentPostingFiles(twoLastFiles.get(0), twoLastFiles.get(1));
+        System.out.println("Finished building the Indexer - time: " + (System.nanoTime() - startTime) / 1000000000.0);
+    }
+}
 
-        int lineCounter = 1;
-        String splitedLine[] = new String[2];
-        File folder = new File("C:\\Users\\refaeli.liron\\IdeaProjects\\RetrivalEngine_LD\\src\\main\\java\\postingFiles");
+        /*
+        String nextLineInFile = "";
+        //spliting to symbols
+        File symbolFile = new File("C:\\Users\\refaeli.liron\\IdeaProjects\\RetrivalEngine_LD\\src\\main\\java\\postingFiles\\symbols");
+        FileWriter fw1 = new FileWriter(symbolFile);
+        BufferedWriter bw1 = new BufferedWriter(fw1);
+
 
         if (folder.listFiles().length == 1) {
             for (final File fileEntry : folder.listFiles()) {
 
                 Scanner fileReader = new Scanner(fileEntry);
-                String nextLineInFile = "";
-
-                //spliting to symbols
-                File symbolFile = new File("C:\\Users\\refaeli.liron\\IdeaProjects\\RetrivalEngine_LD\\src\\main\\java\\postingFiles\\symbols");
-                FileWriter fw1 = new FileWriter(symbolFile);
-                BufferedWriter bw1 = new BufferedWriter(fw1);
 
                 while (fileReader.hasNextLine()) {
                     nextLineInFile = fileReader.nextLine();
@@ -286,19 +308,12 @@ public class Indexer {
 
 
             }
-
-            System.out.println("spliting was done - time: " + (System.nanoTime() - startTime) / 1000000000.0);
-
-            for (Map.Entry<String, TermDataInMap> entry : termsCorpusMap.entrySet())
-            {
-                System.out.println(entry.getKey() + "/" + entry.getValue().idf);
-            }
-
-
-
         }
     }
 
+
+
+    //Will be used only for creating new CitiesAndInformationFile
     private void CreateCitiesAndInformationFile() throws IOException {
         List<String> listOfAllCitiesInCorpus = new ArrayList<>();
         try {
@@ -326,6 +341,7 @@ public class Indexer {
 
     }
 
+    //Will be used only for creating new CitiesAndInformationFile
     private void WriteCitiesAndInformationMapToFile(Map<String,String> containsAllCitiesAndInformation) throws IOException {
         File file = new File(pathToDisk + "\\CitiesAndInformationFile");
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
@@ -365,7 +381,7 @@ public class Indexer {
         while (!pool.awaitTermination(24L, TimeUnit.HOURS)) {
             System.out.println("Not yet. Still waiting for termination");
         }
-        */
+*/
 
 
 

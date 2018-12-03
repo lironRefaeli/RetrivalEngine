@@ -12,31 +12,41 @@ import java.util.*;
  */
 public class Parse {
 
+    static List<String> monthsNames;
     private List<String> stopWordsList;
     private String citiesAndInformationFilePath;
-    private Map<String, Integer> termsAndFrequencyMap;
+
     private Stemmer stemmer;
-    static List<String> monthsNames;
     private boolean useStemmer;
+
+    private List<String> TermsOfDoc;
     private String term = "";
+    private String termToLowerCase = "";
+    private String termToUpperCase = "";
     private String nextTerm = "";
     private String secondNextTerm = "";
     private String thirdNextTerm = "";
-    private List<String> TermsOfDoc;
+    private Map<String, Integer> termsAndFrequencyMap;
 
 
-    Parse(String stopWordsPath, String citiesAndInformationFilePath) {
+
+    Parse(String stopWordsPath, String citiesAndInformationFilePath){
+
+        InitMonthsNames();
         stopWordsList = ReadStopWordToList(stopWordsPath);
         this.citiesAndInformationFilePath = citiesAndInformationFilePath;
+        stemmer = new Stemmer();
+        useStemmer = false;
         try {
             ReadCitiesAndInfoFileToMap();
+
         } catch (FileNotFoundException e) {
+
             e.printStackTrace();
             System.out.println("Reading the CitiesAndInformation file has failed on Parse class");
         }
-        InitMonthsNames();
-        stemmer = new Stemmer();
-        useStemmer = false;
+
+
     }
 
 
@@ -45,28 +55,41 @@ public class Parse {
 
         termsAndFrequencyMap = new HashMap<>();
         BreakTextToTerms(docText, docNum);
-
         return termsAndFrequencyMap;
     }
 
     private void BreakTextToTerms(String docText, String docNum) {
+
         //cleaning the document before splitting (| is seperating between characters, and \\ is sometimes needed
         docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|", "");
+
         //splitting the document according to these delimiters - the second one is spaces
         TermsOfDoc = new ArrayList(Arrays.asList(docText.split("\\n|\\s+|\\t|;|\\?|!|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*")));
 
         for (int i = 0; i < TermsOfDoc.size(); i++) {
-            //handles with stop-words or empty strings and also next terms after current term
+
+            //extracting every term and saving it's lowerCase and UpperCase
             term = TermsOfDoc.get(i);
-            if ((IsStopWord(term.toLowerCase()) || term.equals("")))
+            termToLowerCase = term.toLowerCase();
+            termToUpperCase = term.toUpperCase();
+
+            //handles with stop-words or empty strings and also next terms after current term
+            if ((IsStopWord(termToLowerCase) || term.equals("")))
                 continue;
+
+            //extracting nextTerm
             if (i + 1 <= TermsOfDoc.size() - 1)
                 nextTerm = TermsOfDoc.get(i + 1);
+
+            //checking if term is number or String
             if (IsNumeric(term))
                 i = HandleWithNumbers(i);
             else {
-                if(Indexer.citiesInCorpus.containsKey(term.toUpperCase()))
+
+                //if the term is a city - upade in City Map
+                if(Indexer.citiesInCorpus.containsKey(termToUpperCase))
                     updateCitiesInCorpus(docNum, i);
+
                 i = HandleWithStrings(i);
             }
 
@@ -91,7 +114,7 @@ public class Parse {
 
     //Update the map that holds as keys the city name and as values an object og type of CityInMap
     public void updateCitiesInCorpus(String docNum, int positionInText) {
-        String termInUpperCase = term.toUpperCase();
+        String termInUpperCase = termToUpperCase;
         //not the first time of that city in that document
         if (Indexer.citiesInCorpus.get(termInUpperCase).placementsInDocs.containsKey(docNum))
             Indexer.citiesInCorpus.get(termInUpperCase).placementsInDocs.get(docNum).add(positionInText);
@@ -103,23 +126,13 @@ public class Parse {
     }
 
     private int HandleWithNumbers(int index) {
-        // case "1,000,000 Dollars"
-        if (nextTerm.equals("Dollars") && Double.parseDouble(term) > 1000000) {
-            term = DeleteTheZeros(term);
-            term = term + "M Dollars";
-            index++;
-            AddTermNumberToMap(term);
-            return index;
-        }
-        //handles numbers that need to have "%" next to them - handles every case
-        if ((nextTerm.equals("percent") || nextTerm.equals("percentage"))) {
-            term = term + "%";
-            index++;
-            AddTermNumberToMap(term);
-            return index;
-        }
-        //handles with numbers with point in them
-        if (term.contains(".")) {
+
+        // nextTerm in lowerCase
+        String nextTermToLowerCase = nextTerm.toLowerCase();
+
+        //for numbers with point
+        if(term.contains("."))
+        {
             String[] termSplittedByPoint = new String[2];
             for (int j = 0; j < term.length(); j++) {
                 if (term.charAt(j) == '.') {
@@ -127,91 +140,104 @@ public class Parse {
                     termSplittedByPoint[1] = term.substring(j + 1);
                 }
             }
-
-            if (IsNumeric(termSplittedByPoint[0]) && termSplittedByPoint[0].length() >= 4 && IsNumeric(termSplittedByPoint[1])) {
+            if(termSplittedByPoint[0].length() >= 4 && termSplittedByPoint[0].length() <= 12)
                 term = HandleNumbersWithPoint(termSplittedByPoint[0], termSplittedByPoint[1]);
-            }
-
-            if (nextTerm.equals("Dollars")) {
-                term = term + " Dollars";
-                index++;
-            }
-            AddTermNumberToMap(term);
-            return index;
 
         }
-        //handling with regular numbers, with or without a word after
-        else {
-            //123 Thousand to 123K
-            if (nextTerm.equals("Thousand")) {
-                term = term + 'K';
-                index++;
-                AddTermNumberToMap(term);
-                return index;
-            }
-            CreateSecondAndThirdTerm(index);
-            if (nextTerm.toLowerCase().equals("million")) {
-                //case "100 million U.S. dollars"
-                if (secondNextTerm.equals("U.S.") && thirdNextTerm.equals("dollars")) {
-                    term = term + " M Dollars";
-                    index = index + 3;
-                    AddTermNumberToMap(term);
-                    return index;
-                } else {
-                    term = term + 'M';
-                    index++;
-                    AddTermNumberToMap(term);
-                    return index;
-                }
-            }
-            if (nextTerm.toLowerCase().equals("billion")) {
-                //case "100 billion U.S. dollars"
-                if (secondNextTerm.equals("U.S.") && thirdNextTerm.equals("dollars")) {
-                    term = term + "000 M Dollars";
-                    index = index + 3;
-                    AddTermNumberToMap(term);
-                    return index;
-                } else {
-                    term = term + 'B';
-                    index++;
-                    AddTermNumberToMap(term);
-                    return index;
-                }
+        //for numbers without a point
+        else if(term.length() > 4)
+            term = HandleRegularNumbers(term);
 
-            }
-            if (nextTerm.toLowerCase().equals("trillion")) {
-                //case "1 trillion U.S. dollars"
-                if (secondNextTerm.equals("U.S.") && thirdNextTerm.equals("dollars")) {
-                    term = term + "000000 M Dollars";
-                    index = index + 3;
-                    AddTermNumberToMap(term);
-                    return index;
-                } else {
-                    term = term + "00B";
-                    index++;
-                    AddTermNumberToMap(term);
-                    return index;
-                }
+        CreateSecondAndThirdTerm(index);
 
-            }
-            //only a number
-            else if (term.length() >= 4) {
-                term = HandleRegularNumbers(term);
-                AddTermNumberToMap(term);
-                return index;
-            }
-        }
-
-        //case "35 3/4"
+        //for case "35 3/4"
         if (nextTerm.contains("/")) {
             int indexOfSlash = nextTerm.indexOf("/");
             if (IsNumeric(nextTerm.substring(0, indexOfSlash)) && IsNumeric(nextTerm.substring(indexOfSlash + 1))) {
                 term = term + " " + nextTerm;
                 index++;
+            }
+
+            //for case 22 3/4 Dollars
+            if (secondNextTerm.equals("Dollars")) {
+                index++;
+                term = term + " Dollars";
                 AddTermNumberToMap(term);
                 return index;
             }
         }
+
+        //handling with next term
+        //for case next term is Dollars
+        if (nextTerm.equals("Dollars")) {
+            index++;
+            term = term + " Dollars";
+            AddTermNumberToMap(term);
+            return index;
+        }
+
+        //handles numbers that need to have "%" next to them
+        if ((nextTerm.equals("percent") || nextTerm.equals("percentage"))) {
+            term = term + "%";
+            index++;
+            AddTermNumberToMap(term);
+            return index;
+        }
+
+        if (nextTerm.equals("Thousand") ) {
+            index++;
+            if(term.length() < 4)
+                term = term+"K";
+            AddTermNumberToMap(term);
+            return index;
+        }
+
+        if (nextTermToLowerCase.equals("million")) {
+            //case "100 million U.S. dollars"
+            if (secondNextTerm.equals("U.S.") && thirdNextTerm.equals("dollars")) {
+                term = term + " M Dollars";
+                index = index + 3;
+                AddTermNumberToMap(term);
+                return index;
+            } else {
+                term = term + 'M';
+                index++;
+                AddTermNumberToMap(term);
+                return index;
+            }
+        }
+
+        if (nextTermToLowerCase.equals("billion")) {
+            //case "100 billion U.S. dollars"
+            if (secondNextTerm.equals("U.S.") && thirdNextTerm.equals("dollars")) {
+                term = term + "000 M Dollars";
+                index = index + 3;
+                AddTermNumberToMap(term);
+                return index;
+            } else {
+                term = term + 'B';
+                index++;
+                AddTermNumberToMap(term);
+                return index;
+            }
+
+        }
+
+        if (nextTermToLowerCase.equals("trillion")) {
+            //case "1 trillion U.S. dollars"
+            if (secondNextTerm.equals("U.S.") && thirdNextTerm.equals("dollars")) {
+                term = term + "000000 M Dollars";
+                index = index + 3;
+                AddTermNumberToMap(term);
+                return index;
+            } else {
+                term = term + "00B";
+                index++;
+                AddTermNumberToMap(term);
+                return index;
+            }
+        }
+
 
         //First additional rule: 100 Kilometers or 100 kilometers
         if ((nextTerm.equals("Kilometers") || nextTerm.equals("kilometers") || nextTerm.equals("km"))) {
@@ -221,25 +247,45 @@ public class Parse {
             return index;
         }
 
+        //for the specific case May 15/MAY 15
+        if(index != 0 && CheckPervTermEqualMay(index) )
+        {
+            int monthNum = GetMonthNumber(TermsOfDoc.get(index - 1));
+            if(monthNum < 10) {
+                if (term.length() == 1)
+                    term = "0" + monthNum + "-0" + term;
+                else
+                    term = "0" + monthNum + "-" + term;
+            }
+            else
+            {
+                if (term.length() == 1)
+                    term = monthNum + "-0" + term;
+                else
+                    term = monthNum + "-" + term;
+            }
+
+            AddTermToMap(term);
+            return index;
+        }
+
         //Second additional rule
         //Dates: "14 May 1994"
-
         if (monthsNames.contains(nextTerm.toUpperCase())) {
             int monthNum;
-            CreateSecondAndThirdTerm(index);
             if (IsNumeric(secondNextTerm) && secondNextTerm.length() > 2) {
                 if (term.length() == 1) {
                     monthNum = GetMonthNumber(nextTerm);
                     if (monthNum < 10)
-                        term = "0" + GetMonthNumber(nextTerm) + "-0" + term + "-" + secondNextTerm;
+                        term = "0" + monthNum + "-0" + term + "-" + secondNextTerm;
                     else
-                        term = GetMonthNumber(nextTerm) + "-0" + term + "-" + secondNextTerm;
+                        term = monthNum + "-0" + term + "-" + secondNextTerm;
                 } else {
                     monthNum = GetMonthNumber(nextTerm);
                     if (monthNum < 10)
-                        term = "0" + GetMonthNumber(nextTerm) + "-" + term + "-" + secondNextTerm;
+                        term = "0" + monthNum + "-" + term + "-" + secondNextTerm;
                     else
-                        term = GetMonthNumber(nextTerm) + "-" + term + "-" + secondNextTerm;
+                        term = monthNum + "-" + term + "-" + secondNextTerm;
                 }
                 index = index + 2;
                 AddTermNumberToMap(term);
@@ -251,16 +297,17 @@ public class Parse {
                 if (term.length() == 1) {
                     monthNum = GetMonthNumber(nextTerm);
                     if (monthNum < 10)
-                        term = "0" + GetMonthNumber(nextTerm) + "-0" + term;
+                        term = "0" + monthNum + "-0" + term;
                     else
-                        term = GetMonthNumber(nextTerm) + "-0" + term;
+                        term = monthNum + "-0" + term;
                 } else {
                     monthNum = GetMonthNumber(nextTerm);
                     if (monthNum < 10)
-                        term = "0" + GetMonthNumber(nextTerm) + "-" + term;
+                        term = "0" + monthNum + "-" + term;
                     else
-                        term = GetMonthNumber(nextTerm) + "-" + term;
+                        term = monthNum + "-" + term;
                 }
+
 
                 index++;
                 AddTermNumberToMap(term);
@@ -269,8 +316,7 @@ public class Parse {
         }
 
         //Between 18 and 24
-
-        if (secondNextTerm.equals("and") && IsNumeric(thirdNextTerm) && CheckPervTerm(index)) {
+        if (nextTerm.equals("and") && IsNumeric(secondNextTerm) && index != 0 && CheckPervTermEqualBetween(index)) {
             CreateSecondAndThirdTerm(index);
             term = "between" + " " + term + " " + nextTerm + " " + secondNextTerm;
             index = index + 2;
@@ -278,91 +324,112 @@ public class Parse {
             return index;
         }
 
+        AddTermNumberToMap(term);
         return index;
+
     }
 
 
     private int HandleWithStrings(int index) {
-        //for case June 4, JUNE 4
-        if (monthsNames.contains(term.toUpperCase()) && IsNumeric(nextTerm)) {
 
+        //case terms starts with $
+        if (term.charAt(0) == '$' && IsNumeric(term.substring(1))) {
+            //handles with dollar numbers
+            double value = Double.parseDouble(term.substring(1));
+
+            //case "$100 million"
+            if (nextTerm.equals("million")) {
+                term = term.substring(1);
+                term = term + " M Dollars";
+                AddTermToMap(term);
+                index++;
+                return index;
+            }
+            //"$100 billion"
+            if (nextTerm.equals("billion")) {
+                term = term.substring(1);
+                term = term + "000 M Dollars";
+                AddTermToMap(term);
+                index++;
+                return index;
+            }
+            if (nextTerm.equals("trillion")) {
+                term = term.substring(1);
+                term = term + "000000 M Dollars";
+                AddTermToMap(term);
+                index++;
+                return index;
+            }
+            //"$450,000,000"
+            else if(value > 1000000 ) {
+                term = term.substring(1);
+                term = DeleteTheZeros(term);
+                term = term + " M Dollars";
+                AddTermToMap(term);
+                return index;
+            }
+            //$10
+            else if(value < 1000000)
+            {
+                term = term.substring(1) + " Dollars";
+                AddTermToMap(term);
+                return index;
+            }
+        }
+
+        if(nextTerm.equals("Dollars")) {
+            //case "20.6m Dollars"
+            if (IsNumeric(term.substring(0, term.length() - 1)) && term.charAt(term.length() - 1) == 'm') {
+                term = term.substring(0, term.length() - 1) + " M Dollars";
+                index++;
+                AddTermToMap(term);
+                return index;
+            }
+
+            //case "100bn Dollars"
+            if (term.length() >= 2 && IsNumeric(term.substring(0, term.length() - 2)) && term.substring(term.length() - 2).equals("bn")) {
+                term = term.substring(0, term.length() - 2) + "000 M Dollars";
+                index++;
+                AddTermToMap(term);
+                return index;
+            }
+
+        }
+
+        //for case June 4, JUNE 4
+        if (monthsNames.contains(termToUpperCase) && IsNumeric(nextTerm)) {
+            int monthNum = GetMonthNumber(term);
             if (nextTerm.length() <= 2) {
                 if (nextTerm.length() == 1)
-                    term = "0" + GetMonthNumber(term) + "-0" + nextTerm;
-                else
-                    term = "0" + GetMonthNumber(term) + "-" + nextTerm;
+                {
+                    if(monthNum < 10)
+                        term = "0" + monthNum + "-0" + nextTerm;
+                    else
+                        term = monthNum + "-0" + nextTerm;
+                } else {
+
+                    if (monthNum < 10)
+                        term = "0" + monthNum + "-" + nextTerm;
+                    else
+                        term = monthNum + "-" + nextTerm;
+                }
                 index++;
                 AddTermToMap(term);
                 return index;
             }
             // for case May 1994, MAY 1994
             else {
-                term = nextTerm + "-0" + GetMonthNumber(term);
+
+                if(monthNum < 10)
+                    term = nextTerm + "-0" + monthNum;
+                else
+                    term = nextTerm + "-" + monthNum;
                 index++;
                 AddTermToMap(term);
                 return index;
             }
         }
 
-        //case "$450" or "450,000,000" or "$100 million" or "$100 billion"
-        if (term.charAt(0) == '$' && IsNumeric(term.substring(1))) {
-            //handles with dollar numbers
-            double value = Double.parseDouble(term.substring(1));
-            //case "$450"
-            if (value < 1000000 && !(nextTerm.equals("million") || nextTerm.equals("billion") || nextTerm.equals("trillion"))) {
-                term = term.substring(1) + " Dollars";
-                AddTermToMap(term);
-                return index;
-            } else {
-                //case "$100 million"
-                if (nextTerm.equals("million")) {
-                    term = term.substring(1);
-                    term = term + " M Dollars";
-                    AddTermToMap(term);
-                    index++;
-                    return index;
-                }
-                //"$100 billion"
-                if (nextTerm.equals("billion")) {
-                    term = term.substring(1);
-                    term = term + "000 M Dollars";
-                    AddTermToMap(term);
-                    index++;
-                    return index;
-                }
-                if (nextTerm.equals("trillion")) {
-                    term = term.substring(1);
-                    term = term + "000000 M Dollars";
-                    AddTermToMap(term);
-                    index++;
-                    return index;
-                }
-                //"450,000,000"
-                else {
-                    term = term.substring(1);
-                    term = DeleteTheZeros(term);
-                    term = term + " M Dollars";
-                    AddTermToMap(term);
-                    return index;
-                }
-            }
-        }
-
-        //case "20.6m Dollars"
-        if (IsNumeric(term.substring(0, term.length() - 1)) && term.charAt(term.length() - 1) == 'm' && nextTerm.equals("Dollars")) {
-            term = term.substring(0, term.length() - 1) + " M Dollars";
-            index++;
-            AddTermToMap(term);
-            return index;
-        }
-
-        //case "100bn Dollars"
-        if (term.length() >= 2 && IsNumeric(term.substring(0, term.length() - 2)) && term.substring(term.length() - 2).equals("bn") && nextTerm.equals("Dollars")) {
-            term = term.substring(0, term.length() - 2) + "000 M Dollars";
-            index++;
-            AddTermToMap(term);
-            return index;
-        }
         //word-word, word-word-word, number-word, word-number, number-number
         //length bigger than 5 because we want al least 2 words with the "-"
         //we do not want "-" or "--" to be terms
@@ -371,15 +438,21 @@ public class Parse {
             return index;
         }
 
-
         AddTermToMap(term);
         return index;
     }
 
-    private boolean CheckPervTerm(int index) {
+    //checking if the precious term is between
+    private boolean CheckPervTermEqualBetween(int index) {
         return TermsOfDoc.get(index - 1).toLowerCase().equals("between");
     }
 
+    //checking if the precious term is May
+    private boolean CheckPervTermEqualMay(int index) {
+        return (TermsOfDoc.get(index - 1).toLowerCase().equals("may")) ;
+    }
+
+    //creating secondNextTerm and thirdNextTerm
     private void CreateSecondAndThirdTerm(int index) {
         if (index + 2 <= TermsOfDoc.size() - 1)
             secondNextTerm = TermsOfDoc.get(index + 2);
@@ -389,9 +462,11 @@ public class Parse {
     }
 
     private void AddTermNumberToMap(String term) {
-
         if (term.charAt(term.length() - 1) == '.' || term.charAt(term.length() - 1) == '-')
             term = term.substring(0, term.length() - 1);
+
+        if(term.equals(""))
+            return;
 
         if (useStemmer)
             term = CallStemmer(term);
@@ -400,48 +475,54 @@ public class Parse {
             termsAndFrequencyMap.put(term, termsAndFrequencyMap.get(term) + 1);
         else
             termsAndFrequencyMap.put(term, 1);
+
     }
 
     private void AddTermToMap(String term) {
 
-
         if (term.charAt(term.length() - 1) == '.' || term.charAt(term.length() - 1) == '-')
             term = term.substring(0, term.length() - 1);
 
+        if(term.equals(""))
+            return;
+
+        termToLowerCase = term.toLowerCase();
+        termToUpperCase = term.toUpperCase();
 
         if (useStemmer)
             term = CallStemmer(term);
         //NBA or GSW
         if (IsUpperCase(term)) {
-            if (termsAndFrequencyMap.containsKey(term.toLowerCase())) {
-                termsAndFrequencyMap.put(term.toLowerCase(), termsAndFrequencyMap.get(term.toLowerCase()) + 1);
+
+            if (termsAndFrequencyMap.containsKey(termToLowerCase)) {
+                termsAndFrequencyMap.put(termToLowerCase, termsAndFrequencyMap.get(termToLowerCase) + 1);
             } else if (termsAndFrequencyMap.containsKey(term))
                 termsAndFrequencyMap.put(term, termsAndFrequencyMap.get(term) + 1);
             else
                 termsAndFrequencyMap.put(term, 1);
+
         }
         //Liron or State
         else if (!IsUpperCase(term) && FirstIsUpperCase(term.charAt(0))) {
             //map contains liron or state
-            if (termsAndFrequencyMap.containsKey(term.toLowerCase())) {
-                termsAndFrequencyMap.put(term.toLowerCase(), termsAndFrequencyMap.get(term.toLowerCase()) + 1);
+            if (termsAndFrequencyMap.containsKey(termToLowerCase)) {
+                termsAndFrequencyMap.put(termToLowerCase, termsAndFrequencyMap.get(termToLowerCase) + 1);
             } else {   //map contains LIRON or STATE
-                if (termsAndFrequencyMap.containsKey(term.toUpperCase()))
-                    termsAndFrequencyMap.put(term.toUpperCase(), termsAndFrequencyMap.get(term.toUpperCase()) + 1);
+                if (termsAndFrequencyMap.containsKey(termToUpperCase))
+                    termsAndFrequencyMap.put(termToUpperCase, termsAndFrequencyMap.get(termToUpperCase) + 1);
                     //add Liron as LIRON
                 else
-                    termsAndFrequencyMap.put(term.toUpperCase(), 1);
+                    termsAndFrequencyMap.put(termToUpperCase, 1);
             }
-
         }
 
         //liron or first
         else if (IsLowerCase(term)) {
             //case term is "first" and we already have "FIRST" on the map
             //save the frequency of "FIRST", remove it from map and add frequency + 1 to "first"
-            if (termsAndFrequencyMap.containsKey(term.toUpperCase())) {
-                int frequencyOfUpperCase = termsAndFrequencyMap.get(term.toUpperCase());
-                termsAndFrequencyMap.remove(term.toUpperCase());
+            if (termsAndFrequencyMap.containsKey(termToUpperCase)) {
+                int frequencyOfUpperCase = termsAndFrequencyMap.get(termToUpperCase);
+                termsAndFrequencyMap.remove(termToUpperCase);
                 termsAndFrequencyMap.put(term, frequencyOfUpperCase + 1);
             }
             //we do not have "FIRST" in our map
