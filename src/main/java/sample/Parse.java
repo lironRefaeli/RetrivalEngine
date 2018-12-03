@@ -12,10 +12,10 @@ import java.util.*;
  */
 public class Parse {
 
-    static List<String> monthsNames;
-    private List<String> stopWordsList;
+    static HashSet<String> monthsNames;
+    static HashSet<String> stopWordsList;
     private String citiesAndInformationFilePath;
-
+    static HashSet<String> wordsToDeleteSet;
     private Stemmer stemmer;
     private boolean useStemmer;
 
@@ -30,10 +30,11 @@ public class Parse {
 
 
 
-    Parse(String stopWordsPath, String citiesAndInformationFilePath){
+    Parse(String stopWordsPath, String citiesAndInformationFilePath, String wordsToDelete){
 
         InitMonthsNames();
         stopWordsList = ReadStopWordToList(stopWordsPath);
+        wordsToDeleteSet = ReadJunkWordToList(wordsToDelete);
         this.citiesAndInformationFilePath = citiesAndInformationFilePath;
         stemmer = new Stemmer();
         useStemmer = false;
@@ -51,6 +52,7 @@ public class Parse {
 
 
 
+
     public Map<String, Integer> ParsingDocument(String docText, String docNum) {
 
         termsAndFrequencyMap = new HashMap<>();
@@ -58,10 +60,23 @@ public class Parse {
         return termsAndFrequencyMap;
     }
 
+    public void cleaningTerm() {
+
+        if(!term.equals("")) {
+            char firstC = term.charAt(0);
+            char lastC = term.charAt(term.length() - 1);
+
+            if (firstC == '.' || firstC == '-')
+                term = term.substring(1);
+            if (!term.equals("") && (lastC == '.' || lastC == '-'))
+                term = term.substring(0, term.length() - 1);
+        }
+    }
+
     private void BreakTextToTerms(String docText, String docNum) {
 
         //cleaning the document before splitting (| is seperating between characters, and \\ is sometimes needed
-        docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|//|", "");
+        docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|<|//|", "");
 
         //splitting the document according to these delimiters - the second one is spaces
         TermsOfDoc = new ArrayList(Arrays.asList(docText.split("\\n|\\s+|\\t|;|\\?|!|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*")));
@@ -70,14 +85,13 @@ public class Parse {
 
             //extracting every term and saving it's lowerCase and UpperCase
             term = TermsOfDoc.get(i);
+            cleaningTerm();
             termToLowerCase = term.toLowerCase();
             termToUpperCase = term.toUpperCase();
 
             //handles with stop-words or empty strings and also next terms after current term
-            if ((IsStopWord(termToLowerCase) || term.equals("")))
+            if ((IsStopWord(termToLowerCase) || IsJunkWord() || term.equals("")))
                 continue;
-            if(term.charAt(0) == '.')
-                term = term.substring(1);
 
             //extracting nextTerm
             if (i + 1 <= TermsOfDoc.size() - 1)
@@ -92,15 +106,14 @@ public class Parse {
                 //if the term is a city - upade in City Map
                 if(Indexer.citiesInCorpus.containsKey(termToUpperCase))
                     updateCitiesInCorpus(docNum, i);
-                if(term.length() > 0 && term.charAt(0) == '-')
-                    term = term.substring(1);
-                if(term.length() == 0)
-                    continue;
+
                 i = HandleWithStrings(i);
             }
 
         }
     }
+
+
 
     //Fill the citiesInCorpusMap with the cities names (key) and cities information (values)
     //we still need to fill the map field placementsInDocs in CityInMap object with numOfFile and positions in that file
@@ -742,16 +755,16 @@ public class Parse {
         return stopWordsList.contains(word);
     }
 
-    private List<String> ReadStopWordToList(String stopWordsPath) {
+    private HashSet<String> ReadStopWordToList(String stopWordsPath) {
         Scanner s = null;
         try {
             s = new Scanner(new File(stopWordsPath));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        ArrayList<String> stopWordsList = new ArrayList<String>();
+        HashSet<String> stopWordsList = new HashSet<>();
         while (s.hasNext()) {
-            stopWordsList.add(s.next());
+            stopWordsList.add(s.nextLine());
         }
         s.close();
 
@@ -759,7 +772,7 @@ public class Parse {
     }
 
     private void InitMonthsNames() {
-        monthsNames = new ArrayList<String>();
+        monthsNames = new HashSet();
         monthsNames.add("JANUARY");
         monthsNames.add("FEBRUARY");
         monthsNames.add("MARCH");
@@ -786,6 +799,30 @@ public class Parse {
         monthsNames.add("OCT");
         monthsNames.add("NOV");
         monthsNames.add("DEC");
+    }
+    private HashSet<String> ReadJunkWordToList(String wordsToDelete)
+    {
+        Scanner s = null;
+        try {
+            s = new Scanner(new File(wordsToDelete));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        HashSet<String> junkWordSet = new HashSet<>();
+        //ArrayList<String> junkWordsList = new ArrayList<String>();
+        while (s.hasNextLine()) {
+            junkWordSet.add(s.nextLine());
+            //junkWordsList.add(s.next());
+        }
+        s.close();
+        return junkWordSet;
+        //return junkWordsList;
+    }
+
+
+    private boolean IsJunkWord()
+    {
+        return wordsToDeleteSet.contains(term);
     }
 
     private String CallStemmer(String term) {

@@ -182,7 +182,7 @@ public class MergeFiles implements Runnable {
                 }
                 catch (NullPointerException e)
                 {
-                    System.out.println(termName);
+                    System.out.println("Hi");
                 }
 
                 lineIndex++;

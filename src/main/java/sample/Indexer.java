@@ -32,7 +32,7 @@ public class Indexer {
     public Indexer(ReadFile readFile, Parse parser, String pathToDisk)
     {
         NumberOfDocsInCorpus = 0;
-        numOfTempPostingFiles = 227;
+        numOfTempPostingFiles = 6;
         this.readFile = readFile;
         this.parser = parser;
         this.pathToDisk = pathToDisk;
@@ -253,6 +253,23 @@ public class Indexer {
 
         }//End of external loop - every loop is for one chunk of files (probably 8 files)
 
+        /*
+        File outFile = new File("C:\\Users\\david\\Desktop\\JunkWords.txt");
+        FileWriter fw = new FileWriter(outFile);
+        BufferedWriter bw = new BufferedWriter(fw);
+        for (String term : termsCorpusMap.keySet())
+        {
+            if(termsCorpusMap.get(term).totalTf == 1)
+                bw.write(term);
+            System.out.println(term);
+        }
+        bw.close();
+        fw.close();
+        */
+
+
+        Parse.stopWordsList = null;
+        Parse.wordsToDeleteSet = null;
         //After creating all temporary posting time, it's time to merge them to one big temporary file
         try {
             mergeTempPostingFiles();
