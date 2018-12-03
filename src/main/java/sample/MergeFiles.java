@@ -147,41 +147,59 @@ public class MergeFiles implements Runnable {
         FileWriter fw = new FileWriter(outFile);
         bw = new BufferedWriter(fw);
 
-        String termName;
+        String termName = "";
         int firstLetterOfBothTerms = 97;
-
+        //compareBetweenTwoTerms();
         //both of the posting files still have new lines to read
         while (fileReader1.hasNextLine() && fileReader2.hasNextLine())
         {
-            nextLineInFile1 = fileReader1.nextLine();
-            firstCharOfLine1 = nextLineInFile1.charAt(0);
-            nextLineInFile2 = fileReader2.nextLine();
-            firstLineOfLine2 = nextLineInFile2.charAt(0);
+            extractStrings();
+            //nextLineInFile1 = fileReader1.nextLine();
+            firstCharOfLine1 = curString1.toLowerCase().charAt(0);
+            //nextLineInFile2 = fileReader2.nextLine();
+            firstLineOfLine2 = curString2.toLowerCase().charAt(0);
 
             //both files have changed letters, so create new file with that new letter name
-            if (firstCharOfLine1 == firstLetterOfBothTerms && firstLineOfLine2 == firstLetterOfBothTerms)
+            if (firstCharOfLine1 == (char)firstLetterOfBothTerms && firstLineOfLine2 == (char)firstLetterOfBothTerms)
             {
                 outFile = new File(pathToDisk + "\\" + (char)firstLetterOfBothTerms);
+                bw.close();
+                fw.close();
                 fw = new FileWriter(outFile);
                 bw = new BufferedWriter(fw);
                 firstLetterOfBothTerms++;
             }
-            compareBetweenTwoTerms();
+            compareBetweenTwoTermsWithoutExtract();
             bw.newLine();
             if(text1Flag)
             {
-                termName = SplitString(nextLineInFile1)[0];
-                Indexer.termsCorpusMap.get(termName).pointerToPostingLine = lineIndex;
-                Indexer.termsCorpusMap.get(termName).idf = Math.log10(Indexer.NumberOfDocsInCorpus/
-                        (Indexer.termsCorpusMap.get(termName).numOfDocuments));
+                termName = curString1.split("\\*")[0];
+                try
+                {
+                    Indexer.termsCorpusMap.get(termName).pointerToPostingLine = lineIndex;
+                    Indexer.termsCorpusMap.get(termName).idf = Math.log10(Indexer.NumberOfDocsInCorpus /
+                            (Indexer.termsCorpusMap.get(termName).numOfDocuments));
+                }
+                catch (NullPointerException e)
+                {
+                    System.out.println(termName);
+                }
+
                 lineIndex++;
             }
             else
             {
-                termName = SplitString(nextLineInFile2)[0];
-                Indexer.termsCorpusMap.get(termName).pointerToPostingLine = lineIndex;
-                Indexer.termsCorpusMap.get(termName).idf = Math.log10(Indexer.NumberOfDocsInCorpus/
-                        (Indexer.termsCorpusMap.get(termName).numOfDocuments));
+                termName = curString2.split("\\*")[0];
+                try
+                {
+                    Indexer.termsCorpusMap.get(termName).pointerToPostingLine = lineIndex;
+                    Indexer.termsCorpusMap.get(termName).idf = Math.log10(Indexer.NumberOfDocsInCorpus /
+                            (Indexer.termsCorpusMap.get(termName).numOfDocuments));
+                }
+                catch (NullPointerException e)
+                {
+                    System.out.println(termName);
+                }
                 lineIndex++;
             }
         }
@@ -194,11 +212,11 @@ public class MergeFiles implements Runnable {
             nextLineInFile2 = fileReader2.nextLine();
             bw.write(nextLineInFile2);
             bw.newLine();
-            termName = SplitString(nextLineInFile2)[0];
-            Indexer.termsCorpusMap.get(termName).pointerToPostingLine = lineIndex;
-            Indexer.termsCorpusMap.get(termName).idf = Math.log10(Indexer.NumberOfDocsInCorpus/
-                    (Indexer.termsCorpusMap.get(termName).numOfDocuments));
+            Indexer.termsCorpusMap.get(splitedCurString2[0]).pointerToPostingLine = lineIndex;
+            Indexer.termsCorpusMap.get(splitedCurString2[0]).idf = Math.log10(Indexer.NumberOfDocsInCorpus /
+                    (Indexer.termsCorpusMap.get(splitedCurString2[0]).numOfDocuments));
             lineIndex++;
+
         }
 
         //only file1 has more lines to read
@@ -209,17 +227,17 @@ public class MergeFiles implements Runnable {
             nextLineInFile1 = fileReader1.nextLine();
             bw.write(nextLineInFile1);
             bw.newLine();
-            termName = SplitString(nextLineInFile1)[0];
-            Indexer.termsCorpusMap.get(termName).pointerToPostingLine = lineIndex;
-            Indexer.termsCorpusMap.get(termName).idf = Math.log10(Indexer.NumberOfDocsInCorpus/
-                    (Indexer.termsCorpusMap.get(termName).numOfDocuments));
+            Indexer.termsCorpusMap.get(splitedCurString1[0]).pointerToPostingLine = lineIndex;
+            Indexer.termsCorpusMap.get(splitedCurString1[0]).idf = Math.log10(Indexer.NumberOfDocsInCorpus /
+                    (Indexer.termsCorpusMap.get(splitedCurString1[0]).numOfDocuments));
             lineIndex++;
+
         }
         //delete the two posting files and close the readers and the writer
-        file1.delete();
-        file2.delete();
         fileReader1.close();
         fileReader2.close();
+        file1.delete();
+        file2.delete();
         bw.close();
     }
 
@@ -244,7 +262,9 @@ public class MergeFiles implements Runnable {
     private void compareBetweenTwoTerms () throws IOException {
 
         extractStrings();
-        int compareToResualt = splitedCurString1[0].compareTo(splitedCurString2[0]);
+        String term1 = splitedCurString1[0].toLowerCase();
+        String term2 = splitedCurString2[0].toLowerCase();
+        int compareToResualt = term1.compareTo(term2);
 
         if (compareToResualt < 0) {
             bw.write(curString1);
@@ -257,7 +277,45 @@ public class MergeFiles implements Runnable {
         }
         //curString1 == curString2
         else {
-            String newString = splitedCurString1[0] + "*" + splitedCurString1[1] + splitedCurString2[1];
+            String newString = "";
+            if(IsLowerCase(splitedCurString1[0]) || IsLowerCase(splitedCurString2[0]))
+                newString = term1 + "*" + splitedCurString1[1] + splitedCurString2[1];
+            else
+                newString = splitedCurString1[0] + "*" + splitedCurString1[1] + splitedCurString2[1];
+            bw.write(newString);
+            text1Flag = true;
+            text2Flag = true;
+        }
+       /*
+        //todo to think about it
+        else if(splitedCurString1.length > 1 && splitedCurString2.length > 1)
+            newString = splitedCurString1[0] + "*" + splitedCurString1[1] + splitedCurString2[1];
+       */
+    }
+
+    //lexicographic comparator between two terms, each from a different file
+    private void compareBetweenTwoTermsWithoutExtract() throws IOException {
+
+        String term1 = splitedCurString1[0].toLowerCase();
+        String term2 = splitedCurString2[0].toLowerCase();
+        int compareToResualt = term1.compareTo(term2);
+
+        if (compareToResualt < 0) {
+            bw.write(curString1);
+            text1Flag = true;
+            text2Flag = false;
+        } else if (compareToResualt > 0) {
+            bw.write(curString2);
+            text1Flag = false;
+            text2Flag = true;
+        }
+        //curString1 == curString2
+        else {
+            String newString = "";
+            if(IsLowerCase(splitedCurString1[0]) || IsLowerCase(splitedCurString2[0]))
+                newString = term1 + "*" + splitedCurString1[1] + splitedCurString2[1];
+            else
+                newString = splitedCurString1[0] + "*" + splitedCurString1[1] + splitedCurString2[1];
             bw.write(newString);
             text1Flag = true;
             text2Flag = true;
@@ -297,10 +355,9 @@ public class MergeFiles implements Runnable {
         catch (IOException e) { e.printStackTrace(); }
 
     }
-    }
 
 
-    /*
+
     //checks if a word is all UpperCases using ASCII
     public boolean IsUpperCase(String term)
     {
@@ -337,5 +394,7 @@ public class MergeFiles implements Runnable {
         }
         return true;
     }
+}
 
-*/
+
+

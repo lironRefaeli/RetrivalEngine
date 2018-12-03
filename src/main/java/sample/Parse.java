@@ -61,7 +61,7 @@ public class Parse {
     private void BreakTextToTerms(String docText, String docNum) {
 
         //cleaning the document before splitting (| is seperating between characters, and \\ is sometimes needed
-        docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|", "");
+        docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|//|", "");
 
         //splitting the document according to these delimiters - the second one is spaces
         TermsOfDoc = new ArrayList(Arrays.asList(docText.split("\\n|\\s+|\\t|;|\\?|!|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*")));
@@ -76,6 +76,8 @@ public class Parse {
             //handles with stop-words or empty strings and also next terms after current term
             if ((IsStopWord(termToLowerCase) || term.equals("")))
                 continue;
+            if(term.charAt(0) == '.')
+                term = term.substring(1);
 
             //extracting nextTerm
             if (i + 1 <= TermsOfDoc.size() - 1)
@@ -84,12 +86,16 @@ public class Parse {
             //checking if term is number or String
             if (IsNumeric(term))
                 i = HandleWithNumbers(i);
-            else {
+            else
+                {
 
                 //if the term is a city - upade in City Map
                 if(Indexer.citiesInCorpus.containsKey(termToUpperCase))
                     updateCitiesInCorpus(docNum, i);
-
+                if(term.length() > 0 && term.charAt(0) == '-')
+                    term = term.substring(1);
+                if(term.length() == 0)
+                    continue;
                 i = HandleWithStrings(i);
             }
 

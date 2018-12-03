@@ -29,9 +29,10 @@ public class Indexer {
     public final long startTime = System.nanoTime();
 
 
-    public Indexer(ReadFile readFile, Parse parser, String pathToDisk) {
+    public Indexer(ReadFile readFile, Parse parser, String pathToDisk)
+    {
         NumberOfDocsInCorpus = 0;
-        numOfTempPostingFiles = 4;
+        numOfTempPostingFiles = 227;
         this.readFile = readFile;
         this.parser = parser;
         this.pathToDisk = pathToDisk;
@@ -47,7 +48,7 @@ public class Indexer {
         for (int i = 0; i < numOfTempPostingFiles; i++) {
             System.out.println("start loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
             int maxTermFreqPerDoc = 0;
-            List<String> listOfTexts = readFile.ReadFolder(3); //list of Documents' texts
+            List<String> listOfTexts = readFile.ReadFolder(8); //list of Documents' texts
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
             List<String> ListOfCities = readFile.getListOfCities();
             NumberOfDocsInCorpus += listOfDocsNumbers.size();
@@ -85,13 +86,30 @@ public class Indexer {
                         if (termsCorpusMap.containsKey(termLowerCase)) {
                             termsCorpusMap.get(termLowerCase).totalTf += temporaryMap.get(term);
                             termsCorpusMap.get(termLowerCase).numOfDocuments++;
-                        } else if (termsCorpusMap.containsKey(term)) {
+                        }
+                        else if (termsCorpusMap.containsKey(term)) {
                             //increasing frequency
                             termsCorpusMap.get(term).totalTf += temporaryMap.get(term);
                             termsCorpusMap.get(term).numOfDocuments++;
                         } else
                             //creating new record in termsCorpusMap
                             termsCorpusMap.put(term, new TermDataInMap(temporaryMap.get(term), 1));
+
+                        String postingOldData = "";
+                        if(postingMap.containsKey(termLowerCase))
+                        {
+                            postingOldData = postingMap.get(termLowerCase);
+                            postingMap.put(termLowerCase, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                        }
+                        else
+                        {
+                            if(postingMap.containsKey(term)) {
+                                postingOldData = postingMap.get(term);
+                            }
+
+                            postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                        }
+
                     }
                     //liron or first
                     else if (termIsLowerCase) {
@@ -115,6 +133,21 @@ public class Indexer {
                                 termsCorpusMap.put(term, new TermDataInMap(temporaryMap.get(term), 1));
                         }
 
+                        String postingOldData = "";
+                        if(postingMap.containsKey(termUpperCase))
+                        {
+                            postingOldData = postingMap.get(termUpperCase);
+                            postingMap.remove(termUpperCase);
+                            postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                        }
+                        else
+                        {
+                            if(postingMap.containsKey(term))
+                                postingOldData = postingMap.get(term);
+
+                            postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                        }
+
                     }
                     //every other thing - like numbers or undefined characters
                     else {
@@ -123,7 +156,48 @@ public class Indexer {
                             termsCorpusMap.get(term).numOfDocuments++;
                         } else
                             termsCorpusMap.put(term, new TermDataInMap(temporaryMap.get(term), 1));
+
+                        String postingOldData = "";
+                        if(postingMap.containsKey(term))
+                            postingOldData = postingMap.get(term);
+
+                        postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+
+
                     }
+
+                /*
+                    if(termsCorpusMap.containsKey(term.toLowerCase()))
+                    {
+                        //checking if posting map contains the term
+                        if (!postingMap.containsKey(term.toLowerCase()))
+                        {
+                            //creating new record
+                            postingMap.put(term.toLowerCase(), listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                        }
+                        else
+                        {
+                            //deleting old record and creating new one
+                            String postingOldData = postingMap.get(term.toLowerCase());
+                            postingMap.remove(term.toLowerCase());
+                            postingMap.put(term.toLowerCase(), postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                        }
+                    }
+                    else
+                    {
+                        //checking if posting map contains the term
+                        if (!postingMap.containsKey(term)) {
+                            //creating new record
+                            postingMap.put(term, listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                        } else {
+                            //deleting old record and creating new one
+                            String postingOldData = postingMap.get(term);
+                            postingMap.remove(term);
+                            postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                        }
+                    }
+
+
 
                     //first time from that term in this chunk
                     if (!postingMap.containsKey(termLowerCase))
@@ -134,12 +208,14 @@ public class Indexer {
                         postingMap.put(termLowerCase, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
                     }
 
+                    */
+
+
                 }//End of looping on temporary map and inserts it's values to corpusMap
 
 
-                /*
-                for (String term : temporaryMap.keySet()) {
 
+                /*
                     if(termsCorpusMap.containsKey(term.toLowerCase()))
                     {
                         //checking if posting map contains the term

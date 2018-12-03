@@ -21,9 +21,9 @@ public class mainController {
 
     public void StartEngine(ActionEvent actionEvent) throws IOException {
 
-        String pathToCorpus = "C:\\Users\\david\\Desktop\\Tests\\corpusTest";
+        String pathToCorpus = "C:\\Users\\david\\Desktop\\Tests\\corpus";
         String pathToDisk = "C:\\Users\\david\\Desktop\\Tests\\postingFiles";
-        String pathToCitiesAndInformationFile = pathToDisk + "\\CitiesAndInformationFile";
+        String pathToCitiesAndInformationFile = "C:\\Users\\david\\Desktop\\CitiesAndInformationFile";
         //String pathToCorpus = corpusPath.getText();
         //String pathToDisk = diskPath.getText();
 
