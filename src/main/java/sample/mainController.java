@@ -21,15 +21,16 @@ public class mainController {
 
     public void StartEngine(ActionEvent actionEvent) throws IOException {
 
-        String pathToCorpus = "C:\\Users\\david\\Desktop\\Tests\\corpusTest";
-        String pathToDisk = "C:\\Users\\david\\Desktop\\Tests\\postingFiles";
-        String pathToCitiesAndInformationFile = "C:\\Users\\david\\Desktop\\CitiesAndInformationFile";
-        String wordToDelete = "C:\\Users\\david\\Desktop\\Tests\\JunkWordsAndStopWords\\WordsToDelete.txt";
+
+        String pathToCorpus = "C:\\Users\\refaeli.liron\\Desktop\\corpusTest2";
+        String pathToDisk = "C:\\Users\\refaeli.liron\\IdeaProjects\\RetrivalEngine_LD\\src\\main\\java\\postingFiles";
+        String pathToCitiesAndInformationFile = "C:\\Users\\refaeli.liron\\Desktop\\CitiesAndInformationFile";
+
         //String pathToCorpus = corpusPath.getText();
         //String pathToDisk = diskPath.getText();
 
         ReadFile readFile = new ReadFile(pathToCorpus);
-        Parse parser = new Parse(pathToCorpus + "\\stop_words.txt", pathToCitiesAndInformationFile, wordToDelete);
+        Parse parser = new Parse(pathToCorpus + "\\stop_words.txt", pathToCitiesAndInformationFile);
         final Indexer indexer = new Indexer(readFile, parser, pathToDisk);
         Thread indexerThread = new Thread(){
             public void run()
