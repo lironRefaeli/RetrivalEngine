@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ButtonBar?>
 <?import javafx.scene.control.CheckBox?>
@@ -14,9 +15,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
-
-<?import java.net.URL?>
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.mainController" >
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.mainController">
 
     <children>
         <ImageView fitHeight="538.0" fitWidth="709.0" layoutX="-95.0" layoutY="4.0" pickOnBounds="true" preserveRatio="true">
@@ -44,10 +43,12 @@
                 <Label text="The Corpus Path:" />
                 <TextField fx:id="corpusPath" prefHeight="25.0" prefWidth="136.0" GridPane.columnIndex="1" />
                 <Label text="The DISK path:" GridPane.rowIndex="1" />
-                <TextField fx:id="diskPath"  prefHeight="0.0" prefWidth="190.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" >
+                <TextField fx:id="diskPath" prefHeight="0.0" prefWidth="190.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                     <buttons>
-                        <ChoiceBox id="languages" prefWidth="150.0" />
+                        <ChoiceBox id="languages" fx:id="languagesBox" onContextMenuRequested="#initChoiceBox" onDragDetected="#initChoiceBox" onDragDone="#initChoiceBox" onDragDropped="#initChoiceBox" onDragEntered="#initChoiceBox" onDragExited="#initChoiceBox" onDragOver="#initChoiceBox" onInputMethodTextChanged="#initChoiceBox" onKeyPressed="#initChoiceBox" onKeyReleased="#initChoiceBox" onKeyTyped="#initChoiceBox" onMouseClicked="#initChoiceBox" onMouseDragEntered="#initChoiceBox" onMouseDragExited="#initChoiceBox" onMouseDragOver="#initChoiceBox" onMouseDragReleased="#initChoiceBox" onMouseDragged="#initChoiceBox" onMouseEntered="#initChoiceBox" onMouseExited="#initChoiceBox" onMouseMoved="#initChoiceBox" onMousePressed="#initChoiceBox" onMouseReleased="#initChoiceBox" onScroll="#initChoiceBox" onScrollFinished="#initChoiceBox" onScrollStarted="#initChoiceBox" onTouchMoved="#initChoiceBox" onTouchPressed="#initChoiceBox" onTouchReleased="#initChoiceBox" onTouchStationary="#initChoiceBox" prefWidth="150.0">
+                     <opaqueInsets><Insets />
+                     </opaqueInsets></ChoiceBox>
                     </buttons></ButtonBar>
                 <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="2">
                     <buttons>
@@ -57,31 +58,31 @@
                 <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
                     <buttons>
 
-                        <Button minWidth="70.0" mnemonicParsing="false" prefHeight="25.0" text="browse" />
+                        <Button minWidth="70.0" mnemonicParsing="false" onAction="#browseDiskPath" prefHeight="25.0" text="browse" />
                     </buttons>
 
                 </ButtonBar>
 
                 <Button mnemonicParsing="false" onAction="#StartEngine" text="Start Searching!" GridPane.columnIndex="4" GridPane.rowIndex="3" />
-                <CheckBox mnemonicParsing="false" text="with Stemming" GridPane.rowIndex="2" />
+                <CheckBox fx:id="stemmerCheckBox" mnemonicParsing="false" text="with Stemming" GridPane.rowIndex="2" />
                 <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="2">
                     <buttons>
-                        <Button minWidth="56.0" mnemonicParsing="false" prefHeight="25.0" text="browse" />
+                        <Button minWidth="56.0" mnemonicParsing="false" onAction="#BrowseCorpusPath" prefHeight="25.0" text="browse" />
                     </buttons>
                 </ButtonBar>
                 <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
                     <buttons>
-                        <Button mnemonicParsing="false" text="restart"  />
+                        <Button mnemonicParsing="false" onAction="#Restart" text="restart" />
                     </buttons>
                 </ButtonBar>
                 <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
                     <buttons>
-                        <Button mnemonicParsing="false" prefHeight="25.0" prefWidth="123.0" text="Show Dictionary" />
+                        <Button mnemonicParsing="false" onAction="#ShowDictionary" prefHeight="25.0" prefWidth="123.0" text="Show Dictionary" />
                     </buttons>
                 </ButtonBar>
                 <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="2">
                     <buttons>
-                        <Button mnemonicParsing="false" text="load Dictionary" />
+                        <Button mnemonicParsing="false" onAction="#LoadDictionaryFromDisk" text="load Dictionary" />
                     </buttons>
                 </ButtonBar>
             </children>

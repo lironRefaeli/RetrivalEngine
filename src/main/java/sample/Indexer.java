@@ -1,10 +1,6 @@
 package sample;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.*;
-import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -27,6 +23,10 @@ public class Indexer {
     public static Map<String, CityInMap> citiesInCorpus = new HashMap<>();
     public ConcurrentLinkedQueue<File> queueOfTempPostingFiles;
     public final long startTime = System.nanoTime();
+    String postingFilesPath = "";
+    File dictionaryFile;
+    public int IDsOfDocs = 0;
+    public Map<Integer,String> docsAndIDs;
 
 
     public Indexer(ReadFile readFile, Parse parser, String pathToDisk)
@@ -40,7 +40,28 @@ public class Indexer {
         docsCorpusMap = new HashMap<>();
         queueOfTempPostingFiles = new ConcurrentLinkedQueue();
         mergeFiles = new MergeFiles(pathToDisk, this);
+        docsAndIDs = new HashMap<>();
+
     }
+
+    //todo writing termsCorpus to a file
+    private void WriteTermCorpusMapToDisk() throws IOException {
+
+        if(parser.getStemmer())
+            dictionaryFile = new File(pathToDisk+"\\dictionaryWithStemming");
+        else
+            dictionaryFile = new File(pathToDisk+"\\dictionaryWithoutStemming");
+
+        FileOutputStream fileStream = new FileOutputStream(dictionaryFile);
+        ObjectOutputStream outputStream = new ObjectOutputStream(fileStream);
+
+        // Write object to file
+        outputStream.writeObject(termsCorpusMap);
+
+        outputStream.close();
+        fileStream.close();
+    }
+
 
 
     public void Play() throws IOException {
@@ -52,6 +73,11 @@ public class Indexer {
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
             List<String> ListOfCities = readFile.getListOfCities();
             NumberOfDocsInCorpus += listOfDocsNumbers.size();
+
+            if(parser.getStemmer())
+                postingFilesPath = pathToDisk + "\\withStemming";
+            else
+                postingFilesPath = pathToDisk + "\\withoutStemming";
             //CreateCitiesAndInformationFile(); //function for creating the cities and information file if needed
 
             Map<String, String> postingMap = new TreeMap<>(
@@ -70,11 +96,10 @@ public class Indexer {
                 //after parsing the text, we will creating new record in the docs Map
                 docsCorpusMap.put(listOfDocsNumbers.get(j),
                         new DocTermDataInMap(maxTermFreqPerDoc, temporaryMap.size(), ListOfCities.get(j)));
-
+                docsAndIDs.put(IDsOfDocs,listOfDocsNumbers.get(j));
+                IDsOfDocs++;
                 //loops over one text's terms and merging temporaryMap to termsCorpusMap
                 for (String term : temporaryMap.keySet()) {
-
-
                     //for calculating maxTf
                     if (temporaryMap.get(term) > maxTermFreqPerDoc)
                         maxTermFreqPerDoc = temporaryMap.get(term);
@@ -101,7 +126,7 @@ public class Indexer {
                         if(postingMap.containsKey(termLowerCase))
                         {
                             postingOldData = postingMap.get(termLowerCase);
-                            postingMap.put(termLowerCase, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                            postingMap.put(termLowerCase, postingOldData + IDsOfDocs + "~" + temporaryMap.get(term) + ",");
                         }
                         else
                         {
@@ -109,7 +134,7 @@ public class Indexer {
                                 postingOldData = postingMap.get(term);
                             }
 
-                            postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                            postingMap.put(term, postingOldData + IDsOfDocs + "~" + temporaryMap.get(term) + ",");
                         }
 
                     }
@@ -140,14 +165,14 @@ public class Indexer {
                         {
                             postingOldData = postingMap.get(termUpperCase);
                             postingMap.remove(termUpperCase);
-                            postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                            postingMap.put(term, postingOldData + IDsOfDocs + "~" + temporaryMap.get(term) + ",");
                         }
                         else
                         {
                             if(postingMap.containsKey(term))
                                 postingOldData = postingMap.get(term);
 
-                            postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                            postingMap.put(term, postingOldData + IDsOfDocs + "~" + temporaryMap.get(term) + ",");
                         }
 
                     }
@@ -163,90 +188,11 @@ public class Indexer {
                         if(postingMap.containsKey(term))
                             postingOldData = postingMap.get(term);
 
-                        postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
-
+                        postingMap.put(term, postingOldData + IDsOfDocs + "~" + temporaryMap.get(term) + ",");
 
                     }
-
-                /*
-                    if(termsCorpusMap.containsKey(term.toLowerCase()))
-                    {
-                        //checking if posting map contains the term
-                        if (!postingMap.containsKey(term.toLowerCase()))
-                        {
-                            //creating new record
-                            postingMap.put(term.toLowerCase(), listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
-                        }
-                        else
-                        {
-                            //deleting old record and creating new one
-                            String postingOldData = postingMap.get(term.toLowerCase());
-                            postingMap.remove(term.toLowerCase());
-                            postingMap.put(term.toLowerCase(), postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
-                        }
-                    }
-                    else
-                    {
-                        //checking if posting map contains the term
-                        if (!postingMap.containsKey(term)) {
-                            //creating new record
-                            postingMap.put(term, listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
-                        } else {
-                            //deleting old record and creating new one
-                            String postingOldData = postingMap.get(term);
-                            postingMap.remove(term);
-                            postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
-                        }
-                    }
-
-
-
-                    //first time from that term in this chunk
-                    if (!postingMap.containsKey(termLowerCase))
-                        postingMap.put(termLowerCase, listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
-                        //deleting old record and creating new one
-                    else {
-                        String postingOldData = postingMap.get(termLowerCase);
-                        postingMap.put(termLowerCase, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
-                    }
-
-                    */
-
 
                 }//End of looping on temporary map and inserts it's values to corpusMap
-
-
-
-                /*
-                    if(termsCorpusMap.containsKey(term.toLowerCase()))
-                    {
-                        //checking if posting map contains the term
-                        if (!postingMap.containsKey(term.toLowerCase())) {
-                            //creating new record
-                            postingMap.put(term.toLowerCase(), listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
-                        } else {
-                            //deleting old record and creating new one
-                            String postingOldData = postingMap.get(term.toLowerCase());
-                            postingMap.remove(term.toLowerCase());
-                            postingMap.put(term.toLowerCase(), postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
-                        }
-                    }
-                    else
-                    {
-                        //checking if posting map contains the term
-                        if (!postingMap.containsKey(term)) {
-                            //creating new record
-                            postingMap.put(term, listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
-                        } else {
-                            //deleting old record and creating new one
-                            String postingOldData = postingMap.get(term);
-                            postingMap.remove(term);
-                            postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
-                        }
-                    }
-                }
-                */
-
 
             }//End of internal loop - every loop is for one text
 
@@ -254,7 +200,26 @@ public class Indexer {
             System.out.println("end loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
 
         }//End of external loop - every loop is for one chunk of files (probably 8 files)
+        //todo added this function
+        WriteTermCorpusMapToDisk();
+        File outFile = new File("C:\\Users\\david\\Desktop\\AllJunkWords");
+        FileWriter fw = new FileWriter(outFile);
+        BufferedWriter bw = new BufferedWriter(fw);
+        for (String term : termsCorpusMap.keySet())
+        {
+            if(termsCorpusMap.get(term).totalTf == 1)
+            {
+                bw.write(term);
+                bw.newLine();
+            }
+        }
+        bw.close();
+        fw.close();
 
+
+
+        Parse.stopWordsList = null;
+        Parse.wordsToDeleteSet = null;
         //After creating all temporary posting time, it's time to merge them to one big temporary file
         try {
             mergeTempPostingFiles();
@@ -263,11 +228,17 @@ public class Indexer {
         }
     }
 
+
     private void WriteToTempPosting(Map<String, String> postingMap, int numOftempPostingFile) throws IOException {
         //creating posting file and saving it in postingFilesFolder - his name is posting+the number of the loop
-        File file = new File(pathToDisk + "\\posting_" + numOftempPostingFile);
+
+
+        File postinigFilesFolder = new File(postingFilesPath);
+        postinigFilesFolder.mkdir();
+
+        File file = new File(postingFilesPath + "\\posting_" + numOftempPostingFile);
         queueOfTempPostingFiles.add(file);
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file),262144);
         for (String term : postingMap.keySet()) {
             //the structure is - "term*docNum~tf,"
             String data = term + "*" + postingMap.get(term);
@@ -308,22 +279,33 @@ public class Indexer {
             twoLastFiles.add(fileEntry);
         mergeFiles.margeTwoLastFilesAndCreatePermanentPostingFiles(twoLastFiles.get(0), twoLastFiles.get(1));
         System.out.println("Finished building the Indexer - time: " + (System.nanoTime() - startTime) / 1000000000.0);
-    }
-}
 
+    }
+
+    //todo load map
+    public void SetTermsInCorpusMap(Map<String,TermDataInMap> loadingCorpusMap, boolean StemmerSelection)
+    {
+        termsCorpusMap = loadingCorpusMap;
+    }
+
+    public boolean CheckIfTermsInCorpusExists()
+    {
+        if(termsCorpusMap!=null)
+            return true;
+        return false;
+    }
+
+
+}
         /*
         String nextLineInFile = "";
         //spliting to symbols
         File symbolFile = new File("C:\\Users\\refaeli.liron\\IdeaProjects\\RetrivalEngine_LD\\src\\main\\java\\postingFiles\\symbols");
         FileWriter fw1 = new FileWriter(symbolFile);
         BufferedWriter bw1 = new BufferedWriter(fw1);
-
-
         if (folder.listFiles().length == 1) {
             for (final File fileEntry : folder.listFiles()) {
-
                 Scanner fileReader = new Scanner(fileEntry);
-
                 while (fileReader.hasNextLine()) {
                     nextLineInFile = fileReader.nextLine();
                     if (!(nextLineInFile.toLowerCase().charAt(0) >= 97 && nextLineInFile.toLowerCase().charAt(0) <= 122)) {
@@ -339,14 +321,12 @@ public class Indexer {
                 }
                 bw1.close();
                 lineCounter = 1;
-
                 //spliting to characters
                 for (int i = 97; i <= 122; i++) {
                     char firstChar = (char) i;
                     File file = new File("C:\\Users\\refaeli.liron\\IdeaProjects\\RetrivalEngine_LD\\src\\main\\java\\postingFiles\\" + firstChar);
                     FileWriter fw = new FileWriter(file);
                     BufferedWriter bw = new BufferedWriter(fw);
-
                     if (!nextLineInFile.equals("") && nextLineInFile.toLowerCase().charAt(0) == firstChar) {
                         bw.write(nextLineInFile);
                         splitedLine = nextLineInFile.split("\\*");
@@ -355,7 +335,6 @@ public class Indexer {
                         lineCounter++;
                         bw.newLine();
                     }
-
                     while (fileReader.hasNextLine()) {
                         nextLineInFile = fileReader.nextLine();
                         if (nextLineInFile.toLowerCase().charAt(0) == firstChar) {
@@ -375,22 +354,14 @@ public class Indexer {
                             break;
                         }
                     }
-
                     bw.close();
                     lineCounter = 1;
                 }
-
-
                 fileReader.close();
                 fileEntry.delete();
-
-
             }
         }
     }
-
-
-
     //Will be used only for creating new CitiesAndInformationFile
     private void CreateCitiesAndInformationFile() throws IOException {
         List<String> listOfAllCitiesInCorpus = new ArrayList<>();
@@ -415,10 +386,7 @@ public class Indexer {
             }
         }
         WriteCitiesAndInformationMapToFile(ContainsAllCitiesAndInformation);
-
-
     }
-
     //Will be used only for creating new CitiesAndInformationFile
     private void WriteCitiesAndInformationMapToFile(Map<String,String> containsAllCitiesAndInformation) throws IOException {
         File file = new File(pathToDisk + "\\CitiesAndInformationFile");
@@ -430,24 +398,13 @@ public class Indexer {
         }
         writer.close();
     }
-
-
 }
-
-
-
 /*
-
         while (numberOfFiles > 1) {
             for (int i = 0; i < numberOfFiles / 2; i++) {
-
                 pool.execute(new MergeFiles(pathToDisk, this));
-
             }
-
-
             System.out.println("num of files that were merged: " + numberOfFiles + " - time: " + (System.nanoTime() - startTime) / 1000000000.0);
-
             if (numberOfFiles % 2 != 0)
                 numberOfFiles = numberOfFiles / 2 + 1;
             else
@@ -460,13 +417,6 @@ public class Indexer {
             System.out.println("Not yet. Still waiting for termination");
         }
 */
-
-
-
-
-
-
-
 
 
 

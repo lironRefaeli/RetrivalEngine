@@ -12,10 +12,10 @@ import java.util.*;
  */
 public class Parse {
 
-    static List<String> monthsNames;
-    private List<String> stopWordsList;
+    static HashSet<String> monthsNames;
+    static HashSet<String> stopWordsList;
     private String citiesAndInformationFilePath;
-
+    static HashSet<String> wordsToDeleteSet;
     private Stemmer stemmer;
     private boolean useStemmer;
 
@@ -30,13 +30,18 @@ public class Parse {
 
 
 
-    Parse(String stopWordsPath, String citiesAndInformationFilePath){
+    Parse(String stopWordsPath, String citiesAndInformationFilePath, String wordsToDelete, boolean stemmerSelection){
 
         InitMonthsNames();
         stopWordsList = ReadStopWordToList(stopWordsPath);
+        wordsToDeleteSet = ReadJunkWordToList(wordsToDelete);
         this.citiesAndInformationFilePath = citiesAndInformationFilePath;
-        stemmer = new Stemmer();
-        useStemmer = false;
+
+        //stemmer defenition
+        this.useStemmer = stemmerSelection;
+        if(useStemmer)
+            stemmer = new Stemmer();
+
         try {
             ReadCitiesAndInfoFileToMap();
 
@@ -50,6 +55,10 @@ public class Parse {
     }
 
 
+    public boolean getStemmer()
+    {
+        return useStemmer;
+    }
 
     public Map<String, Integer> ParsingDocument(String docText, String docNum) {
 
@@ -74,7 +83,7 @@ public class Parse {
     private void BreakTextToTerms(String docText, String docNum) {
 
         //cleaning the document before splitting (| is seperating between characters, and \\ is sometimes needed
-        docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|//|\\.-|-\\.|", "");
+        docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|<|//|", "");
 
         //splitting the document according to these delimiters - the second one is spaces
         TermsOfDoc = new ArrayList(Arrays.asList(docText.split("\\n|\\s+|\\t|;|\\?|!|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*")));
@@ -83,14 +92,12 @@ public class Parse {
 
             //extracting every term and saving it's lowerCase and UpperCase
             term = TermsOfDoc.get(i);
-            String oldterm = term;
             cleaningTerm();
-
             termToLowerCase = term.toLowerCase();
             termToUpperCase = term.toUpperCase();
 
             //handles with stop-words or empty strings and also next terms after current term
-            if ((IsStopWord(termToLowerCase) || term.equals("")))
+            if ((IsStopWord(termToLowerCase) || IsJunkWord() || term.equals("")))
                 continue;
 
             //extracting nextTerm
@@ -101,7 +108,7 @@ public class Parse {
             if (IsNumeric(term))
                 i = HandleWithNumbers(i);
             else
-                {
+            {
 
                 //if the term is a city - upade in City Map
                 if(Indexer.citiesInCorpus.containsKey(termToUpperCase))
@@ -112,6 +119,8 @@ public class Parse {
 
         }
     }
+
+
 
     //Fill the citiesInCorpusMap with the cities names (key) and cities information (values)
     //we still need to fill the map field placementsInDocs in CityInMap object with numOfFile and positions in that file
@@ -349,7 +358,6 @@ public class Parse {
 
     private int HandleWithStrings(int index) {
 
-
         //case terms starts with $
         if (term.charAt(0) == '$' && IsNumeric(term.substring(1))) {
             //handles with dollar numbers
@@ -455,8 +463,6 @@ public class Parse {
             AddTermToMap(term);
             return index;
         }
-
-
 
         AddTermToMap(term);
         return index;
@@ -756,16 +762,16 @@ public class Parse {
         return stopWordsList.contains(word);
     }
 
-    private List<String> ReadStopWordToList(String stopWordsPath) {
+    private HashSet<String> ReadStopWordToList(String stopWordsPath) {
         Scanner s = null;
         try {
             s = new Scanner(new File(stopWordsPath));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        ArrayList<String> stopWordsList = new ArrayList<String>();
+        HashSet<String> stopWordsList = new HashSet<>();
         while (s.hasNext()) {
-            stopWordsList.add(s.next());
+            stopWordsList.add(s.nextLine());
         }
         s.close();
 
@@ -773,7 +779,7 @@ public class Parse {
     }
 
     private void InitMonthsNames() {
-        monthsNames = new ArrayList<String>();
+        monthsNames = new HashSet();
         monthsNames.add("JANUARY");
         monthsNames.add("FEBRUARY");
         monthsNames.add("MARCH");
@@ -801,6 +807,30 @@ public class Parse {
         monthsNames.add("NOV");
         monthsNames.add("DEC");
     }
+    private HashSet<String> ReadJunkWordToList(String wordsToDelete)
+    {
+        Scanner s = null;
+        try {
+            s = new Scanner(new File(wordsToDelete));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        HashSet<String> junkWordSet = new HashSet<>();
+        //ArrayList<String> junkWordsList = new ArrayList<String>();
+        while (s.hasNextLine()) {
+            junkWordSet.add(s.nextLine());
+            //junkWordsList.add(s.next());
+        }
+        s.close();
+        return junkWordSet;
+        //return junkWordsList;
+    }
+
+
+    private boolean IsJunkWord()
+    {
+        return wordsToDeleteSet.contains(term);
+    }
 
     private String CallStemmer(String term) {
         for (int i = 0; i < term.length(); i++) {
@@ -814,20 +844,13 @@ public class Parse {
 
     /*
     private CityInMap connectionToApi(String cityName) throws JSONException, IOException {
-
-
         JSONObject json = readJsonFromUrl("https://restcountries.eu/rest/v2/capital/" + cityName);
-
         String currencies = json.get("currencies").toString();
         JSONObject jsonCurrencies = new JSONObject(currencies.substring(1,currencies.length()-1));
-
-
         CityInMap cityInfo = new CityInMap(json.get("name").toString(), jsonCurrencies.get("code").toString(), json.get("population").toString());
         return cityInfo;
     }
-
     private JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
-
         InputStream is = new URL(url).openStream();
         try {
             BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
@@ -839,9 +862,7 @@ public class Parse {
             is.close();
         }
     }
-
     private String readAll(Reader rd) throws IOException {
-
         StringBuilder sb = new StringBuilder();
         int cp;
         while ((cp = rd.read()) != -1) {
@@ -849,6 +870,4 @@ public class Parse {
         }
         return sb.toString();
     }
-
 */
-

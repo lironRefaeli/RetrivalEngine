@@ -2,6 +2,7 @@ package sample;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -21,18 +22,31 @@ public class ReadFile {
     private List<String> listOfDocsNumbers; //list of all the documents' numbers in the files
     private List<String> listOfCities; //list of all the documents' cities in the files
     private List<String> listOfTexts; //list of all the documents' texts in the files
+    private HashSet<String> listOfLanguages; //list of all the documents' languages in the files
 
     /**
      * @param mainFolderPath
      */
-    ReadFile(String mainFolderPath) {
+    ReadFile(String mainFolderPath) throws IOException {
         nextFolderToReadIndex = 0;
         filesPaths = new ArrayList<>();
         //creating an object File from the input path, in order to read the content of the given folder
         final File folder = new File(mainFolderPath);
         //sending the File object to a function that will create a list of all the file's paths in the given folder
         listFilesForFolder(folder);
+
+        /*
+        listOfLanguages= new HashSet<>();
+        listOfLanguages = ReadAllLanguagesFromCorpusForCreatingInfoFile();
+        for (String s : listOfLanguages) {
+            System.out.println(s.toLowerCase());
+        }
+
+
+        System.out.println("done");
+        */
     }
+
 
     /**
      * the function is extracting all the file's paths in the given folder and
@@ -128,6 +142,8 @@ public class ReadFile {
        return listOfCities;
     }
 
+    public HashSet<String> getListOfLanguages() { return listOfLanguages; }
+
     public List<String> ReadAllCitiesFromCorpusForCreatingInfoFile() throws IOException {
         for (int i = 0; i < filesPaths.size(); i++) {
             File f = new File(filesPaths.get(i));
@@ -151,6 +167,41 @@ public class ReadFile {
             }
         }
         return listOfCities;
+    }
+
+
+    public HashSet<String> ReadAllLanguagesFromCorpusForCreatingInfoFile() throws IOException {
+        for (int i = 0; i < filesPaths.size(); i++) {
+            File f = new File(filesPaths.get(i));
+            Document document = Jsoup.parse(new String(Files.readAllBytes(f.toPath())));
+            Elements elements = document.getElementsByTag("DOC");
+            for (Element element : elements) {
+                //adding all the documents' cities in the file to the listOfCities
+                String language= "";
+                language = element.getElementsByTag("F").toString();
+                // if there isn't an information about the city, we will add empty string to the list.
+                if (!language.equals("") && language.contains("<f p=\"105\">")) {
+                    language = language.substring(language.indexOf("<f p=\"105\">", language.indexOf("</f>")));
+
+
+                    if (language.length() > 15) {
+                        language = language.substring(language.indexOf("\n "), language.indexOf(" \n"));
+                        language = language.replaceAll("\n", "");
+                        String cityline[] = language.split(" ");
+                        if(cityline.length==3)
+                        language = cityline[2].toUpperCase();
+                        if(cityline.length==2)
+                            language = cityline[1].toUpperCase();
+
+
+                    }
+
+                    if(language != null)
+                        listOfLanguages.add(language);
+                }
+            }
+        }
+        return listOfLanguages;
     }
 
 }

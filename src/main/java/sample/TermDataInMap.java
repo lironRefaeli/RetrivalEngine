@@ -1,6 +1,8 @@
 package sample;
 
-public class TermDataInMap {
+import java.io.Serializable;
+
+public class TermDataInMap implements Serializable {
 
     public int numOfDocuments;
     public int pointerToPostingLine;

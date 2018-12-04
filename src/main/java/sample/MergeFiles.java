@@ -53,7 +53,7 @@ public class MergeFiles implements Runnable {
         }
 
         FileWriter fw = new FileWriter(outFile);
-        bw = new BufferedWriter(fw);
+        bw = new BufferedWriter(fw, 262144);
 
         //both files still have new lines to read
         while (fileReader1.hasNextLine() && fileReader2.hasNextLine())
@@ -145,7 +145,7 @@ public class MergeFiles implements Runnable {
         //create ths Symbols file
         File outFile = new File(pathToDisk + "\\Symbols");
         FileWriter fw = new FileWriter(outFile);
-        bw = new BufferedWriter(fw);
+        bw = new BufferedWriter(fw, 262144);
 
         String termName;
         String termNameLower;
@@ -163,11 +163,12 @@ public class MergeFiles implements Runnable {
             //both files have changed letters, so create new file with that new letter name
             if (firstCharOfLine1 == (char)firstLetterOfBothTerms && firstLineOfLine2 == (char)firstLetterOfBothTerms)
             {
+                lineIndex = 1;
                 outFile = new File(pathToDisk + "\\" + (char)firstLetterOfBothTerms);
                 bw.close();
                 fw.close();
                 fw = new FileWriter(outFile);
-                bw = new BufferedWriter(fw);
+                bw = new BufferedWriter(fw, 262144);
                 firstLetterOfBothTerms++;
             }
             compareBetweenTwoTermsWithoutExtract();
@@ -315,7 +316,7 @@ public class MergeFiles implements Runnable {
             text2Flag = true;
         }
        /*
-        //todo to think about it
+
         else if(splitedCurString1.length > 1 && splitedCurString2.length > 1)
             newString = splitedCurString1[0] + "*" + splitedCurString1[1] + splitedCurString2[1];
        */
@@ -349,7 +350,7 @@ public class MergeFiles implements Runnable {
             text2Flag = true;
         }
        /*
-        //todo to think about it
+
         else if(splitedCurString1.length > 1 && splitedCurString2.length > 1)
             newString = splitedCurString1[0] + "*" + splitedCurString1[1] + splitedCurString2[1];
        */
@@ -423,6 +424,3 @@ public class MergeFiles implements Runnable {
         return true;
     }
 }
-
-
-
