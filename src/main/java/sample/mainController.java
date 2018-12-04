@@ -24,7 +24,7 @@ public class mainController {
         String pathToCorpus = "C:\\Users\\david\\Desktop\\Tests\\corpusTest";
         String pathToDisk = "C:\\Users\\david\\Desktop\\Tests\\postingFiles";
         String pathToCitiesAndInformationFile = "C:\\Users\\david\\Desktop\\CitiesAndInformationFile";
-        String wordToDelete = "C:\\Users\\david\\Desktop\\WordsToDelete.txt";
+        String wordToDelete = "C:\\Users\\david\\Desktop\\Tests\\JunkWordsAndStopWords\\WordsToDelete.txt";
         //String pathToCorpus = corpusPath.getText();
         //String pathToDisk = diskPath.getText();
 

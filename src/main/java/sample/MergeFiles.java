@@ -32,7 +32,7 @@ public class MergeFiles implements Runnable {
         this.indexer = indexer;
         splitedCurString1 = new String[2];
         splitedCurString2 = new String[2];
-        lineIndex = 0;
+        lineIndex = 1;
     }
 
     //One of the main function in this class
@@ -147,7 +147,8 @@ public class MergeFiles implements Runnable {
         FileWriter fw = new FileWriter(outFile);
         bw = new BufferedWriter(fw);
 
-        String termName = "";
+        String termName;
+        String termNameLower;
         int firstLetterOfBothTerms = 97;
         //compareBetweenTwoTerms();
         //both of the posting files still have new lines to read
@@ -173,7 +174,8 @@ public class MergeFiles implements Runnable {
             bw.newLine();
             if(text1Flag)
             {
-                termName = curString1.split("\\*")[0];
+                termName = splitedCurString1[0];
+                termNameLower = termName.toLowerCase();
                 try
                 {
                     Indexer.termsCorpusMap.get(termName).pointerToPostingLine = lineIndex;
@@ -182,14 +184,17 @@ public class MergeFiles implements Runnable {
                 }
                 catch (NullPointerException e)
                 {
-                    System.out.println("Hi");
+                    Indexer.termsCorpusMap.get(termNameLower).pointerToPostingLine = lineIndex;
+                    Indexer.termsCorpusMap.get(termNameLower).idf = Math.log10(Indexer.NumberOfDocsInCorpus /
+                            (Indexer.termsCorpusMap.get(termNameLower).numOfDocuments));
                 }
 
                 lineIndex++;
             }
             else
             {
-                termName = curString2.split("\\*")[0];
+                termName = splitedCurString2[0];
+                termNameLower = termName.toLowerCase();
                 try
                 {
                     Indexer.termsCorpusMap.get(termName).pointerToPostingLine = lineIndex;
@@ -198,7 +203,9 @@ public class MergeFiles implements Runnable {
                 }
                 catch (NullPointerException e)
                 {
-                    System.out.println(termName);
+                    Indexer.termsCorpusMap.get(termNameLower).pointerToPostingLine = lineIndex;
+                    Indexer.termsCorpusMap.get(termNameLower).idf = Math.log10(Indexer.NumberOfDocsInCorpus /
+                            (Indexer.termsCorpusMap.get(termNameLower).numOfDocuments));
                 }
                 lineIndex++;
             }
@@ -209,12 +216,23 @@ public class MergeFiles implements Runnable {
         //so no need of creating new file here
         while (!text1Flag && fileReader2.hasNextLine())
         {
+
             nextLineInFile2 = fileReader2.nextLine();
             bw.write(nextLineInFile2);
             bw.newLine();
-            Indexer.termsCorpusMap.get(splitedCurString2[0]).pointerToPostingLine = lineIndex;
-            Indexer.termsCorpusMap.get(splitedCurString2[0]).idf = Math.log10(Indexer.NumberOfDocsInCorpus /
-                    (Indexer.termsCorpusMap.get(splitedCurString2[0]).numOfDocuments));
+            termName = splitedCurString2[0];
+            termNameLower = termName.toLowerCase();
+            try{
+                Indexer.termsCorpusMap.get(termName).pointerToPostingLine = lineIndex;
+                Indexer.termsCorpusMap.get(termName).idf = Math.log10(Indexer.NumberOfDocsInCorpus /
+                        (Indexer.termsCorpusMap.get(termName).numOfDocuments));
+            }
+            catch(NullPointerException e)
+            {
+                Indexer.termsCorpusMap.get(termNameLower).pointerToPostingLine = lineIndex;
+                Indexer.termsCorpusMap.get(termNameLower).idf = Math.log10(Indexer.NumberOfDocsInCorpus /
+                        (Indexer.termsCorpusMap.get(termNameLower).numOfDocuments));
+            }
             lineIndex++;
 
         }
@@ -227,9 +245,19 @@ public class MergeFiles implements Runnable {
             nextLineInFile1 = fileReader1.nextLine();
             bw.write(nextLineInFile1);
             bw.newLine();
-            Indexer.termsCorpusMap.get(splitedCurString1[0]).pointerToPostingLine = lineIndex;
-            Indexer.termsCorpusMap.get(splitedCurString1[0]).idf = Math.log10(Indexer.NumberOfDocsInCorpus /
-                    (Indexer.termsCorpusMap.get(splitedCurString1[0]).numOfDocuments));
+            termName = splitedCurString1[0];
+            termNameLower = termName.toLowerCase();
+            try{
+                Indexer.termsCorpusMap.get(termName).pointerToPostingLine = lineIndex;
+                Indexer.termsCorpusMap.get(termName).idf = Math.log10(Indexer.NumberOfDocsInCorpus /
+                        (Indexer.termsCorpusMap.get(termName).numOfDocuments));
+            }
+            catch(NullPointerException e)
+            {
+                Indexer.termsCorpusMap.get(termNameLower).pointerToPostingLine = lineIndex;
+                Indexer.termsCorpusMap.get(termNameLower).idf = Math.log10(Indexer.NumberOfDocsInCorpus /
+                        (Indexer.termsCorpusMap.get(termNameLower).numOfDocuments));
+            }
             lineIndex++;
 
         }

@@ -32,7 +32,7 @@ public class Indexer {
     public Indexer(ReadFile readFile, Parse parser, String pathToDisk)
     {
         NumberOfDocsInCorpus = 0;
-        numOfTempPostingFiles = 6;
+        numOfTempPostingFiles = 2;
         this.readFile = readFile;
         this.parser = parser;
         this.pathToDisk = pathToDisk;
@@ -48,7 +48,7 @@ public class Indexer {
         for (int i = 0; i < numOfTempPostingFiles; i++) {
             System.out.println("start loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
             int maxTermFreqPerDoc = 0;
-            List<String> listOfTexts = readFile.ReadFolder(8); //list of Documents' texts
+            List<String> listOfTexts = readFile.ReadFolder(1); //list of Documents' texts
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
             List<String> ListOfCities = readFile.getListOfCities();
             NumberOfDocsInCorpus += listOfDocsNumbers.size();
@@ -74,7 +74,7 @@ public class Indexer {
                 //loops over one text's terms and merging temporaryMap to termsCorpusMap
                 for (String term : temporaryMap.keySet()) {
                     //for calculating maxTf
-                    if (temporaryMap.get(term) > maxTermFreqPerDoc)
+                     if (temporaryMap.get(term) > maxTermFreqPerDoc)
                         maxTermFreqPerDoc = temporaryMap.get(term);
 
                     boolean termIsUpperCase = Parse.IsUpperCase(term);
@@ -253,19 +253,21 @@ public class Indexer {
 
         }//End of external loop - every loop is for one chunk of files (probably 8 files)
 
-        /*
-        File outFile = new File("C:\\Users\\david\\Desktop\\JunkWords.txt");
+
+        File outFile = new File("C:\\Users\\david\\Desktop\\AllJunkWords");
         FileWriter fw = new FileWriter(outFile);
         BufferedWriter bw = new BufferedWriter(fw);
         for (String term : termsCorpusMap.keySet())
         {
             if(termsCorpusMap.get(term).totalTf == 1)
+            {
                 bw.write(term);
-            System.out.println(term);
+                bw.newLine();
+            }
         }
         bw.close();
         fw.close();
-        */
+
 
 
         Parse.stopWordsList = null;
@@ -323,6 +325,23 @@ public class Indexer {
             twoLastFiles.add(fileEntry);
         mergeFiles.margeTwoLastFilesAndCreatePermanentPostingFiles(twoLastFiles.get(0), twoLastFiles.get(1));
         System.out.println("Finished building the Indexer - time: " + (System.nanoTime() - startTime) / 1000000000.0);
+        File outFile = new File("C:\\Users\\david\\Desktop\\AllIDFWords");
+        //File outFile2 = new File("C:\\Users\\david\\Desktop\\termsInCorpus");
+        FileWriter fw = new FileWriter(outFile);
+        BufferedWriter bw = new BufferedWriter(fw);
+       // FileWriter fw2 = new FileWriter(outFile2);
+       // BufferedWriter bw2 = new BufferedWriter(fw2);
+        for (String term : termsCorpusMap.keySet())
+        {
+
+            if(termsCorpusMap.get(term).idf > 0.01 && termsCorpusMap.get(term).idf < 0.25)
+            {
+                bw.write(term);
+                bw.newLine();
+            }
+        }
+        bw.close();
+        fw.close();
     }
 }
 
