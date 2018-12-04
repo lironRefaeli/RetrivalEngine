@@ -6,10 +6,7 @@ import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * This class is building the inverted index.
@@ -17,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 public class Indexer {
     public int numOfTempPostingFiles;
     static public int NumberOfDocsInCorpus;
+    public int IDsOfDocs = 0;
     public ReadFile readFile;
     public Parse parser;
     public String pathToDisk;
@@ -25,21 +23,22 @@ public class Indexer {
     public static Map<String, TermDataInMap> termsCorpusMap; //a map that includes all the terms in the corpus
     public Map<String, DocTermDataInMap> docsCorpusMap; //a map that includes all the terms in the corpus
     public static Map<String, CityInMap> citiesInCorpus = new HashMap<>();
-    public ConcurrentLinkedQueue<File> queueOfTempPostingFiles;
+    public ConcurrentLinkedQueue<File> queueOfTempPostingFiles = new ConcurrentLinkedQueue<>();
+    public Map<Integer,String> docsAndIDs;
     public final long startTime = System.nanoTime();
 
 
     public Indexer(ReadFile readFile, Parse parser, String pathToDisk)
     {
         NumberOfDocsInCorpus = 0;
-        numOfTempPostingFiles = 2;
+        numOfTempPostingFiles = 227;
         this.readFile = readFile;
         this.parser = parser;
         this.pathToDisk = pathToDisk;
         termsCorpusMap = new HashMap<>();
         docsCorpusMap = new HashMap<>();
-        queueOfTempPostingFiles = new ConcurrentLinkedQueue();
         mergeFiles = new MergeFiles(pathToDisk, this);
+        docsAndIDs = new HashMap<>();
     }
 
 
@@ -48,7 +47,7 @@ public class Indexer {
         for (int i = 0; i < numOfTempPostingFiles; i++) {
             System.out.println("start loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
             int maxTermFreqPerDoc = 0;
-            List<String> listOfTexts = readFile.ReadFolder(1); //list of Documents' texts
+            List<String> listOfTexts = readFile.ReadFolder(8); //list of Documents' texts
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
             List<String> ListOfCities = readFile.getListOfCities();
             NumberOfDocsInCorpus += listOfDocsNumbers.size();
@@ -95,6 +94,9 @@ public class Indexer {
                 docsCorpusMap.put(listOfDocsNumbers.get(j),
                         new DocTermDataInMap(maxTermFreqPerDoc, temporaryMap.size(), ListOfCities.get(j)));
 
+                docsAndIDs.put(IDsOfDocs,listOfDocsNumbers.get(j));
+                IDsOfDocs++;
+
                 //loops over one text's terms and merging temporaryMap to termsCorpusMap
                 for (String term : temporaryMap.keySet()) {
                     //for calculating maxTf
@@ -123,7 +125,7 @@ public class Indexer {
                         if(postingMap.containsKey(termLowerCase))
                         {
                             postingOldData = postingMap.get(termLowerCase);
-                            postingMap.put(termLowerCase, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                            postingMap.put(termLowerCase, postingOldData + IDsOfDocs + "~" + temporaryMap.get(term) + ",");
                         }
                         else
                         {
@@ -131,7 +133,7 @@ public class Indexer {
                                 postingOldData = postingMap.get(term);
                             }
 
-                            postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                            postingMap.put(term, postingOldData + IDsOfDocs + "~" + temporaryMap.get(term) + ",");
                         }
 
                     }
@@ -162,14 +164,14 @@ public class Indexer {
                         {
                             postingOldData = postingMap.get(termUpperCase);
                             postingMap.remove(termUpperCase);
-                            postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                            postingMap.put(term, postingOldData + IDsOfDocs + "~" + temporaryMap.get(term) + ",");
                         }
                         else
                         {
                             if(postingMap.containsKey(term))
                                 postingOldData = postingMap.get(term);
 
-                            postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                            postingMap.put(term, postingOldData + IDsOfDocs + "~" + temporaryMap.get(term) + ",");
                         }
 
                     }
@@ -185,7 +187,7 @@ public class Indexer {
                         if(postingMap.containsKey(term))
                             postingOldData = postingMap.get(term);
 
-                        postingMap.put(term, postingOldData + listOfDocsNumbers.get(j) + "~" + temporaryMap.get(term) + ",");
+                        postingMap.put(term, postingOldData + IDsOfDocs + "~" + temporaryMap.get(term) + ",");
 
 
                     }
@@ -231,7 +233,7 @@ public class Indexer {
         //creating posting file and saving it in postingFilesFolder - his name is posting+the number of the loop
         File file = new File(pathToDisk + "\\posting_" + numOftempPostingFile);
         queueOfTempPostingFiles.add(file);
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file),262144);
         for (String term : postingMap.keySet()) {
             //the structure is - "term*docNum~tf,"
             String data = term + "*" + postingMap.get(term);
@@ -297,17 +299,6 @@ public class Indexer {
             //todo 3
             //if(Parse.IsNumeric(term))
               //  counterOfNumbersInCorpus++;
-
-            if(termsCorpusMap.get(term).idf > 0.01 && termsCorpusMap.get(term).idf < 0.25)
-            {
-                bw.write(term);
-                bw.newLine();
-            }
-            if(termsCorpusMap.get(term).totalTf == 1)
-            {
-                bw2.write(term);
-                bw2.newLine();
-            }
         }
         //todo souts 1-3
         //System.out.println("the number of Numbers - section 3:" + counterOfNumbersInCorpus);
@@ -370,7 +361,7 @@ public class Indexer {
 
 
 
-
+        //todo dont delete this function!
         /*
         JSON_reader Jread = new JSON_reader();
         Map<String,String> ContainsAllCitiesAndInformation = new HashMap<>();
@@ -390,6 +381,8 @@ public class Indexer {
 
         WriteCitiesAndInformationMapToFile(ContainsAllCitiesAndInformation);
         */
+
+
 
     //Will be used only for creating new CitiesAndInformationFile
     private void WriteCitiesAndInformationMapToFile(Map<String,String> containsAllCitiesAndInformation) throws IOException {

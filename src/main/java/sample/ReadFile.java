@@ -16,7 +16,7 @@ import java.nio.file.Files;
 public class ReadFile {
 
 
-    int nextFolderToReadIndex; //pointer to the next folder to extract it's content
+    private int nextFolderToReadIndex; //pointer to the next folder to extract it's content
     private List<String> filesPaths; //list of all the file's paths in the given folder
     private List<String> listOfDocsNumbers; //list of all the documents' numbers in the files
     private List<String> listOfCities; //list of all the documents' cities in the files

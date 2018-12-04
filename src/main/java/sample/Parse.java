@@ -18,7 +18,6 @@ public class Parse {
     static HashSet<String> wordsToDeleteSet;
     private Stemmer stemmer;
     public boolean useStemmer;
-
     private List<String> TermsOfDoc;
     private String term = "";
     private String termToLowerCase = "";
@@ -29,15 +28,17 @@ public class Parse {
     private Map<String, Integer> termsAndFrequencyMap;
 
 
-
-    Parse(String stopWordsPath, String citiesAndInformationFilePath, String wordsToDelete){
-
+    Parse(String stopWordsPath, String citiesAndInformationFilePath, String wordsToDelete, boolean stemmerSelection){
         InitMonthsNames();
         stopWordsList = ReadStopWordToList(stopWordsPath);
         wordsToDeleteSet = ReadJunkWordToList(wordsToDelete);
         this.citiesAndInformationFilePath = citiesAndInformationFilePath;
-        stemmer = new Stemmer();
-        useStemmer = false;
+
+        //stemmer defenition
+        this.useStemmer = stemmerSelection;
+        if(useStemmer)
+            stemmer = new Stemmer();
+
         try {
             ReadCitiesAndInfoFileToMap();
 
@@ -46,21 +47,19 @@ public class Parse {
             e.printStackTrace();
             System.out.println("Reading the CitiesAndInformation file has failed on Parse class");
         }
-
-
     }
 
 
-
-
-    public Map<String, Integer> ParsingDocument(String docText, String docNum) {
+    public Map<String, Integer> ParsingDocument(String docText, String docNum)
+    {
 
         termsAndFrequencyMap = new HashMap<>();
         BreakTextToTerms(docText, docNum);
         return termsAndFrequencyMap;
     }
 
-    public void cleaningTerm() {
+    public void cleaningTerm()
+    {
 
         if(!term.equals("")) {
             char firstC = term.charAt(0);
@@ -73,7 +72,8 @@ public class Parse {
         }
     }
 
-    private void BreakTextToTerms(String docText, String docNum) {
+    private void BreakTextToTerms(String docText, String docNum)
+    {
 
         //cleaning the document before splitting (| is seperating between characters, and \\ is sometimes needed
         docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|<|//|", "");
