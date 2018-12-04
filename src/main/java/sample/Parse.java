@@ -17,7 +17,7 @@ public class Parse {
     private String citiesAndInformationFilePath;
     static HashSet<String> wordsToDeleteSet;
     private Stemmer stemmer;
-    private boolean useStemmer;
+    public boolean useStemmer;
 
     private List<String> TermsOfDoc;
     private String term = "";
@@ -742,7 +742,7 @@ public class Parse {
     }
 
     //can read regular numbers and also numbers with dots.
-    private static boolean IsNumeric(String word) {
+    public static boolean IsNumeric(String word) {
         try {
             Double.parseDouble(word);
         } catch (NumberFormatException nfe) {
