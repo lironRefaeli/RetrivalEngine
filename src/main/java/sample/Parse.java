@@ -17,7 +17,8 @@ public class Parse {
     private String citiesAndInformationFilePath;
     static HashSet<String> wordsToDeleteSet;
     private Stemmer stemmer;
-    public boolean useStemmer;
+    private boolean useStemmer;
+
     private List<String> TermsOfDoc;
     private String term = "";
     private String termToLowerCase = "";
@@ -28,7 +29,9 @@ public class Parse {
     private Map<String, Integer> termsAndFrequencyMap;
 
 
+
     Parse(String stopWordsPath, String citiesAndInformationFilePath, String wordsToDelete, boolean stemmerSelection){
+
         InitMonthsNames();
         stopWordsList = ReadStopWordToList(stopWordsPath);
         wordsToDeleteSet = ReadJunkWordToList(wordsToDelete);
@@ -47,19 +50,24 @@ public class Parse {
             e.printStackTrace();
             System.out.println("Reading the CitiesAndInformation file has failed on Parse class");
         }
+
+
     }
 
 
-    public Map<String, Integer> ParsingDocument(String docText, String docNum)
+    public boolean getStemmer()
     {
+        return useStemmer;
+    }
+
+    public Map<String, Integer> ParsingDocument(String docText, String docNum) {
 
         termsAndFrequencyMap = new HashMap<>();
         BreakTextToTerms(docText, docNum);
         return termsAndFrequencyMap;
     }
 
-    public void cleaningTerm()
-    {
+    public void cleaningTerm() {
 
         if(!term.equals("")) {
             char firstC = term.charAt(0);
@@ -72,8 +80,7 @@ public class Parse {
         }
     }
 
-    private void BreakTextToTerms(String docText, String docNum)
-    {
+    private void BreakTextToTerms(String docText, String docNum) {
 
         //cleaning the document before splitting (| is seperating between characters, and \\ is sometimes needed
         docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|<|//|", "");
@@ -101,7 +108,7 @@ public class Parse {
             if (IsNumeric(term))
                 i = HandleWithNumbers(i);
             else
-                {
+            {
 
                 //if the term is a city - upade in City Map
                 if(Indexer.citiesInCorpus.containsKey(termToUpperCase))
@@ -742,7 +749,7 @@ public class Parse {
     }
 
     //can read regular numbers and also numbers with dots.
-    public static boolean IsNumeric(String word) {
+    private static boolean IsNumeric(String word) {
         try {
             Double.parseDouble(word);
         } catch (NumberFormatException nfe) {
@@ -837,20 +844,13 @@ public class Parse {
 
     /*
     private CityInMap connectionToApi(String cityName) throws JSONException, IOException {
-
-
         JSONObject json = readJsonFromUrl("https://restcountries.eu/rest/v2/capital/" + cityName);
-
         String currencies = json.get("currencies").toString();
         JSONObject jsonCurrencies = new JSONObject(currencies.substring(1,currencies.length()-1));
-
-
         CityInMap cityInfo = new CityInMap(json.get("name").toString(), jsonCurrencies.get("code").toString(), json.get("population").toString());
         return cityInfo;
     }
-
     private JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
-
         InputStream is = new URL(url).openStream();
         try {
             BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
@@ -862,9 +862,7 @@ public class Parse {
             is.close();
         }
     }
-
     private String readAll(Reader rd) throws IOException {
-
         StringBuilder sb = new StringBuilder();
         int cp;
         while ((cp = rd.read()) != -1) {
@@ -872,6 +870,4 @@ public class Parse {
         }
         return sb.toString();
     }
-
 */
-
