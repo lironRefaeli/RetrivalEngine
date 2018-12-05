@@ -1,5 +1,6 @@
 package sample;
 
+import javafx.scene.control.Alert;
 import org.json.JSONException;
 
 import java.io.*;
@@ -14,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Indexer {
     public int numOfTempPostingFiles;
-    static public int NumberOfDocsInCorpus;
+    static public double NumberOfDocsInCorpus;
     public ReadFile readFile;
     public Parse parser;
     public String pathToDisk;
@@ -31,6 +32,7 @@ public class Indexer {
     public int IDsOfDocs = 0;
     public Map<Integer,String> docsAndIDs;
     JSON_reader json_reader;
+    static boolean hasException = false;
 
 
     public Indexer(ReadFile readFile, Parse parser, String pathToDisk)
@@ -135,7 +137,7 @@ public class Indexer {
                             termsCorpusMap.get(term).numOfDocuments++;
                         } else
                             //creating new record in termsCorpusMap
-                            termsCorpusMap.put(term, new TermDataInMap(temporaryMap.get(term), 1));
+                            termsCorpusMap.put(term, new TermDataInMap(term,temporaryMap.get(term), 1));
 
                         String postingOldData = "";
                         if(postingMap.containsKey(termLowerCase))
@@ -160,7 +162,7 @@ public class Indexer {
                         if (termsCorpusMap.containsKey(termUpperCase)) {
                             TermDataInMap dataOfupperCaseTerm = termsCorpusMap.get(termUpperCase);
                             termsCorpusMap.remove(termUpperCase);
-                            termsCorpusMap.put(term, new TermDataInMap(dataOfupperCaseTerm.totalTf + temporaryMap.get(term),
+                            termsCorpusMap.put(term, new TermDataInMap(term,dataOfupperCaseTerm.totalTf + temporaryMap.get(term),
                                     dataOfupperCaseTerm.numOfDocuments++));
                         }
                         //we do not have "FIRST" in our map
@@ -172,7 +174,7 @@ public class Indexer {
                             }
                             //adds "first" to the map
                             else
-                                termsCorpusMap.put(term, new TermDataInMap(temporaryMap.get(term), 1));
+                                termsCorpusMap.put(term, new TermDataInMap(term,temporaryMap.get(term), 1));
                         }
 
                         String postingOldData = "";
@@ -197,7 +199,7 @@ public class Indexer {
                             termsCorpusMap.get(term).totalTf += temporaryMap.get(term);
                             termsCorpusMap.get(term).numOfDocuments++;
                         } else
-                            termsCorpusMap.put(term, new TermDataInMap(temporaryMap.get(term), 1));
+                            termsCorpusMap.put(term, new TermDataInMap(term,temporaryMap.get(term), 1));
 
                         String postingOldData = "";
                         if(postingMap.containsKey(term))
@@ -213,14 +215,13 @@ public class Indexer {
 
             WriteToTempPosting(postingMap, i); //write the posting map to a temporary posting file
             System.out.println("end loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
+            if(hasException)
+                return;
 
         }//End of external loop - every loop is for one chunk of files (probably 8 files)
         //todo added this function
         WriteTermCorpusMapToDisk();
 
-
-        Parse.stopWordsList = null;
-        Parse.wordsToDeleteSet = null;
         //After creating all temporary posting time, it's time to merge them to one big temporary file
         try {
             mergeTempPostingFiles();
@@ -230,21 +231,29 @@ public class Indexer {
     }
 
 
-    private void WriteToTempPosting(Map<String, String> postingMap, int numOftempPostingFile) throws IOException {
+    private void WriteToTempPosting(Map<String, String> postingMap, int numOftempPostingFile)  {
         //creating posting file and saving it in postingFilesFolder - his name is posting+the number of the loop
         File postinigFilesFolder = new File(postingFilesPath);
         postinigFilesFolder.mkdir();
 
-        File file = new File(postingFilesPath + "\\posting_" + numOftempPostingFile);
+        File file = new File(postingFilesPath + "\\posting_" + numOftempPostingFile+".txt");
         queueOfTempPostingFiles.add(file.getPath());
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file),262144);
-        for (String term : postingMap.keySet()) {
-            //the structure is - "term*docNum~tf,"
-            String data = term + "*" + postingMap.get(term);
-            writer.write(data);
-            writer.newLine();
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(file),262144);
+            for (String term : postingMap.keySet()) {
+                //the structure is - "term*docNum~tf,"
+                String data = term + "*" + postingMap.get(term);
+                writer.write(data);
+                writer.newLine();
+            }
+            writer.close();
+        } catch (IOException e)
+        {
+            hasException = true;
+
         }
-        writer.close();
+
     }
 
     public void mergeTempPostingFiles() throws IOException, InterruptedException {
@@ -299,70 +308,7 @@ public class Indexer {
 
 }
         /*
-        String nextLineInFile = "";
-        //spliting to symbols
-        File symbolFile = new File("C:\\Users\\refaeli.liron\\IdeaProjects\\RetrivalEngine_LD\\src\\main\\java\\postingFiles\\symbols");
-        FileWriter fw1 = new FileWriter(symbolFile);
-        BufferedWriter bw1 = new BufferedWriter(fw1);
-        if (folder.listFiles().length == 1) {
-            for (final File fileEntry : folder.listFiles()) {
-                Scanner fileReader = new Scanner(fileEntry);
-                while (fileReader.hasNextLine()) {
-                    nextLineInFile = fileReader.nextLine();
-                    if (!(nextLineInFile.toLowerCase().charAt(0) >= 97 && nextLineInFile.toLowerCase().charAt(0) <= 122)) {
-                        bw1.write(nextLineInFile);
-                        splitedLine = nextLineInFile.split("\\*");
-                        termsCorpusMap.get(splitedLine[0]).pointerToPostingLine = lineCounter;
-                        termsCorpusMap.get(splitedLine[0]).idf = Math.log10(NumberOfDocsInCorpus/(termsCorpusMap.get(splitedLine[0]).numOfDocuments));
-                        lineCounter++;
-                        bw1.newLine();
-                    } else {
-                        break;
-                    }
-                }
-                bw1.close();
-                lineCounter = 1;
-                //spliting to characters
-                for (int i = 97; i <= 122; i++) {
-                    char firstChar = (char) i;
-                    File file = new File("C:\\Users\\refaeli.liron\\IdeaProjects\\RetrivalEngine_LD\\src\\main\\java\\postingFiles\\" + firstChar);
-                    FileWriter fw = new FileWriter(file);
-                    BufferedWriter bw = new BufferedWriter(fw);
-                    if (!nextLineInFile.equals("") && nextLineInFile.toLowerCase().charAt(0) == firstChar) {
-                        bw.write(nextLineInFile);
-                        splitedLine = nextLineInFile.split("\\*");
-                        termsCorpusMap.get(splitedLine[0]).pointerToPostingLine = lineCounter;
-                        termsCorpusMap.get(splitedLine[0]).idf = Math.log10(NumberOfDocsInCorpus/(termsCorpusMap.get(splitedLine[0]).numOfDocuments));
-                        lineCounter++;
-                        bw.newLine();
-                    }
-                    while (fileReader.hasNextLine()) {
-                        nextLineInFile = fileReader.nextLine();
-                        if (nextLineInFile.toLowerCase().charAt(0) == firstChar) {
-                            bw.write(nextLineInFile);
-                            splitedLine = nextLineInFile.split("\\*");
-                            try{
-                                termsCorpusMap.get(splitedLine[0]).pointerToPostingLine = lineCounter;
-                            }
-                            catch(NullPointerException e)
-                            {
-                                System.out.println(splitedLine[0]);
-                            }
-                            termsCorpusMap.get(splitedLine[0]).idf = Math.log10(NumberOfDocsInCorpus/(termsCorpusMap.get(splitedLine[0]).numOfDocuments));
-                            lineCounter++;
-                            bw.newLine();
-                        } else {
-                            break;
-                        }
-                    }
-                    bw.close();
-                    lineCounter = 1;
-                }
-                fileReader.close();
-                fileEntry.delete();
-            }
-        }
-    }
+
     //Will be used only for creating new CitiesAndInformationFile
     private void CreateCitiesAndInformationFile() throws IOException {
         List<String> listOfAllCitiesInCorpus = new ArrayList<>();
@@ -400,23 +346,7 @@ public class Indexer {
         writer.close();
     }
 }
-/*
-        while (numberOfFiles > 1) {
-            for (int i = 0; i < numberOfFiles / 2; i++) {
-                pool.execute(new MergeFiles(pathToDisk, this));
-            }
-            System.out.println("num of files that were merged: " + numberOfFiles + " - time: " + (System.nanoTime() - startTime) / 1000000000.0);
-            if (numberOfFiles % 2 != 0)
-                numberOfFiles = numberOfFiles / 2 + 1;
-            else
-                numberOfFiles = numberOfFiles / 2;
-        }
-        pool.awaitTermination(10, TimeUnit.SECONDS);
-        System.out.println("done merging all files - time: " + (System.nanoTime() - startTime) / 1000000000.0);
-        pool.shutdown();
-        while (!pool.awaitTermination(24L, TimeUnit.HOURS)) {
-            System.out.println("Not yet. Still waiting for termination");
-        }
+
 */
 
 

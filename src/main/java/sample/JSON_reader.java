@@ -16,76 +16,80 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class handels with JSON files and connecting to API in order to bring data about capital cities
+ */
 public class JSON_reader {
     public void connectionToApi() throws JSONException {
-        OkHttpClient myClient = new OkHttpClient();
-        String url = ("https://restcountries.eu/rest/v2/all?fielsss=capital;name;population;currency");
 
-        Request request = new Request.Builder().url(url).build();
-        Response response = null;
-        org.json.simple.parser.JSONParser json = new org.json.simple.parser.JSONParser();
-        try {
-
-            response = myClient.newCall(request).execute();
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Object object = null;
-        try {
+            OkHttpClient httpClient = new OkHttpClient();
+            //the URL contains API data about capital cities
+            String url = ("https://restcountries.eu/rest/v2/all?fielsss=capital;name;population;currency");
+            Request request = new Request.Builder().url(url).build();
+            Response response = null;
+            org.json.simple.parser.JSONParser json = new org.json.simple.parser.JSONParser();
             try {
-                object = json.parse(response.body().string());
-            } catch (ParseException e) {
+                response = httpClient.newCall(request).execute();
+
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (object != null) {
-            String capital = "", country = "", coin = "";
-            String population = "";
-            Object[] parsed_json = ((JSONArray) object).toArray();
-            for (Object O : parsed_json) {
-                capital = (String) ((JSONObject) O).get("capital");
-                country = (String) ((JSONObject) O).get("name");
-                JSONArray theArray = (JSONArray) (((JSONObject) O).get("currencies"));
-                population = ((JSONObject) O).get("population").toString();
-
-                for (Object obj : theArray) {
-                    coin = (String) ((JSONObject) obj).get("code");
+            Object object = null;
+            try {
+                try {
+                    //the object includes data from json object after parsering it
+                    object = json.parse(response.body().string());
+                } catch (ParseException e) {
+                    e.printStackTrace();
                 }
-                String pop = divideNumbers(Double.parseDouble(population));
-                Indexer.citiesInAPI.put(capital.toUpperCase(), new CityInMap(country, coin, pop));
-                System.out.println("hi");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (object != null) {
 
+                //extracting the specific data from the json object
+                String capital = "", country = "", coin = "";
+                String population = "";
+                Object[] parsed_json = ((JSONArray) object).toArray();
+                for (Object O : parsed_json) {
+                    capital = (String) ((JSONObject) O).get("capital");
+                    country = (String) ((JSONObject) O).get("name");
+                    JSONArray theArray = (JSONArray) (((JSONObject) O).get("currencies"));
+                    population = ((JSONObject) O).get("population").toString();
+
+                    for (Object obj : theArray) {
+                        coin = (String) ((JSONObject) obj).get("code");
+                    }
+                    //handling with the numbers of the population parameter
+                    population = ParsePopulationNumber(Double.parseDouble(population));
+                    Indexer.citiesInAPI.put(capital.toUpperCase(), new CityInMap(country, coin, population));
+
+                }
+            }
+
+
+        }
+
+        //the function is getting population's size and convert it
+        private String ParsePopulationNumber(Double population) {
+            if (population >= 1000000000) {
+                population = population / 1000000000;
+                population = (double) Math.round(population * 100);
+                population = population / 100;
+                return Double.toString(population) + "B";
+            } else if (population >= 1000000) {
+                population = population / 1000000;
+                population = (double) Math.round(population * 100);
+                population = population / 100;
+                return Double.toString(population) + "M";
+            } else if (population >= 1000) {
+                population = population / 1000;
+                population = (double) Math.round(population * 100);
+                population = population / 100;
+                return Double.toString(population) + "K";
+            } else {
+                return Double.toString(population);
             }
         }
-
-
     }
-
-
-    private String divideNumbers(Double pop) {
-        if (pop >= 1000000000) {
-            pop = pop / 1000000000;
-            pop = (double) Math.round(pop * 100);
-            pop = pop / 100;
-            return Double.toString(pop) + "B";
-        } else if (pop >= 1000000) {
-            pop = pop / 1000000;
-            pop = (double) Math.round(pop * 100);
-            pop = pop / 100;
-            return Double.toString(pop) + "M";
-        } else if (pop >= 1000) {
-            pop = pop / 1000;
-            pop = (double) Math.round(pop * 100);
-            pop = pop / 100;
-            return Double.toString(pop) + "K";
-        } else {
-            return Double.toString(pop);
-        }
-    }
-}
 

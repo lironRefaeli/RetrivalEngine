@@ -1,5 +1,8 @@
 package sample;
 
+/**
+ * this class represents a document data object that is saved in docsInCorpus map
+ */
 public class DocTermDataInMap {
 
     public int max_tf;

@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * this class represents a city data object that is saved in citiesInCorpus map
+ */
 public class CityInMap {
 
     public String countryName;

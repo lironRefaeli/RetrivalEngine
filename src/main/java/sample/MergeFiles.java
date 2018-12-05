@@ -49,7 +49,7 @@ public class MergeFiles implements Runnable {
         //only allow one thread to get access to creating new file and increasing the counterNameOfFile variable
         synchronized (lock)
         {
-            outFile = new File(Indexer.postingFilesPath + "\\mergedFile" + counterNameOfFile);
+            outFile = new File(Indexer.postingFilesPath + "\\mergedFile" + counterNameOfFile+".txt");
             counterNameOfFile++;
         }
 
@@ -57,8 +57,6 @@ public class MergeFiles implements Runnable {
 
         bw = new BufferedWriter(fw,262144);
 
-        String lineFile1;
-        String lineFile2;
         //both files still have new lines to read
         while (fileReader1.ready() && fileReader2.ready())
         {
@@ -146,20 +144,16 @@ public class MergeFiles implements Runnable {
         File file2= new File(secondFilePath);
         FileReader secondReader = new FileReader(file2);
         fileReader2 = new BufferedReader(secondReader);
-        String nextLineInFile1;
         char firstCharOfLine1;
-        String nextLineInFile2;
         char firstLineOfLine2;
 
         //create ths Symbols file
-        File outFile = new File(Indexer.postingFilesPath + "\\Symbols");
+        File outFile = new File(Indexer.postingFilesPath + "\\Symbols.txt");
         FileWriter fw = new FileWriter(outFile);
         bw = new BufferedWriter(fw,262144);
 
         String termName;
         String termNameLower;
-        String lineFile1;
-        String lineFile2;
         int firstLetterOfBothTerms = 97;
 
         //both of the posting files still have new lines to read
@@ -176,7 +170,7 @@ public class MergeFiles implements Runnable {
                 lineIndex = 1;
                 bw.close();
                 fw.close();
-                outFile = new File(Indexer.postingFilesPath + "\\" + (char)firstLetterOfBothTerms);
+                outFile = new File(Indexer.postingFilesPath + "\\" + (char)firstLetterOfBothTerms +".txt");
                 fw = new FileWriter(outFile);
                 bw = new BufferedWriter(fw, 262144);
                 firstLetterOfBothTerms++;
@@ -344,13 +338,13 @@ public class MergeFiles implements Runnable {
 
         String term1 = splitedCurString1[0].toLowerCase();
         String term2 = splitedCurString2[0].toLowerCase();
-        int compareToResualt = term1.compareTo(term2);
+        int result = term1.compareTo(term2);
 
-        if (compareToResualt < 0) {
+        if (result < 0) {
             bw.write(curString1);
             text1Flag = true;
             text2Flag = false;
-        } else if (compareToResualt > 0) {
+        } else if (result > 0) {
             bw.write(curString2);
             text1Flag = false;
             text2Flag = true;
