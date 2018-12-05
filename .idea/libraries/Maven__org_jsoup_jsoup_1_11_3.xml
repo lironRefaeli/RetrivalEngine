@@ -2,7 +2,6 @@
   <library name="Maven: org.jsoup:jsoup:1.11.3">
     <CLASSES>
       <root url="jar://$MAVEN_REPOSITORY$/org/jsoup/jsoup/1.11.3/jsoup-1.11.3.jar!/" />
-      <root url="jar://$USER_HOME$/Downloads/json-20090211.jar!/" />
     </CLASSES>
     <JAVADOC>
       <root url="jar://$MAVEN_REPOSITORY$/org/jsoup/jsoup/1.11.3/jsoup-1.11.3-javadoc.jar!/" />

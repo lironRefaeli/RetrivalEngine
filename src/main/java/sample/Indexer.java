@@ -1,5 +1,7 @@
 package sample;
 
+import org.json.JSONException;
+
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -21,18 +23,20 @@ public class Indexer {
     public static Map<String, TermDataInMap> termsCorpusMap; //a map that includes all the terms in the corpus
     public Map<String, DocTermDataInMap> docsCorpusMap; //a map that includes all the terms in the corpus
     public static Map<String, CityInMap> citiesInCorpus = new HashMap<>();
+    public static Map<String, CityInMap> citiesInAPI = new HashMap<>();
     public ConcurrentLinkedQueue<String> queueOfTempPostingFiles;
     public static final long startTime = System.nanoTime();
     static String postingFilesPath = "";
     File dictionaryFile;
     public int IDsOfDocs = 0;
     public Map<Integer,String> docsAndIDs;
+    JSON_reader json_reader;
 
 
     public Indexer(ReadFile readFile, Parse parser, String pathToDisk)
     {
         NumberOfDocsInCorpus = 0;
-        numOfTempPostingFiles = 227;
+        numOfTempPostingFiles = 4;
         this.readFile = readFile;
         this.parser = parser;
         this.pathToDisk = pathToDisk;
@@ -41,6 +45,8 @@ public class Indexer {
         queueOfTempPostingFiles = new ConcurrentLinkedQueue();
         mergeFiles = new MergeFiles(pathToDisk, this);
         docsAndIDs = new HashMap<>();
+        json_reader = new JSON_reader();
+
 
     }
 
@@ -64,12 +70,21 @@ public class Indexer {
 
 
 
-    public void Play() throws IOException {
+    public void Play() throws IOException{
+
+        //connecting to API and bringing data about capital cities in the world
+        try {
+            json_reader.connectionToApi();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
         //the number of loop is determined by the numOfChunks parameter
         for (int i = 0; i < numOfTempPostingFiles; i++) {
             System.out.println("start loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
             int maxTermFreqPerDoc = 0;
-            List<String> listOfTexts = readFile.ReadFolder(8); //list of Documents' texts
+            List<String> listOfTexts = readFile.ReadFolder(1); //list of Documents' texts
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
             List<String> ListOfCities = readFile.getListOfCities();
             NumberOfDocsInCorpus += listOfDocsNumbers.size();
@@ -202,20 +217,6 @@ public class Indexer {
         }//End of external loop - every loop is for one chunk of files (probably 8 files)
         //todo added this function
         WriteTermCorpusMapToDisk();
-        File outFile = new File("C:\\Users\\david\\Desktop\\AllJunkWords");
-        FileWriter fw = new FileWriter(outFile);
-        BufferedWriter bw = new BufferedWriter(fw);
-        for (String term : termsCorpusMap.keySet())
-        {
-            if(termsCorpusMap.get(term).totalTf == 1)
-            {
-                bw.write(term);
-                bw.newLine();
-            }
-        }
-        bw.close();
-        fw.close();
-
 
 
         Parse.stopWordsList = null;
@@ -278,21 +279,7 @@ public class Indexer {
         mergeFiles.margeTwoLastFilesAndCreatePermanentPostingFiles(twoLastFiles.get(0).getPath(), twoLastFiles.get(1).getPath());
         System.out.println("Finished building the Indexer - time: " + (System.nanoTime() - startTime) / 1000000000.0);
 
-        File file = new File("C:\\Users\\david\\Desktop\\Tests\\termsWithOnlyOneTF");
-        FileWriter fw = new FileWriter(file);
-        BufferedWriter bw = new BufferedWriter(fw,262144);
-        for (String term : termsCorpusMap.keySet())
-        {
-            if(termsCorpusMap.get(term).totalTf == 1)
-            {
-                bw.write(term);
-                bw.newLine();
-            }
 
-
-        }
-        bw.close();
-        fw.close();
 
     }
 

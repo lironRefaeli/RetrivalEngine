@@ -145,6 +145,8 @@ public class ReadFile {
     public HashSet<String> getListOfLanguages() { return listOfLanguages; }
 
     public List<String> ReadAllCitiesFromCorpusForCreatingInfoFile() throws IOException {
+
+        List<String> listOfAllCities = new ArrayList<>();
         for (int i = 0; i < filesPaths.size(); i++) {
             File f = new File(filesPaths.get(i));
             Document document = Jsoup.parse(new String(Files.readAllBytes(f.toPath())));
@@ -163,10 +165,10 @@ public class ReadFile {
 
                     }
                 }
-                listOfCities.add(city);
+                listOfAllCities.add(city);
             }
         }
-        return listOfCities;
+        return listOfAllCities;
     }
 
 

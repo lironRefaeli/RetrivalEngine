@@ -14,7 +14,6 @@ public class Parse {
 
     static HashSet<String> monthsNames;
     static HashSet<String> stopWordsList;
-    private String citiesAndInformationFilePath;
     static HashSet<String> wordsToDeleteSet;
     private Stemmer stemmer;
     private boolean useStemmer;
@@ -30,27 +29,15 @@ public class Parse {
 
 
 
-    Parse(String stopWordsPath, String citiesAndInformationFilePath, String wordsToDelete, boolean stemmerSelection){
+    Parse(String stopWordsPath, boolean stemmerSelection){
 
         InitMonthsNames();
         stopWordsList = ReadStopWordToList(stopWordsPath);
-        wordsToDeleteSet = ReadJunkWordToList(wordsToDelete);
-        this.citiesAndInformationFilePath = citiesAndInformationFilePath;
 
         //stemmer defenition
         this.useStemmer = stemmerSelection;
         if(useStemmer)
             stemmer = new Stemmer();
-
-        try {
-            ReadCitiesAndInfoFileToMap();
-
-        } catch (FileNotFoundException e) {
-
-            e.printStackTrace();
-            System.out.println("Reading the CitiesAndInformation file has failed on Parse class");
-        }
-
 
     }
 
@@ -97,7 +84,7 @@ public class Parse {
             termToUpperCase = term.toUpperCase();
 
             //handles with stop-words or empty strings and also next terms after current term
-            if ((IsStopWord(termToLowerCase) || IsJunkWord() || term.equals("")))
+            if ((IsStopWord(termToLowerCase) || term.equals("")))
                 continue;
 
             //extracting nextTerm
@@ -111,7 +98,7 @@ public class Parse {
             {
 
                 //if the term is a city - upade in City Map
-                if(Indexer.citiesInCorpus.containsKey(termToUpperCase))
+                if(Indexer.citiesInAPI.containsKey(termToUpperCase))
                     updateCitiesInCorpus(docNum, i);
 
                 i = HandleWithStrings(i);
@@ -120,31 +107,24 @@ public class Parse {
         }
     }
 
-
-
-    //Fill the citiesInCorpusMap with the cities names (key) and cities information (values)
-    //we still need to fill the map field placementsInDocs in CityInMap object with numOfFile and positions in that file
-    private void ReadCitiesAndInfoFileToMap() throws FileNotFoundException {
-        File CitiesAndInfoFile = new File(citiesAndInformationFilePath);
-        Scanner reader = new Scanner(CitiesAndInfoFile);
-        String[] cityAndInfoStrings;
-        String[] infoOfTheCity;
-        while (reader.hasNextLine())
-        {
-            String lineInFile = reader.nextLine();
-            cityAndInfoStrings = lineInFile.split("\\*");
-            infoOfTheCity = cityAndInfoStrings[1].split(",");
-            Indexer.citiesInCorpus.put(cityAndInfoStrings[0],new CityInMap(infoOfTheCity[0],infoOfTheCity[1],infoOfTheCity[2]));
-        }
-    }
-
     //Update the map that holds as keys the city name and as values an object og type of CityInMap
     public void updateCitiesInCorpus(String docNum, int positionInText) {
         String termInUpperCase = termToUpperCase;
-        //not the first time of that city in that document
-        if (Indexer.citiesInCorpus.get(termInUpperCase).placementsInDocs.containsKey(docNum))
-            Indexer.citiesInCorpus.get(termInUpperCase).placementsInDocs.get(docNum).add(positionInText);
-        else {
+        //if the city is in citiesInCorpus
+        if(Indexer.citiesInCorpus.containsKey(termInUpperCase))
+        {
+            //not the first time of that city in that document
+            if (Indexer.citiesInCorpus.get(termInUpperCase).placementsInDocs.containsKey(docNum))
+                Indexer.citiesInCorpus.get(termInUpperCase).placementsInDocs.get(docNum).add(positionInText);
+            else {
+                List<Integer> positionsList = new ArrayList<>();
+                positionsList.add(positionInText);
+                Indexer.citiesInCorpus.get(termInUpperCase).placementsInDocs.put(docNum, positionsList);
+            }
+        }
+        else //bring data from citiesInAPI
+        {
+            Indexer.citiesInCorpus.put(termInUpperCase, Indexer.citiesInAPI.get(termInUpperCase));
             List<Integer> positionsList = new ArrayList<>();
             positionsList.add(positionInText);
             Indexer.citiesInCorpus.get(termInUpperCase).placementsInDocs.put(docNum, positionsList);
@@ -829,7 +809,8 @@ public class Parse {
 
     private boolean IsJunkWord()
     {
-        return wordsToDeleteSet.contains(term);
+        //return wordsToDeleteSet.contains(term);
+        return false;
     }
 
     private String CallStemmer(String term) {

@@ -5,20 +5,31 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.control.*;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
+import java.util.TreeMap;
 
+//todo write in readme
+//https://stackoverflow.com/questions/29888592/errorjava-javactask-source-release-8-requires-target-release-1-8
 public class mainController {
 
+    ReadFile readFile;
+    Parse parser;
+    Indexer indexer;
     ObservableList<String> languagesBoxOptions = FXCollections.observableArrayList("English","French","Vietnamese","Rusian","Albanian","Polish","Latvian","Lithuanian","Tamil",
     "Indonesian","Arabic","Kirundi","German","Tigrigna","Slovenian","Malay","Cambodia","Spanish","Norwegian","Bengali","Japanse", "Amharic", "Ukrainian", "Czech", "Macedonian", "Chinese", "Italian", "Slovene",
             "Swedish", "Korean", "Danish", "Hungarian" , "Afrikaans", "Turkish", "Kazakh", "Georgian", "Hindi", "Bulgarian", "Hebrew", "Kinyarwanda", "Thai", "International", "Cambodian", "Tagalog"
@@ -42,36 +53,34 @@ public class mainController {
 
     public void StartEngine(ActionEvent actionEvent) throws IOException {
 
-        //String pathToCorpus = "C:\\Users\\david\\Desktop\\Tests\\corpusTest";
-        //String pathToDisk = "C:\\Users\\david\\Desktop\\Tests\\postingFiles";
 
-        //todo decide where to put cities and junk words files
-        String pathToCitiesAndInformationFile = "C:\\Users\\david\\Desktop\\Tests\\JunkWordsAndStopWords\\CitiesAndInformationFile";
-        String wordToDelete = "C:\\Users\\david\\Desktop\\Tests\\JunkWordsAndStopWords\\WordsToDelete.txt";
+        if(Indexer.termsCorpusMap == null) {
+            //String pathToCorpus = "C:\\Users\\david\\Desktop\\Tests\\corpusTest";
+            //String pathToDisk = "C:\\Users\\david\\Desktop\\Tests\\postingFiles";
 
-        //extracting corpusPath from the UI
-        String pathToCorpus = corpusPath.getText();
+            //extracting corpusPath from the UI
+            String pathToCorpus = corpusPath.getText();
 
-        //extracting steemer selection from the UI
-        boolean stemmerSelection = stemmerCheckBox.isSelected();
+            //extracting steemer selection from the UI
+            boolean stemmerSelection = stemmerCheckBox.isSelected();
 
-        //extracting disk path from the UI and changing it according to stemmer checkbox selection
-        String pathToDisk = diskPath.getText();
-       //todo delete creatinf folder
-        ReadFile readFile = new ReadFile(pathToCorpus);
-        Parse parser = new Parse(pathToCorpus + "\\stop_words.txt", pathToCitiesAndInformationFile, wordToDelete , stemmerSelection);
-        final Indexer indexer = new Indexer(readFile, parser, pathToDisk);
-        Thread indexerThread = new Thread() {
-            public void run() {
-                try {
-                    indexer.Play();
-                } catch (IOException e) {
-                    e.printStackTrace();
+            //extracting disk path from the UI and changing it according to stemmer checkbox selection
+            String pathToDisk = diskPath.getText();
+            //todo delete creatinf folder
+            readFile = new ReadFile(pathToCorpus);
+            parser = new Parse(pathToCorpus + "\\stop_words.txt", stemmerSelection);
+            indexer = new Indexer(readFile, parser, pathToDisk);
+            Thread indexerThread = new Thread() {
+                public void run() {
+                    try {
+                        indexer.Play();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-        };
-        indexerThread.start();
-
+            };
+            indexerThread.start();
+        }
 
         //opens a new window for writing the query after the inverted index and all the other relevant stuff are ready
         try {
@@ -124,6 +133,8 @@ public class mainController {
     }
 
     public void Restart(ActionEvent event) {
+
+
         String pathToDisk = diskPath.getText();
         String postingFolderPath;
         String dictionaryFilePath;
@@ -138,22 +149,72 @@ public class mainController {
             dictionaryFilePath = pathToDisk + "\\dictionaryWithoutStemming";
 
         }
-        //todo delete dictionary file
+        //delete dictionary file
         File dictionaryFile = new File(dictionaryFilePath);
         dictionaryFile.delete();
 
-        //todo null in paramrtets on memory
-
         //delete posting files
         File postingFilesDirectory = new File(postingFolderPath);
-        for(File file: postingFilesDirectory.listFiles())
-            if (!file.isDirectory())
-                file.delete();
+        if(postingFilesDirectory.listFiles() != null) {
+            for (File file : postingFilesDirectory.listFiles())
+                if (!file.isDirectory())
+                    file.delete();
+        }
 
         postingFilesDirectory.delete();
+
+        //null in parameters on memory
+        readFile = null;
+        parser = null;
+        indexer = null;
+        corpusPath.setText("");
+        diskPath.setText("");
+        System.gc(); // calling the garbage collector
+
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        //alert.setTitle("Information Dialog");
+        alert.setHeaderText("Restart the engine was succeeded");
+        //alert.setContentText("s");
+        alert.showAndWait();
     }
 
     public void ShowDictionary(ActionEvent event) {
+
+        if(Indexer.termsCorpusMap != null)
+        {
+            TreeMap<String, TermDataInMap> sortingTermsInCorpus = new TreeMap<>();
+            sortingTermsInCorpus.putAll(Indexer.termsCorpusMap);
+
+            Scene scene = new Scene(new Group());
+            Stage stage = new Stage();
+            stage.setTitle("Table View Sample");
+            stage.setWidth(300);
+            stage.setHeight(500);
+
+            final Label label = new Label("Display Dictionary");
+            //label.setFont(new Font("Arial", 20));
+
+            TableView table = new TableView();
+            table.setEditable(true);
+
+            TableColumn firstNameCol = new TableColumn("Term");
+            TableColumn lastNameCol = new TableColumn("Frequency In Corpus");
+
+            table.getColumns().addAll(firstNameCol, lastNameCol);
+
+            final VBox vbox = new VBox();
+            vbox.setSpacing(5);
+            //vbox.setPadding(new Insets(10, 0, 0, 10));
+            vbox.getChildren().addAll(label, table);
+
+            ((Group) scene.getRoot()).getChildren().addAll(vbox);
+
+            stage.setScene(scene);
+            stage.show();
+
+
+        }
     }
 
     public void LoadDictionaryFromDisk(ActionEvent event)  {
@@ -173,11 +234,12 @@ public class mainController {
         try {
             fileStreamer = new FileInputStream(dictionaryFile);
         } catch (FileNotFoundException e) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            Alert alert = new Alert(Alert.AlertType.ERROR);
             //alert.setTitle("Information Dialog");
-            alert.setHeaderText("Loading the dictionary was succeeded!");
+            alert.setHeaderText("The dictionary file wasn't found :(");
             //alert.setContentText("s");
             alert.showAndWait();
+            return;
         }
         ObjectInputStream objectStreamer = null;
         try {
@@ -201,6 +263,14 @@ public class mainController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        //alert.setTitle("Information Dialog");
+        alert.setHeaderText("Loading the dictionary was succeeded!");
+        //alert.setContentText("s");
+        alert.showAndWait();
+
+
 
 
 
