@@ -46,8 +46,8 @@ public class mainController {
         //String pathToDisk = "C:\\Users\\david\\Desktop\\Tests\\postingFiles";
 
         //todo decide where to put cities and junk words files
-        String pathToCitiesAndInformationFile = "C:\\Users\\refaeli.liron\\Desktop\\JunkWordsAndStopWords\\CitiesAndInformationFile";
-        String wordToDelete = "C:\\Users\\refaeli.liron\\Desktop\\JunkWordsAndStopWords\\WordsToDelete.txt";
+        String pathToCitiesAndInformationFile = "C:\\Users\\david\\Desktop\\Tests\\JunkWordsAndStopWords\\CitiesAndInformationFile";
+        String wordToDelete = "C:\\Users\\david\\Desktop\\Tests\\JunkWordsAndStopWords\\WordsToDelete.txt";
 
         //extracting corpusPath from the UI
         String pathToCorpus = corpusPath.getText();

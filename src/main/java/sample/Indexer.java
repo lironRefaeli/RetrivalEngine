@@ -21,9 +21,9 @@ public class Indexer {
     public static Map<String, TermDataInMap> termsCorpusMap; //a map that includes all the terms in the corpus
     public Map<String, DocTermDataInMap> docsCorpusMap; //a map that includes all the terms in the corpus
     public static Map<String, CityInMap> citiesInCorpus = new HashMap<>();
-    public ConcurrentLinkedQueue<File> queueOfTempPostingFiles;
-    public final long startTime = System.nanoTime();
-    String postingFilesPath = "";
+    public ConcurrentLinkedQueue<String> queueOfTempPostingFiles;
+    public static final long startTime = System.nanoTime();
+    static String postingFilesPath = "";
     File dictionaryFile;
     public int IDsOfDocs = 0;
     public Map<Integer,String> docsAndIDs;
@@ -32,7 +32,7 @@ public class Indexer {
     public Indexer(ReadFile readFile, Parse parser, String pathToDisk)
     {
         NumberOfDocsInCorpus = 0;
-        numOfTempPostingFiles = 3;
+        numOfTempPostingFiles = 227;
         this.readFile = readFile;
         this.parser = parser;
         this.pathToDisk = pathToDisk;
@@ -69,7 +69,7 @@ public class Indexer {
         for (int i = 0; i < numOfTempPostingFiles; i++) {
             System.out.println("start loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
             int maxTermFreqPerDoc = 0;
-            List<String> listOfTexts = readFile.ReadFolder(1); //list of Documents' texts
+            List<String> listOfTexts = readFile.ReadFolder(8); //list of Documents' texts
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
             List<String> ListOfCities = readFile.getListOfCities();
             NumberOfDocsInCorpus += listOfDocsNumbers.size();
@@ -231,13 +231,11 @@ public class Indexer {
 
     private void WriteToTempPosting(Map<String, String> postingMap, int numOftempPostingFile) throws IOException {
         //creating posting file and saving it in postingFilesFolder - his name is posting+the number of the loop
-
-
         File postinigFilesFolder = new File(postingFilesPath);
         postinigFilesFolder.mkdir();
 
         File file = new File(postingFilesPath + "\\posting_" + numOftempPostingFile);
-        queueOfTempPostingFiles.add(file);
+        queueOfTempPostingFiles.add(file.getPath());
         BufferedWriter writer = new BufferedWriter(new FileWriter(file),262144);
         for (String term : postingMap.keySet()) {
             //the structure is - "term*docNum~tf,"
@@ -252,7 +250,7 @@ public class Indexer {
         while (numOfTempPostingFiles > 2) {
             pool = Executors.newFixedThreadPool(numOfTempPostingFiles / 2 + 1);
             for (int i = 0; i < numOfTempPostingFiles / 2; i++) {
-                pool.execute(new MergeFiles(pathToDisk, this));
+                pool.execute(new MergeFiles(postingFilesPath, this));
 
             }
             pool.shutdown();
@@ -273,12 +271,28 @@ public class Indexer {
     public void splitMergedFile() throws IOException
     {
         List<File> twoLastFiles = new ArrayList<>();
-        File folder = new File(pathToDisk);
+        File folder = new File(postingFilesPath);
         //we know we only have two files left on that folder
         for (final File fileEntry : folder.listFiles())
             twoLastFiles.add(fileEntry);
-        mergeFiles.margeTwoLastFilesAndCreatePermanentPostingFiles(twoLastFiles.get(0), twoLastFiles.get(1));
+        mergeFiles.margeTwoLastFilesAndCreatePermanentPostingFiles(twoLastFiles.get(0).getPath(), twoLastFiles.get(1).getPath());
         System.out.println("Finished building the Indexer - time: " + (System.nanoTime() - startTime) / 1000000000.0);
+
+        File file = new File("C:\\Users\\david\\Desktop\\Tests\\termsWithOnlyOneTF");
+        FileWriter fw = new FileWriter(file);
+        BufferedWriter bw = new BufferedWriter(fw,262144);
+        for (String term : termsCorpusMap.keySet())
+        {
+            if(termsCorpusMap.get(term).totalTf == 1)
+            {
+                bw.write(term);
+                bw.newLine();
+            }
+
+
+        }
+        bw.close();
+        fw.close();
 
     }
 

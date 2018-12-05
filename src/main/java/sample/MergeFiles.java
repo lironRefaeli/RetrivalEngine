@@ -1,8 +1,5 @@
 package sample;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.Scanner;
 
 
@@ -17,8 +14,8 @@ public class MergeFiles implements Runnable {
     private String curString2 = "";
     private String[] splitedCurString1;
     private String[] splitedCurString2;
-    private Scanner fileReader1;
-    private Scanner fileReader2;
+    private BufferedReader fileReader1;
+    private BufferedReader fileReader2;
     private String pathToDisk;
     private BufferedWriter bw;
     private Indexer indexer;
@@ -38,35 +35,42 @@ public class MergeFiles implements Runnable {
     //One of the main function in this class
     //responsible for merging two temporary posting files and create one sorted lexicographic file
     //Mulitple threads are executing this function all combined
-    public File margeTwoFiles(File file1, File file2) throws IOException
+    public String margeTwoFiles(String firstFilePath, String secondFilePath) throws IOException
     {
-        fileReader1 = new Scanner(file1);
-        fileReader2 = new Scanner(file2);
+        File file1 = new File(firstFilePath);
+        FileReader firstReader = new FileReader(file1);
+        fileReader1 = new BufferedReader(firstReader);
+        File file2 = new File(secondFilePath);
+        FileReader secondReader = new FileReader(file2);
+        fileReader2 = new BufferedReader(secondReader);
         System.out.println(file1.getName() + "+" + file2.getName());
         File outFile;
 
         //only allow one thread to get access to creating new file and increasing the counterNameOfFile variable
         synchronized (lock)
         {
-            outFile = new File(pathToDisk + "\\mergedFile" + counterNameOfFile);
+            outFile = new File(Indexer.postingFilesPath + "\\mergedFile" + counterNameOfFile);
             counterNameOfFile++;
         }
 
         FileWriter fw = new FileWriter(outFile);
-        bw = new BufferedWriter(fw, 262144);
 
+        bw = new BufferedWriter(fw,262144);
+
+        String lineFile1;
+        String lineFile2;
         //both files still have new lines to read
-        while (fileReader1.hasNextLine() && fileReader2.hasNextLine())
+        while (fileReader1.ready() && fileReader2.ready())
         {
             compareBetweenTwoTerms();
             bw.newLine();
         }
 
         //only file2 has more lines to read
-        if (!fileReader1.hasNextLine() && fileReader2.hasNextLine())
+        if ((!fileReader1.ready() && fileReader2.ready()))
         {
             //boolean text1Flag is here in case there is still a word in curString1
-            while (!text1Flag && fileReader2.hasNextLine())
+            while (!text1Flag && fileReader2.ready())
             {
                 compareBetweenTwoTerms();
                 bw.newLine();
@@ -79,9 +83,9 @@ public class MergeFiles implements Runnable {
                 bw.newLine();
             }
             //in case we wrote curString1 and still have words in file2
-            while (fileReader2.hasNextLine())
+            while (fileReader2.ready())
             {
-                curString2 = fileReader2.nextLine();
+                curString2 = fileReader2.readLine();
                 bw.write(curString2);
                 bw.newLine();
             }
@@ -91,10 +95,10 @@ public class MergeFiles implements Runnable {
         }
 
         //only file1 has more lines to read
-        else if (fileReader1.hasNextLine() && !fileReader2.hasNextLine())
+        else if (fileReader1.ready() && !fileReader2.ready())
         {
             //boolean text2Flag is here in case there is still a word in curString2
-            while (!text2Flag && fileReader1.hasNextLine())
+            while (!text2Flag && fileReader1.ready())
             {
                 compareBetweenTwoTerms();
                 bw.newLine();
@@ -107,9 +111,9 @@ public class MergeFiles implements Runnable {
                 bw.newLine();
             }
             //in case we wrote curString1 and still have words in file2
-            while (fileReader1.hasNextLine())
+            while (fileReader1.ready())
             {
-                curString1 = fileReader1.nextLine();
+                curString1 = fileReader1.readLine();
                 bw.write(curString1);
                 bw.newLine();
             }
@@ -121,52 +125,58 @@ public class MergeFiles implements Runnable {
 
         //delete the two posting files and close the readers and the writer
         bw.close();
+        fw.close();
         fileReader1.close();
         fileReader2.close();
         file1.delete();
         file2.delete();
         System.out.println(outFile.getName() + " was complete");
-        return outFile;
+        return outFile.getPath();
     }
 
 
     //This function write all the symbols from the last two posting files to the symbols file
     //At the end it calls to "WriteTheLettersPostingFiles" function that write all the other words
     //The symbols are coming first in every temp posting file, and that is why this function comes before the letters function
-    public void margeTwoLastFilesAndCreatePermanentPostingFiles(File file1, File file2) throws IOException {
+    public void margeTwoLastFilesAndCreatePermanentPostingFiles(String firstFilePath, String secondFilePath) throws IOException {
         //read the two last temp posting files
-        fileReader1 = new Scanner(file1);
-        fileReader2 = new Scanner(file2);
+        File file1 = new File(firstFilePath);
+        FileReader firstReader = new FileReader(file1);
+        fileReader1 =new BufferedReader(firstReader);
+        File file2= new File(secondFilePath);
+        FileReader secondReader = new FileReader(file2);
+        fileReader2 = new BufferedReader(secondReader);
         String nextLineInFile1;
         char firstCharOfLine1;
         String nextLineInFile2;
         char firstLineOfLine2;
 
         //create ths Symbols file
-        File outFile = new File(pathToDisk + "\\Symbols");
+        File outFile = new File(Indexer.postingFilesPath + "\\Symbols");
         FileWriter fw = new FileWriter(outFile);
-        bw = new BufferedWriter(fw, 262144);
+        bw = new BufferedWriter(fw,262144);
 
         String termName;
         String termNameLower;
+        String lineFile1;
+        String lineFile2;
         int firstLetterOfBothTerms = 97;
-        //compareBetweenTwoTerms();
+
         //both of the posting files still have new lines to read
-        while (fileReader1.hasNextLine() && fileReader2.hasNextLine())
+        while (fileReader1.ready() && fileReader2.ready())
         {
             extractStrings();
             //nextLineInFile1 = fileReader1.nextLine();
             firstCharOfLine1 = curString1.toLowerCase().charAt(0);
             //nextLineInFile2 = fileReader2.nextLine();
             firstLineOfLine2 = curString2.toLowerCase().charAt(0);
-
             //both files have changed letters, so create new file with that new letter name
             if (firstCharOfLine1 == (char)firstLetterOfBothTerms && firstLineOfLine2 == (char)firstLetterOfBothTerms)
             {
                 lineIndex = 1;
-                outFile = new File(pathToDisk + "\\" + (char)firstLetterOfBothTerms);
                 bw.close();
                 fw.close();
+                outFile = new File(Indexer.postingFilesPath + "\\" + (char)firstLetterOfBothTerms);
                 fw = new FileWriter(outFile);
                 bw = new BufferedWriter(fw, 262144);
                 firstLetterOfBothTerms++;
@@ -215,11 +225,10 @@ public class MergeFiles implements Runnable {
         //only file2 has more lines to read
         //it is not possible that file2 has words that start with a letter that file1 doesn't have
         //so no need of creating new file here
-        while (!text1Flag && fileReader2.hasNextLine())
+        while (!text1Flag && fileReader2.ready())
         {
-
-            nextLineInFile2 = fileReader2.nextLine();
-            bw.write(nextLineInFile2);
+            extractStrings();
+            bw.write(curString2);
             bw.newLine();
             termName = splitedCurString2[0];
             termNameLower = termName.toLowerCase();
@@ -241,10 +250,10 @@ public class MergeFiles implements Runnable {
         //only file1 has more lines to read
         //it is not possible that file1 has words that start with a letter that file2 doesn't have
         //so no need of creating new file here
-        while (!text2Flag && fileReader1.hasNextLine())
+        while (!text2Flag && fileReader1.ready())
         {
-            nextLineInFile1 = fileReader1.nextLine();
-            bw.write(nextLineInFile1);
+            extractStrings();
+            bw.write(curString1);
             bw.newLine();
             termName = splitedCurString1[0];
             termNameLower = termName.toLowerCase();
@@ -274,15 +283,23 @@ public class MergeFiles implements Runnable {
     //we want to spilt and take only the term's name for comparison
     private void extractStrings ()
     {
-        if (text1Flag && fileReader1.hasNextLine())
+        if (text1Flag)
         {
-            curString1 = fileReader1.nextLine();
+            try {
+                curString1 = fileReader1.readLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             splitedCurString1 = curString1.split("\\*");
 
         }
-        if (text2Flag && fileReader2.hasNextLine())
+        if (text2Flag)
         {
-            curString2 = fileReader2.nextLine();
+            try {
+                curString2 =fileReader2.readLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             splitedCurString2 = curString2.split("\\*");
         }
     }
@@ -373,11 +390,13 @@ public class MergeFiles implements Runnable {
     //extract two temp posting files from the concurrent queue and merge them together in "margeTwoFiles" function
     public void run ()
     {
-        try {
-            if (indexer.queueOfTempPostingFiles.size() >= 2) {
-                final File firstFile = indexer.queueOfTempPostingFiles.poll();
-                final File secondFile = indexer.queueOfTempPostingFiles.poll();
-                indexer.queueOfTempPostingFiles.add(margeTwoFiles(firstFile, secondFile));
+        try
+        {
+            if (indexer.queueOfTempPostingFiles.size() >= 2)
+            {
+                String firstFilePath = indexer.queueOfTempPostingFiles.poll();
+                String secondFilePath = indexer.queueOfTempPostingFiles.poll();
+                indexer.queueOfTempPostingFiles.add(margeTwoFiles(firstFilePath, secondFilePath));
 
             }
         }
@@ -423,4 +442,7 @@ public class MergeFiles implements Runnable {
         }
         return true;
     }
+
 }
+
+
