@@ -56,9 +56,8 @@ public class JSON_reader {
                 for (Object obj : theArray) {
                     coin = (String) ((JSONObject) obj).get("code");
                 }
-                String pop = divideNumbers(Double.parseDouble(population));
-                Indexer.citiesInAPI.put(capital.toUpperCase(), new CityInMap(country, coin, pop));
-                System.out.println("hi");
+                population = ParsePopulationNumber(Double.parseDouble(population));
+                Indexer.citiesInAPI.put(capital.toUpperCase(), new CityInMap(country, coin, population));
 
             }
         }
@@ -66,25 +65,24 @@ public class JSON_reader {
 
     }
 
-
-    private String divideNumbers(Double pop) {
-        if (pop >= 1000000000) {
-            pop = pop / 1000000000;
-            pop = (double) Math.round(pop * 100);
-            pop = pop / 100;
-            return Double.toString(pop) + "B";
-        } else if (pop >= 1000000) {
-            pop = pop / 1000000;
-            pop = (double) Math.round(pop * 100);
-            pop = pop / 100;
-            return Double.toString(pop) + "M";
-        } else if (pop >= 1000) {
-            pop = pop / 1000;
-            pop = (double) Math.round(pop * 100);
-            pop = pop / 100;
-            return Double.toString(pop) + "K";
+    private String ParsePopulationNumber(Double population) {
+        if (population >= 1000000000) {
+            population = population / 1000000000;
+            population = (double) Math.round(population * 100);
+            population = population / 100;
+            return Double.toString(population) + "B";
+        } else if (population >= 1000000) {
+            population = population / 1000000;
+            population = (double) Math.round(population * 100);
+            population = population / 100;
+            return Double.toString(population) + "M";
+        } else if (population >= 1000) {
+            population = population / 1000;
+            population = (double) Math.round(population * 100);
+            population = population / 100;
+            return Double.toString(population) + "K";
         } else {
-            return Double.toString(pop);
+            return Double.toString(population);
         }
     }
 }

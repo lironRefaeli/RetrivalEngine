@@ -144,34 +144,6 @@ public class ReadFile {
 
     public HashSet<String> getListOfLanguages() { return listOfLanguages; }
 
-    public List<String> ReadAllCitiesFromCorpusForCreatingInfoFile() throws IOException {
-
-        List<String> listOfAllCities = new ArrayList<>();
-        for (int i = 0; i < filesPaths.size(); i++) {
-            File f = new File(filesPaths.get(i));
-            Document document = Jsoup.parse(new String(Files.readAllBytes(f.toPath())));
-            Elements elements = document.getElementsByTag("DOC");
-            for (Element element : elements) {
-                //adding all the documents' cities in the file to the listOfCities
-                String city = element.getElementsByTag("F").toString();
-                // if there isn't an information about the city, we will add empty string to the list.
-                if (!city.equals("") && city.contains("<f p=\"104\">")) {
-                    city = city.substring(city.indexOf("<f p=\"104\">", city.indexOf("</f>")));
-                    if (city.length() > 15) {
-                        city = city.substring(city.indexOf("\n "), city.indexOf(" \n"));
-                        city = city.replaceAll("\n", "");
-                        String cityline[] = city.split(" ");
-                        city = cityline[2].toUpperCase();
-
-                    }
-                }
-                listOfAllCities.add(city);
-            }
-        }
-        return listOfAllCities;
-    }
-
-
     public HashSet<String> ReadAllLanguagesFromCorpusForCreatingInfoFile() throws IOException {
         for (int i = 0; i < filesPaths.size(); i++) {
             File f = new File(filesPaths.get(i));
