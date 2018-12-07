@@ -17,7 +17,6 @@ public class Parse {
     static HashSet<String> wordsToDeleteSet;
     private Stemmer stemmer;
     private boolean useStemmer;
-
     private List<String> TermsOfDoc;
     private String term = "";
     private String termToLowerCase = "";
@@ -28,8 +27,7 @@ public class Parse {
     private Map<String, Integer> termsAndFrequencyMap;
 
 
-
-    Parse(String stopWordsPath, boolean stemmerSelection){
+    Parse(String stopWordsPath, boolean stemmerSelection) throws IOException{
 
         InitMonthsNames();
         stopWordsList = ReadStopWordToList(stopWordsPath);
@@ -47,6 +45,7 @@ public class Parse {
         return useStemmer;
     }
 
+
     public Map<String, Integer> ParsingDocument(String docText, String docNum) {
 
         termsAndFrequencyMap = new HashMap<>();
@@ -54,6 +53,7 @@ public class Parse {
         return termsAndFrequencyMap;
     }
 
+    //delete the chars - and . from the beginning and from the end of every term
     public void cleaningTerm() {
 
         if(!term.equals("")) {
@@ -67,14 +67,16 @@ public class Parse {
         }
     }
 
+
     private void BreakTextToTerms(String docText, String docNum) {
 
-        //cleaning the document before splitting (| is seperating between characters, and \\ is sometimes needed
+        //cleaning the document before splitting (| is separating between characters, and \\ is sometimes needed
         docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|<|//|", "");
 
         //splitting the document according to these delimiters - the second one is spaces
         TermsOfDoc = new ArrayList(Arrays.asList(docText.split("\\n|\\s+|\\t|;|\\?|!|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*")));
 
+        //runs over one doc's length
         for (int i = 0; i < TermsOfDoc.size(); i++) {
 
             //extracting every term and saving it's lowerCase and UpperCase
@@ -96,14 +98,11 @@ public class Parse {
                 i = HandleWithNumbers(i);
             else
             {
-
-                //if the term is a city - upade in City Map
+                //if the term is a city - update in cityMap
                 if(Indexer.citiesInAPI.containsKey(termToUpperCase))
                     updateCitiesInCorpus(docNum, i);
-
                 i = HandleWithStrings(i);
             }
-
         }
     }
 
@@ -131,14 +130,17 @@ public class Parse {
         }
     }
 
+    //This method gets terms which are numeric terms and checks if one of the defined rules on numeric terms
+    //Is relevant for that term
     private int HandleWithNumbers(int index) {
 
-        // nextTerm in lowerCase
+        //nextTerm in lowerCase
         String nextTermToLowerCase = nextTerm.toLowerCase();
 
         //for numbers with point
         if(term.contains("."))
         {
+            //split by "."
             String[] termSplittedByPoint = new String[2];
             for (int j = 0; j < term.length(); j++) {
                 if (term.charAt(j) == '.') {
@@ -146,6 +148,7 @@ public class Parse {
                     termSplittedByPoint[1] = term.substring(j + 1);
                 }
             }
+            //thousand, million, billion and trillion
             if(termSplittedByPoint[0].length() >= 4 && termSplittedByPoint[0].length() <= 12)
                 term = HandleNumbersWithPoint(termSplittedByPoint[0], termSplittedByPoint[1]);
 
@@ -244,7 +247,6 @@ public class Parse {
             }
         }
 
-
         //First additional rule: 100 Kilometers or 100 kilometers
         if ((nextTerm.equals("Kilometers") || nextTerm.equals("kilometers") || nextTerm.equals("km"))) {
             term = term + "km";
@@ -335,7 +337,7 @@ public class Parse {
 
     }
 
-
+    //This method handle with terms which are are not numeric
     private int HandleWithStrings(int index) {
 
         //case terms starts with $
@@ -467,13 +469,15 @@ public class Parse {
 
     }
 
+    //inserts a numeric term to the temporary map with it's frequency
+    //handles with terms of upper case letters. lower case letters and terms with first letter as capital letter
     private void AddTermNumberToMap(String term) {
-        if (term.charAt(term.length() - 1) == '.' || term.charAt(term.length() - 1) == '-')
+      /*  if (term.charAt(term.length() - 1) == '.' || term.charAt(term.length() - 1) == '-')
             term = term.substring(0, term.length() - 1);
 
         if(term.equals(""))
             return;
-
+       */
         if (useStemmer)
             term = CallStemmer(term);
 
@@ -484,14 +488,16 @@ public class Parse {
 
     }
 
+    //inserts a non-numeric term to the temporary map with it's frequency
+    //
     private void AddTermToMap(String term) {
 
-        if (term.charAt(term.length() - 1) == '.' || term.charAt(term.length() - 1) == '-')
+      /*  if (term.charAt(term.length() - 1) == '.' || term.charAt(term.length() - 1) == '-')
             term = term.substring(0, term.length() - 1);
 
         if(term.equals(""))
             return;
-
+       */
         termToLowerCase = term.toLowerCase();
         termToUpperCase = term.toUpperCase();
 
@@ -549,6 +555,7 @@ public class Parse {
         }
     }
 
+    //get the number that represents that month name
     //Get "MAY" or "May" or "may" and return "5"
     private static int GetMonthNumber(String monthName) {
         monthName = monthName.toUpperCase();
@@ -593,6 +600,7 @@ public class Parse {
         return true;
     }
 
+    //checks if the first char is uppercase
     public static boolean FirstIsUpperCase(char firstCharOfTerm) {
         if (firstCharOfTerm < 65 || firstCharOfTerm > 90)
             return false;
@@ -614,6 +622,7 @@ public class Parse {
         return true;
     }
 
+    //handle with doubles
     private static String HandleNumbersWithPoint(String beforePoint, String afterPoint) {
         if (beforePoint.length() >= 4 && beforePoint.length() <= 6)
             return beforePoint.substring(0, beforePoint.length() - 3) + '.'
@@ -627,6 +636,7 @@ public class Parse {
         return null;
 
     }
+
 
     private String HandleRegularNumbers(String number) {
         if (number.length() == 4) {
@@ -696,6 +706,8 @@ public class Parse {
         return number;
     }
 
+
+    //clean the zeros from numbers that their length is bigger than or equals to 4, and smaller than or equals 12
     private static String DeleteTheZeros(String number) {
         int length = number.length();
         if (length >= 4 && length <= 6) {
@@ -738,17 +750,15 @@ public class Parse {
         return true;
     }
 
+    //checks if a term is in our stopwords list
     boolean IsStopWord(String word) {
         return stopWordsList.contains(word);
     }
 
-    private HashSet<String> ReadStopWordToList(String stopWordsPath) {
-        Scanner s = null;
-        try {
+    //read the stop words file into list named stopWordsList
+    private HashSet<String> ReadStopWordToList(String stopWordsPath) throws IOException {
+        Scanner s;
             s = new Scanner(new File(stopWordsPath));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
         HashSet<String> stopWordsList = new HashSet<>();
         while (s.hasNext()) {
             stopWordsList.add(s.nextLine());
@@ -787,31 +797,6 @@ public class Parse {
         monthsNames.add("NOV");
         monthsNames.add("DEC");
     }
-    private HashSet<String> ReadJunkWordToList(String wordsToDelete)
-    {
-        Scanner s = null;
-        try {
-            s = new Scanner(new File(wordsToDelete));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        HashSet<String> junkWordSet = new HashSet<>();
-        //ArrayList<String> junkWordsList = new ArrayList<String>();
-        while (s.hasNextLine()) {
-            junkWordSet.add(s.nextLine());
-            //junkWordsList.add(s.next());
-        }
-        s.close();
-        return junkWordSet;
-        //return junkWordsList;
-    }
-
-
-    private boolean IsJunkWord()
-    {
-        //return wordsToDeleteSet.contains(term);
-        return false;
-    }
 
     private String CallStemmer(String term) {
         for (int i = 0; i < term.length(); i++) {
@@ -822,33 +807,3 @@ public class Parse {
     }
 
 }//end of class
-
-    /*
-    private CityInMap connectionToApi(String cityName) throws JSONException, IOException {
-        JSONObject json = readJsonFromUrl("https://restcountries.eu/rest/v2/capital/" + cityName);
-        String currencies = json.get("currencies").toString();
-        JSONObject jsonCurrencies = new JSONObject(currencies.substring(1,currencies.length()-1));
-        CityInMap cityInfo = new CityInMap(json.get("name").toString(), jsonCurrencies.get("code").toString(), json.get("population").toString());
-        return cityInfo;
-    }
-    private JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
-        InputStream is = new URL(url).openStream();
-        try {
-            BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-            String jsonText = readAll(rd);
-            jsonText = jsonText.substring(1,jsonText.length()-1);
-            JSONObject json = new JSONObject(jsonText);
-            return json;
-        } finally {
-            is.close();
-        }
-    }
-    private String readAll(Reader rd) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        int cp;
-        while ((cp = rd.read()) != -1) {
-            sb.append((char) cp);
-        }
-        return sb.toString();
-    }
-*/

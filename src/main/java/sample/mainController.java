@@ -87,9 +87,21 @@ public class mainController {
                     return;
                 }
 
-                //creating parser with path to stop words file (it's place is in the corpus' folder) and the stemmer selction
+                //creating parser with path to stop words file (it's place is in the corpus' folder) and the stemmer selection
                 //in order to know if to use stemming
-                parser = new Parse(pathToCorpus + "\\stop_words.txt", stemmerSelection);
+                try
+                {
+                    parser = new Parse(pathToCorpus + "\\stop_words.txt", stemmerSelection);
+                }
+                catch (IOException e)
+                {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    //alert.setTitle("Information Dialog");
+                    alert.setHeaderText("Stop words txt file is missing in the corpus folder");
+                    //alert.setContentText("s");
+                    alert.showAndWait();
+                    return;
+                }
                 //creating index and sending to his constructor readfile object, parser object and disk path
                 indexer = new Indexer(readFile, parser, pathToDisk);
 
