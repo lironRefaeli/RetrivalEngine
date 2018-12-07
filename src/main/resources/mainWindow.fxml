@@ -63,7 +63,7 @@
 
                 </ButtonBar>
 
-                <Button mnemonicParsing="false" onAction="#StartEngine" prefHeight="26.0" prefWidth="103.0" text="Start Searching!" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                <Button mnemonicParsing="false" onAction="#StartEngine" prefHeight="26.0" prefWidth="103.0" text="Start Indexing!" GridPane.columnIndex="2" GridPane.rowIndex="3" />
                 <CheckBox fx:id="stemmerCheckBox" mnemonicParsing="false" text="with Stemming" GridPane.rowIndex="2" />
                 <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="2">
                     <buttons>

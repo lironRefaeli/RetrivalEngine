@@ -202,16 +202,14 @@ public class Indexer {
         }//End of external loop - every loop is for one chunk of files (probably 8 files)
 
         //use thread in order to write CorpusTermMap, CorpusDocsMap and CorpusCitiesMap to a file
-        Thread writingMapThread = new Thread(() ->
-        {
-                try {
-                    WriteMapsToDisk();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    System.out.println("IOException caught in lambda");
-                }
-        });
-        writingMapThread.start();
+
+        try {
+            WriteMapsToDisk();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("IOException caught in lambda");
+        }
+
 
 
         //After creating all temporary posting time, it's time to merge them to one big temporary file
