@@ -1,5 +1,8 @@
 package sample;
 
+/**
+ * This class is an open source, and we are using it to stemming terms in Parse class when stemmer checkbox was pressed
+ */
 public class Stemmer {
 
     private char[] b;

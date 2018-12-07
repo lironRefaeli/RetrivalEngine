@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 
+/**
+ * The main class is opening the main window for configuring the engine by JAVAFX.
+ */
     public class Main extends Application {
 
 
@@ -21,7 +24,7 @@ import java.util.Map;
             Parent root = fxmlLoader.load(getClass().getResource("/mainWindow.fxml").openStream());
             primaryStage.setTitle("mainWindow");
             Scene scene = new Scene(root, 610, 320);
-            scene.getStylesheets().add(getClass().getResource("/cssTemplate.css").toExternalForm());
+            //scene.getStylesheets().add(getClass().getResource("/cssTemplate.css").toExternalForm());
             primaryStage.setScene(scene);
             primaryStage.show();
 

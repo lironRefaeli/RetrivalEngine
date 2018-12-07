@@ -1,9 +1,12 @@
 package sample;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+import javafx.scene.control.Alert;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -27,7 +30,7 @@ public class ReadFile {
     /**
      * @param mainFolderPath
      */
-    ReadFile(String mainFolderPath) throws IOException {
+    ReadFile(String mainFolderPath)  {
         nextFolderToReadIndex = 0;
         filesPaths = new ArrayList<>();
         //creating an object File from the input path, in order to read the content of the given folder
@@ -35,16 +38,6 @@ public class ReadFile {
         //sending the File object to a function that will create a list of all the file's paths in the given folder
         listFilesForFolder(folder);
 
-        /*
-        listOfLanguages= new HashSet<>();
-        listOfLanguages = ReadAllLanguagesFromCorpusForCreatingInfoFile();
-        for (String s : listOfLanguages) {
-            System.out.println(s.toLowerCase());
-        }
-
-
-        System.out.println("done");
-        */
     }
 
 
@@ -55,16 +48,19 @@ public class ReadFile {
      * @param folder
      */
     private void listFilesForFolder(File folder) {
-        //checking all the files in the given folder
-        for (final File fileEntry : folder.listFiles()) {
-            //if there's a folder in the specific file
-            if (fileEntry.isDirectory())
-                //we are recursively checking if there are files in it.
-                listFilesForFolder(fileEntry);
-            else
-                //adding path of file to the list
-                filesPaths.add(fileEntry.getPath());
-        }
+
+
+            //checking all the files in the given folder
+            for (final File fileEntry : folder.listFiles()) {
+                //if there's a folder in the specific file
+                if (fileEntry.isDirectory())
+                    //we are recursively checking if there are files in it.
+                    listFilesForFolder(fileEntry);
+                else
+                    //adding path of file to the list
+                    filesPaths.add(fileEntry.getPath());
+            }
+
     }
 
     /**
@@ -74,7 +70,7 @@ public class ReadFile {
      * @return list of al the texts that were in the given folders.
      * @throws IOException
      */
-    public List<String> ReadFolder(int numOfFoldersToReadFrom) throws IOException {
+    public List<String> ReadFolder(int numOfFoldersToReadFrom)  {
 
         //for new chunk we are restart the lists
         listOfTexts = new ArrayList<>();
@@ -98,9 +94,20 @@ public class ReadFile {
      * @param filePath
      * @throws IOException
      */
-    private void TransferFilePathToFileContent(String filePath) throws IOException {
+    private void TransferFilePathToFileContent(String filePath) {
         File f = new File(filePath);
-        Document document = Jsoup.parse(new String(Files.readAllBytes(f.toPath())));
+        Document document = null;
+        try {
+            document = Jsoup.parse(new String(Files.readAllBytes(f.toPath())));
+        } catch (IOException e) {
+
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            //alert.setTitle("Information Dialog");
+            alert.setHeaderText("The corpus wasn't found. Please enter your corpus' path again");
+            //alert.setContentText("s");
+            alert.showAndWait();
+            return;
+        }
         //first, we will separate all the documents in a file.
         Elements elements = document.getElementsByTag("DOC");
         for (Element element : elements) {

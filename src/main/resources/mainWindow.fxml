@@ -20,15 +20,15 @@
     <children>
         <ImageView fitHeight="538.0" fitWidth="709.0" layoutX="-95.0" layoutY="4.0" pickOnBounds="true" preserveRatio="true">
             <image>
-                <Image url="@reka2.png" />
+                <Image url="@backgroundMainWindow.png" />
             </image>
         </ImageView>
         <GridPane layoutX="34.0" layoutY="86.0" prefHeight="186.0" prefWidth="571.0">
             <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="152.0" minWidth="10.0" prefWidth="109.0" />
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="255.0" minWidth="10.0" prefWidth="153.0" />
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="255.0" minWidth="10.0" prefWidth="86.0" />
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="255.0" minWidth="10.0" prefWidth="113.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="152.0" minWidth="10.0" prefWidth="101.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="255.0" minWidth="10.0" prefWidth="145.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="255.0" minWidth="10.0" prefWidth="103.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="255.0" minWidth="10.0" prefWidth="115.0" />
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="255.0" minWidth="10.0" prefWidth="107.0" />
             </columnConstraints>
             <rowConstraints>
@@ -58,36 +58,36 @@
                 <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
                     <buttons>
 
-                        <Button minWidth="70.0" mnemonicParsing="false" onAction="#browseDiskPath" prefHeight="25.0" text="browse" />
+                        <Button minWidth="70.0" mnemonicParsing="false" onAction="#browseDiskPath" prefHeight="25.0" prefWidth="125.0" text="browse" />
                     </buttons>
 
                 </ButtonBar>
 
-                <Button mnemonicParsing="false" onAction="#StartEngine" text="Start Searching!" GridPane.columnIndex="4" GridPane.rowIndex="3" />
+                <Button mnemonicParsing="false" onAction="#StartEngine" prefHeight="26.0" prefWidth="103.0" text="Start Searching!" GridPane.columnIndex="2" GridPane.rowIndex="3" />
                 <CheckBox fx:id="stemmerCheckBox" mnemonicParsing="false" text="with Stemming" GridPane.rowIndex="2" />
                 <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="2">
                     <buttons>
-                        <Button minWidth="56.0" mnemonicParsing="false" onAction="#BrowseCorpusPath" prefHeight="25.0" text="browse" />
+                        <Button minWidth="56.0" mnemonicParsing="false" onAction="#BrowseCorpusPath" prefHeight="25.0" prefWidth="121.0" text="browse" />
                     </buttons>
                 </ButtonBar>
                 <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
                     <buttons>
-                        <Button mnemonicParsing="false" onAction="#Restart" text="restart" />
+                        <Button mnemonicParsing="false" onAction="#Reset" prefHeight="25.0" prefWidth="109.0" text="reset" />
                     </buttons>
                 </ButtonBar>
                 <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
                     <buttons>
-                        <Button mnemonicParsing="false" onAction="#ShowDictionary" prefHeight="25.0" prefWidth="123.0" text="Show Dictionary" />
+                        <Button mnemonicParsing="false" onAction="#displayDictionary" prefHeight="25.0" prefWidth="123.0" text="show Dictionary" />
                     </buttons>
                 </ButtonBar>
                 <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="2">
                     <buttons>
-                        <Button mnemonicParsing="false" onAction="#LoadDictionaryFromDisk" text="load Dictionary" />
+                        <Button mnemonicParsing="false" onAction="#LoadDictionaryFromDisk" prefHeight="25.0" prefWidth="111.0" text="load Dictionary" />
                     </buttons>
                 </ButtonBar>
             </children>
         </GridPane>
-        <Label layoutX="39.0" layoutY="23.0" text="Our Retrival Engine">
+        <Label layoutX="39.0" layoutY="23.0" text="Configure your engine">
             <font>
                 <Font size="36.0" />
             </font>
