@@ -230,7 +230,8 @@ public class Indexer {
         queueOfTempPostingFiles.add(file.getPath()); //that queue will serve us when merging the temp posting files
         BufferedWriter writer;
         try {
-            writer = new BufferedWriter(new FileWriter(file),262144);
+            //writer = new BufferedWriter(new FileWriter(file),262144);
+            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file.getPath()),"UTF-8"),262144);
             for (String term : postingMap.keySet()) {
                 //the structure is - "term*docNum~tf,"
                 String data = term + "*" + postingMap.get(term);
@@ -291,9 +292,9 @@ public class Indexer {
 
         //writing the corpusTermMap to a file as an object
         if(parser.getStemmer())
-            dictionaryFile = new File(pathToDisk+"\\CorpusTermsWithStemming");
+            dictionaryFile = new File(pathToDisk+"\\dictionaryWithStemming");
         else
-            dictionaryFile = new File(pathToDisk+"\\CorpusTermsWithoutStemming");
+            dictionaryFile = new File(pathToDisk+"\\dictionaryWithoutStemming");
 
         FileOutputStream fileStream = new FileOutputStream(dictionaryFile);
         ObjectOutputStream outputStream = new ObjectOutputStream(fileStream);

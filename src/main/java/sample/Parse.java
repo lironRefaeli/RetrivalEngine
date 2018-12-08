@@ -14,7 +14,6 @@ public class Parse {
 
     static HashSet<String> monthsNames;
     static HashSet<String> stopWordsList;
-    static HashSet<String> wordsToDeleteSet;
     private Stemmer stemmer;
     private boolean useStemmer;
     private List<String> TermsOfDoc;
