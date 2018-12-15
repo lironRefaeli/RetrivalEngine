@@ -26,7 +26,6 @@ public class Parse {
     private String thirdNextTerm = "";
     private Map<String, Integer> termsAndFrequencyMap;
 
-
     Parse(String stopWordsPath, boolean stemmerSelection) throws IOException{
 
         InitMonthsNames();
@@ -99,8 +98,10 @@ public class Parse {
             else
             {
                 //if the term is a city - update in cityMap
-                if(Indexer.citiesInAPI.containsKey(termToUpperCase))
+                if(Indexer.citiesInAPI.containsKey(termToUpperCase)) {
                     updateCitiesInCorpus(docNum, i);
+
+                }
                 i = HandleWithStrings(i);
             }
         }

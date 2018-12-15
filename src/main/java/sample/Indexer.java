@@ -15,22 +15,23 @@ import java.util.concurrent.TimeUnit;
 public class Indexer {
     public int numOfTempPostingFiles;
     static public double NumberOfDocsInCorpus;
+    static boolean hasException = false;
+    public static Map<String, CityInMap> citiesInCorpus = new HashMap<>();
+    public static Map<String, CityInMap> citiesInAPI = new HashMap<>();
+    public static Map<String, TermDataInMap> termsCorpusMap; //a map that includes all the terms in the corpus
+    public static final long startTime = System.nanoTime();
+    static String postingFilesPath = "";
     public ReadFile readFile;
     public Parse parser;
     public String pathToDisk;
     public MergeFiles mergeFiles;
     public ExecutorService pool;
-    public static Map<String, TermDataInMap> termsCorpusMap; //a map that includes all the terms in the corpus
     public Map<String, DocTermDataInMap> docsCorpusMap; //a map that includes all the terms in the corpus
-    public static Map<String, CityInMap> citiesInCorpus = new HashMap<>();
-    public static Map<String, CityInMap> citiesInAPI = new HashMap<>();
     public ConcurrentLinkedQueue<String> queueOfTempPostingFiles;
-    public static final long startTime = System.nanoTime();
-    static String postingFilesPath = "";
     public int IDsOfDocs = 0;
     public Map<Integer,String> docsAndIDs;
     JSON_reader json_reader;
-    static boolean hasException = false;
+
 
 
     public Indexer(ReadFile readFile, Parse parser, String pathToDisk)
@@ -201,7 +202,24 @@ public class Indexer {
 
         }//End of external loop - every loop is for one chunk of files (probably 8 files)
 
+
         //use thread in order to write CorpusTermMap, CorpusDocsMap and CorpusCitiesMap to a file
+         Set<String> setCountry = new HashSet<>();
+
+        for(int i=0;i<citiesInCorpus.size();i++)
+        {
+            if(citiesInCorpus.get(i)!=null && !citiesInCorpus.get(i).countryName.equals("")  )
+                setCountry.add(citiesInCorpus.get(i).countryName);
+        }
+
+        for(String counrty: setCountry)
+        {
+            System.out.println(counrty);
+        }
+
+        System.out.println(setCountry.size());
+
+
 
         try {
             WriteMapsToDisk();

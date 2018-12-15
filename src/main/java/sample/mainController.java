@@ -16,6 +16,8 @@ import javafx.stage.Stage;
 
 import javax.swing.*;
 import java.io.*;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -208,7 +210,6 @@ public class mainController {
          */
         public void Reset(ActionEvent event) {
 
-
                 String pathToDisk = diskPath.getText();
                 String postingFolderPath;
                 String dictionaryFilePath;
@@ -244,6 +245,19 @@ public class mainController {
                 corpusPath.setText("");
                 diskPath.setText("");
                 System.gc(); // calling the garbage collector
+
+                //todo reset static parameters
+                Indexer.termsCorpusMap = null;
+                Indexer.NumberOfDocsInCorpus = 0;
+                Indexer.hasException = false;
+                Indexer.citiesInCorpus = null;
+                //Indexer.citiesInAPI = null;
+                Indexer.termsCorpusMap = null;
+                Indexer.postingFilesPath = "";
+                Parse.monthsNames = null;
+                Parse.stopWordsList = null;
+                Parse.wordsToDeleteSet = null;
+
 
 
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
