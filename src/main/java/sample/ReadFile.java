@@ -96,9 +96,10 @@ public class ReadFile {
      */
     private void TransferFilePathToFileContent(String filePath) {
         File f = new File(filePath);
-        Document document = null;
+        Document document;
         try {
-            document = Jsoup.parse(new String(Files.readAllBytes(f.toPath())));
+            document = Jsoup.parse(f,"UTF-8");
+           //document = Jsoup.parse(new String(Files.readAllBytes(f.toPath())),"UTF-8");
         } catch (IOException e) {
 
             Alert alert = new Alert(Alert.AlertType.ERROR);

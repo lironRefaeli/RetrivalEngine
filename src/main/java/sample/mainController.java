@@ -16,10 +16,7 @@ import javafx.stage.Stage;
 
 import javax.swing.*;
 import java.io.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 //todo write in readme
 //https://stackoverflow.com/questions/29888592/errorjava-javactask-source-release-8-requires-target-release-1-8
@@ -52,7 +49,7 @@ public class mainController {
         public void StartEngine(ActionEvent actionEvent) throws IOException {
 
             //checking if there is a dictionary in the system by checking termsInCorpus map
-            if(Indexer.termsCorpusMap == null) {
+            //if(Indexer.termsCorpusMap == null) {
 
                 //extracting corpusPath from the UI
                 String pathToCorpus = corpusPath.getText();
@@ -155,7 +152,8 @@ public class mainController {
                     alert.showAndWait();
                 }
 
-            }//if index stopped in the middle of the process because of wrong disk path - display alert
+          //  }//if index stopped in the middle of the process because of wrong disk path - display alert
+            /*
             else
             {
                 //opens a new window for writing the query after the inverted index and all the other relevant stuff are ready
@@ -167,6 +165,7 @@ public class mainController {
                 stage.setScene(new Scene(root1, 600, 500));
                 stage.show();
             }
+            */
 
         }
 
@@ -210,23 +209,35 @@ public class mainController {
          */
         public void Reset(ActionEvent event) {
 
+
                 String pathToDisk = diskPath.getText();
                 String postingFolderPath;
                 String dictionaryFilePath;
+                String corpusCitiesPath;
+                String corpusDocsPath;
                 boolean stemmerSelection = stemmerCheckBox.isSelected();
 
                 if(stemmerSelection) {
                     postingFolderPath = pathToDisk + "\\withStemming";
                     dictionaryFilePath = pathToDisk + "\\dictionaryWithStemming";
+                    corpusCitiesPath = pathToDisk + "\\CorpusCitiesWithStemming";
+                    corpusDocsPath = pathToDisk + "\\CorpusDocsWithStemming";
                 }
                 else {
                     postingFolderPath = pathToDisk + "\\withoutStemming";
                     dictionaryFilePath = pathToDisk + "\\dictionaryWithoutStemming";
+                    corpusCitiesPath = pathToDisk + "\\CorpusCitiesWithoutStemming";
+                    corpusDocsPath = pathToDisk + "\\CorpusDocsWithoutStemming";
 
                 }
                 //delete dictionary file
                 File dictionaryFile = new File(dictionaryFilePath);
+                File citiesFile = new File(corpusCitiesPath);
+                File docsFile = new File(corpusDocsPath);
+
                 dictionaryFile.delete();
+                citiesFile.delete();
+                docsFile.delete();
 
                 //delete posting files
                 File postingFilesDirectory = new File(postingFolderPath);
@@ -245,18 +256,13 @@ public class mainController {
                 corpusPath.setText("");
                 diskPath.setText("");
                 System.gc(); // calling the garbage collector
-
-                //todo reset static parameters
                 Indexer.termsCorpusMap = null;
+                Indexer.citiesInCorpus = new HashMap<>();
                 Indexer.NumberOfDocsInCorpus = 0;
+                Indexer.citiesInAPI = new HashMap<>();
                 Indexer.hasException = false;
-                Indexer.citiesInCorpus = null;
-                //Indexer.citiesInAPI = null;
-                Indexer.termsCorpusMap = null;
-                Indexer.postingFilesPath = "";
-                Parse.monthsNames = null;
-                Parse.stopWordsList = null;
-                Parse.wordsToDeleteSet = null;
+                Parse.stopWordsList = new HashSet<>();
+                Parse.monthsNames = new HashSet<>();
 
 
 

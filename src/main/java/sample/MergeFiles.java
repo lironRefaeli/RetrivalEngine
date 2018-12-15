@@ -38,11 +38,17 @@ public class MergeFiles implements Runnable {
     public String margeTwoFiles(String firstFilePath, String secondFilePath) throws IOException
     {
         File file1 = new File(firstFilePath);
-        FileReader firstReader = new FileReader(file1);
-        fileReader1 = new BufferedReader(firstReader);
+        //FileReader firstReader = new FileReader(file1);
+        //fileReader1 = new BufferedReader(firstReader);
+        FileInputStream fileInputStream1 = new FileInputStream(firstFilePath);
+        InputStreamReader fileInputStreamReader1 = new InputStreamReader(fileInputStream1,"UTF-8");
+        fileReader1 = new BufferedReader(fileInputStreamReader1);
         File file2 = new File(secondFilePath);
-        FileReader secondReader = new FileReader(file2);
-        fileReader2 = new BufferedReader(secondReader);
+        //FileReader secondReader = new FileReader(file2);
+        //fileReader2 = new BufferedReader(secondReader);
+        FileInputStream fileInputStream2 = new FileInputStream(secondFilePath);
+        InputStreamReader fileInputStreamReader2 = new InputStreamReader(fileInputStream2,"UTF-8");
+        fileReader2 = new BufferedReader(fileInputStreamReader2);
         System.out.println(file1.getName() + "+" + file2.getName());
         File outFile;
 
@@ -54,8 +60,8 @@ public class MergeFiles implements Runnable {
         }
 
         FileWriter fw = new FileWriter(outFile);
-
-        bw = new BufferedWriter(fw,262144);
+        bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile.getPath()),"UTF-8"),262144);
+        //bw = new BufferedWriter(fw,262144);
 
         //both files still have new lines to read
         while (fileReader1.ready() && fileReader2.ready())
@@ -124,6 +130,10 @@ public class MergeFiles implements Runnable {
         //delete the two posting files and close the readers and the writer
         bw.close();
         fw.close();
+        fileInputStream1.close();
+        fileInputStream2.close();
+        fileInputStreamReader1.close();
+        fileInputStreamReader2.close();
         fileReader1.close();
         fileReader2.close();
         file1.delete();
@@ -139,18 +149,32 @@ public class MergeFiles implements Runnable {
     public void margeTwoLastFilesAndCreatePermanentPostingFiles(String firstFilePath, String secondFilePath) throws IOException {
         //read the two last temp posting files
         File file1 = new File(firstFilePath);
-        FileReader firstReader = new FileReader(file1);
-        fileReader1 =new BufferedReader(firstReader);
+        //FileReader firstReader = new FileReader(file1);
+        //fileReader1 =new BufferedReader(firstReader);
+       // fileReader1 = new BufferedReader(new InputStreamReader(new FileInputStream(firstFilePath),"UTF-8"));
         File file2= new File(secondFilePath);
-        FileReader secondReader = new FileReader(file2);
-        fileReader2 = new BufferedReader(secondReader);
+        //FileReader secondReader = new FileReader(file2);
+        //fileReader2 = new BufferedReader(secondReader);
+       // fileReader2 = new BufferedReader(new InputStreamReader(new FileInputStream(secondFilePath),"UTF-8"));
+        FileInputStream fileInputStream1 = new FileInputStream(firstFilePath);
+        InputStreamReader fileInputStreamReader1 = new InputStreamReader(fileInputStream1,"UTF-8");
+        fileReader1 = new BufferedReader(fileInputStreamReader1);
+        //FileReader secondReader = new FileReader(file2);
+        //fileReader2 = new BufferedReader(secondReader);
+        FileInputStream fileInputStream2 = new FileInputStream(secondFilePath);
+        InputStreamReader fileInputStreamReader2 = new InputStreamReader(fileInputStream2,"UTF-8");
+        fileReader2 = new BufferedReader(fileInputStreamReader2);
+
+
+
         char firstCharOfLine1;
         char firstLineOfLine2;
 
         //create ths Symbols file
         File outFile = new File(Indexer.postingFilesPath + "\\Symbols.txt");
         FileWriter fw = new FileWriter(outFile);
-        bw = new BufferedWriter(fw,262144);
+        bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile.getPath()),"UTF-8"),262144);
+        //bw = new BufferedWriter(fw,262144);
 
         String termName;
         String termNameLower;
@@ -172,7 +196,8 @@ public class MergeFiles implements Runnable {
                 fw.close();
                 outFile = new File(Indexer.postingFilesPath + "\\" + (char)firstLetterOfBothTerms +".txt");
                 fw = new FileWriter(outFile);
-                bw = new BufferedWriter(fw, 262144);
+                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile.getPath()),"UTF-8"),262144);
+                //bw = new BufferedWriter(fw, 262144);
                 firstLetterOfBothTerms++;
             }
             compareBetweenTwoTermsWithoutExtract();
@@ -266,6 +291,10 @@ public class MergeFiles implements Runnable {
 
         }
         //delete the two posting files and close the readers and the writer
+        fileInputStream1.close();
+        fileInputStream2.close();
+        fileInputStreamReader1.close();
+        fileInputStreamReader2.close();
         fileReader1.close();
         fileReader2.close();
         file1.delete();
