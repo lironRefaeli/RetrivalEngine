@@ -25,7 +25,7 @@ public class Indexer {
     public static Map<String, CityInMap> citiesInCorpus = new HashMap<>();
     public static Map<String, CityInMap> citiesInAPI = new HashMap<>();
     public ConcurrentLinkedQueue<String> queueOfTempPostingFiles;
-    public static final long startTime = System.nanoTime();
+    public static long startTime = System.nanoTime();
     static String postingFilesPath = "";
     public int IDsOfDocs = 0;
     public Map<Integer,String> docsAndIDs;

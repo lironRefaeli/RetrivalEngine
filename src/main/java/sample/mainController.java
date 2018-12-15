@@ -130,9 +130,10 @@ public class mainController {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setHeaderText("Just for you to know");
                     alert.setContentText("The number of documents that were indexed is: " + indexer.docsCorpusMap.size() +
-                            ". The number of terms that were found is: " + indexer.termsCorpusMap.size() + ". We found " +
-                            "this data in: " + (System.nanoTime() - indexer.startTime) / 1000000000.0 + " sec.");
+                            ". The number of terms that were found is: " + Indexer.termsCorpusMap.size() + ". We found " +
+                            "this data in: " + (System.nanoTime() - Indexer.startTime) / 1000000000.0 + " sec.");
                     alert.showAndWait();
+                    Indexer.startTime = 0;
 
                     //opens a new window for writing the query after the inverted index and all the other relevant stuff are ready
                     FXMLLoader fxmlLoader = new FXMLLoader();
@@ -396,7 +397,7 @@ public class mainController {
         private void initChoiceBox(){
 
             languagesBox.setItems(languagesBoxOptions);
-            languagesBox.setValue("English");
+            //languagesBox.setValue("English");
         }
 
 }
