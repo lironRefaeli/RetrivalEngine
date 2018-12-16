@@ -39,6 +39,7 @@ public class mainController {
         @FXML
         private ChoiceBox languagesBox;
 
+        private boolean stemmerSelection;
 
         /**
          * the function opening the searching window
@@ -90,7 +91,8 @@ public class mainController {
                 //in order to know if to use stemming
                 try
                 {
-                    parser = new Parse(pathToCorpus + "\\stop_words.txt", stemmerSelection);
+                    parser = new Parse( stemmerSelection);
+                    parser.LoadStopWordsList(pathToCorpus + "\\stop_words.txt");
                 }
                 catch (IOException e)
                 {
@@ -134,15 +136,6 @@ public class mainController {
                             "this data in: " + (System.nanoTime() - Indexer.startTime) / 1000000000.0 + " sec.");
                     alert.showAndWait();
                     Indexer.startTime = 0;
-
-                    //opens a new window for writing the query after the inverted index and all the other relevant stuff are ready
-                    FXMLLoader fxmlLoader = new FXMLLoader();
-                    Parent root1 = fxmlLoader.load(getClass().getResource("/engineWindow.fxml").openStream());
-                    Stage stage = new Stage();
-                    stage.initModality(Modality.APPLICATION_MODAL);
-                    stage.setTitle("engineWindow");
-                    stage.setScene(new Scene(root1, 600, 500));
-                    stage.show();
                 }
                 else
                 {
@@ -216,6 +209,7 @@ public class mainController {
                 String dictionaryFilePath;
                 String corpusCitiesPath;
                 String corpusDocsPath;
+                String IDsPath;
                 boolean stemmerSelection = stemmerCheckBox.isSelected();
 
                 if(stemmerSelection) {
@@ -223,22 +217,26 @@ public class mainController {
                     dictionaryFilePath = pathToDisk + "\\dictionaryWithStemming";
                     corpusCitiesPath = pathToDisk + "\\CorpusCitiesWithStemming";
                     corpusDocsPath = pathToDisk + "\\CorpusDocsWithStemming";
+                    IDsPath = pathToDisk + "\\IDsDocsWithStemming";
                 }
                 else {
                     postingFolderPath = pathToDisk + "\\withoutStemming";
                     dictionaryFilePath = pathToDisk + "\\dictionaryWithoutStemming";
                     corpusCitiesPath = pathToDisk + "\\CorpusCitiesWithoutStemming";
                     corpusDocsPath = pathToDisk + "\\CorpusDocsWithoutStemming";
+                    IDsPath = pathToDisk + "\\IDsDocsWithoutStemming";
 
                 }
                 //delete dictionary file
                 File dictionaryFile = new File(dictionaryFilePath);
                 File citiesFile = new File(corpusCitiesPath);
                 File docsFile = new File(corpusDocsPath);
+                File IDsFile = new File(IDsPath);
 
                 dictionaryFile.delete();
                 citiesFile.delete();
                 docsFile.delete();
+                IDsFile.delete();
 
                 //delete posting files
                 File postingFilesDirectory = new File(postingFolderPath);
@@ -259,6 +257,7 @@ public class mainController {
                 System.gc(); // calling the garbage collector
                 Indexer.termsCorpusMap = null;
                 Indexer.citiesInCorpus = new HashMap<>();
+                Indexer.docsAndIDs = new HashMap<>();
                 Indexer.NumberOfDocsInCorpus = 0;
                 Indexer.citiesInAPI = new HashMap<>();
                 Indexer.hasException = false;
@@ -343,27 +342,52 @@ public class mainController {
                 boolean stemmerSelection = stemmerCheckBox.isSelected();
                 String pathToDisk = diskPath.getText();
                 File dictionaryFile;
+                File docsFile;
+                File citiesFile;
+                File IDsFile;
 
                 if (stemmerSelection)
+                {
                     dictionaryFile = new File(pathToDisk + "\\dictionaryWithStemming");
+                    docsFile = new File(pathToDisk + "\\CorpusDocsWithStemming");
+                    citiesFile = new File(pathToDisk + "\\CorpusCitiesWithStemming");
+                    IDsFile = new File(pathToDisk + "\\IDsDocsWithStemming");
+                }
+
+
                 else
+                {
                     dictionaryFile = new File(pathToDisk + "\\dictionaryWithoutStemming");
+                    docsFile = new File(pathToDisk + "\\CorpusDocsWithoutStemming");
+                    citiesFile = new File(pathToDisk + "\\CorpusCitiesWithoutStemming");
+                    IDsFile = new File(pathToDisk + "\\IDsDocsWithoutStemming");
+                }
 
+                FileInputStream fileStreamer;
+                FileInputStream fileStreamerDocs;
+                FileInputStream fileStreamerCities;
+                FileInputStream fileStreamerIDs;
 
-                FileInputStream fileStreamer = null;
                 try {
                     fileStreamer = new FileInputStream(dictionaryFile);
+                    fileStreamerDocs = new FileInputStream(docsFile);
+                    fileStreamerCities = new FileInputStream(citiesFile);
+                    fileStreamerIDs = new FileInputStream(IDsFile);
                 } catch (FileNotFoundException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
-                    //alert.setTitle("Information Dialog");
-                    alert.setHeaderText("The dictionary file wasn't found :(");
-                    //alert.setContentText("s");
+                    alert.setHeaderText("One or more of the necessary dictionaries weren't found :(");
                     alert.showAndWait();
                     return;
                 }
                 ObjectInputStream objectStreamer = null;
+                ObjectInputStream objectStreamerDocs = null;
+                ObjectInputStream objectStreamerCities = null;
+                ObjectInputStream objectStreamerIDs = null;
                 try {
                     objectStreamer = new ObjectInputStream(fileStreamer);
+                    objectStreamerDocs = new ObjectInputStream(fileStreamerDocs);
+                    objectStreamerCities = new ObjectInputStream(fileStreamerCities);
+                    objectStreamerIDs = new ObjectInputStream(fileStreamerIDs);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -371,6 +395,9 @@ public class mainController {
                 // Read objects
                 try {
                     Indexer.termsCorpusMap = (Map<String, TermDataInMap>) objectStreamer.readObject();
+                    Indexer.docsCorpusMap = (Map<String, DocTermDataInMap>) objectStreamerDocs.readObject();
+                    Indexer.citiesInCorpus = (Map<String, CityInMap>) objectStreamerCities.readObject();
+                    Indexer.docsAndIDs = (Map<Integer, String>) objectStreamerIDs.readObject();
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (ClassNotFoundException e) {
@@ -379,15 +406,19 @@ public class mainController {
 
                 try {
                     objectStreamer.close();
+                    objectStreamerDocs.close();
+                    objectStreamerCities.close();
+                    objectStreamerIDs.close();
                     fileStreamer.close();
+                    fileStreamerDocs.close();
+                    fileStreamerCities.close();
+                    fileStreamerIDs.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                //alert.setTitle("Information Dialog");
-                alert.setHeaderText("Loading the dictionary was succeeded!");
-                //alert.setContentText("s");
+                alert.setHeaderText("Loading the dictionaries was succeeded!");
                 alert.showAndWait();
 
         }
@@ -399,5 +430,31 @@ public class mainController {
             languagesBox.setItems(languagesBoxOptions);
             //languagesBox.setValue("English");
         }
+
+    public void OpenSearchWindow(ActionEvent actionEvent) throws IOException {
+        //opens a new window for writing the query after the inverted index and all the other relevant stuff are ready
+        if(Indexer.termsCorpusMap != null)
+        {
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            Parent root1 = fxmlLoader.load(mainController.class.getResource("/engineWindow.fxml").openStream());
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("engineWindow");
+            stage.setScene(new Scene(root1, 600, 500));
+            stage.show();
+            boolean stemmerSelection = stemmerCheckBox.isSelected();
+            engineController.setStemmerSelection(stemmerSelection);
+            engineController.setPathToDisk(diskPath.getText());
+        }
+        else
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("Please run the Indexer or load a dictionary before searching");
+            alert.showAndWait();
+            return;
+        }
+    }
+
+
 
 }

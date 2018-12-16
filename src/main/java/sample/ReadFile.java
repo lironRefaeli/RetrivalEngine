@@ -137,6 +137,41 @@ public class ReadFile {
 
         }
     }
+
+    public static List<Query> ReadQueries(String queriesFilePath)
+    {
+        List<Query> queriesList = new ArrayList<>();
+        File f = new File(queriesFilePath);
+        Document document;
+        try {
+            document = Jsoup.parse(f,"UTF-8");
+            //document = Jsoup.parse(new String(Files.readAllBytes(f.toPath())),"UTF-8");
+        } catch (IOException e) {
+
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            //alert.setTitle("Information Dialog");
+            alert.setHeaderText("The path to the queries file wasn't found, please try again");
+            //alert.setContentText("s");
+            alert.showAndWait();
+            return null;
+        }
+
+        //Reading the info about each query from the queries file
+        Elements elements = document.getElementsByTag("top");
+        for (Element element : elements)
+        {
+            Query query = new Query();
+            query.queryID = element.getElementsByTag("num").text();
+            query.title = element.getElementsByTag("title").text();
+            query.description = element.getElementsByTag("desc").text();
+            queriesList.add(query);
+        }
+
+        return queriesList;
+    }
+
+
+
     /**
      * @return listOfDocsNumbers
      */

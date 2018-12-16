@@ -17,6 +17,7 @@ public class Parse {
     private Stemmer stemmer;
     private boolean useStemmer;
     private List<String> TermsOfDoc;
+    private List<String> TermsOfQuery;
     private String term = "";
     private String termToLowerCase = "";
     private String termToUpperCase = "";
@@ -25,16 +26,18 @@ public class Parse {
     private String thirdNextTerm = "";
     private Map<String, Integer> termsAndFrequencyMap;
 
-    Parse(String stopWordsPath, boolean stemmerSelection) throws IOException{
-
-        InitMonthsNames();
-        stopWordsList = ReadStopWordToList(stopWordsPath);
-
+    Parse(boolean stemmerSelection){
         //stemmer defenition
         this.useStemmer = stemmerSelection;
         if(useStemmer)
             stemmer = new Stemmer();
+        InitMonthsNames();
 
+    }
+
+    public void LoadStopWordsList(String stopWordsPath) throws IOException
+    {
+        stopWordsList = ReadStopWordToList(stopWordsPath);
     }
 
 
@@ -48,6 +51,13 @@ public class Parse {
 
         termsAndFrequencyMap = new HashMap<>();
         BreakTextToTerms(docText, docNum);
+        return termsAndFrequencyMap;
+    }
+
+    public Map<String, Integer> ParsingQuery(String queryString) {
+
+        termsAndFrequencyMap = new HashMap<>();
+        BreakQueryToTerms(queryString);
         return termsAndFrequencyMap;
     }
 
@@ -103,6 +113,34 @@ public class Parse {
                 }
                 i = HandleWithStrings(i);
             }
+        }
+    }
+
+    private void BreakQueryToTerms(String queryString) {
+
+        queryString = queryString.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|<|//|", "");
+        TermsOfQuery = new ArrayList(Arrays.asList(queryString.split("\\n|\\s+|\\t|;|\\?|!|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*")));
+
+        for (int i = 0; i < TermsOfQuery.size(); i++) {
+
+            //extracting every term and saving it's lowerCase and UpperCase
+            term = TermsOfQuery.get(i);
+            cleaningTerm();
+            termToLowerCase = term.toLowerCase();
+            termToUpperCase = term.toUpperCase();
+
+            if (term.equals(""))
+                continue;
+
+            //extracting nextTerm
+            if (i + 1 <= TermsOfQuery.size() - 1)
+                nextTerm = TermsOfQuery.get(i + 1);
+
+            //checking if term is number or String
+            if (IsNumeric(term))
+                i = HandleWithNumbers(i);
+            else
+                i = HandleWithStrings(i);
         }
     }
 
@@ -472,12 +510,6 @@ public class Parse {
     //inserts a numeric term to the temporary map with it's frequency
     //handles with terms of upper case letters. lower case letters and terms with first letter as capital letter
     private void AddTermNumberToMap(String term) {
-      /*  if (term.charAt(term.length() - 1) == '.' || term.charAt(term.length() - 1) == '-')
-            term = term.substring(0, term.length() - 1);
-
-        if(term.equals(""))
-            return;
-       */
         if (useStemmer)
             term = CallStemmer(term);
 
@@ -491,13 +523,6 @@ public class Parse {
     //inserts a non-numeric term to the temporary map with it's frequency
     //
     private void AddTermToMap(String term) {
-
-      /*  if (term.charAt(term.length() - 1) == '.' || term.charAt(term.length() - 1) == '-')
-            term = term.substring(0, term.length() - 1);
-
-        if(term.equals(""))
-            return;
-       */
         termToLowerCase = term.toLowerCase();
         termToUpperCase = term.toUpperCase();
 

@@ -15,7 +15,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.mainController">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.mainController">
 
     <children>
         <ImageView fitHeight="538.0" fitWidth="709.0" layoutX="-95.0" layoutY="4.0" pickOnBounds="true" preserveRatio="true">
@@ -85,6 +85,8 @@
                         <Button mnemonicParsing="false" onAction="#LoadDictionaryFromDisk" prefHeight="25.0" prefWidth="111.0" text="load Dictionary" />
                     </buttons>
                 </ButtonBar>
+            <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+          <Button onAction="#OpenSearchWindow" mnemonicParsing="false" prefHeight="25.0" prefWidth="107.0" text="Start Searching!" GridPane.columnIndex="4" GridPane.rowIndex="3" />
             </children>
         </GridPane>
         <Label layoutX="39.0" layoutY="23.0" text="Configure your engine">

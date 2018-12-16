@@ -21,14 +21,14 @@ public class Indexer {
     public MergeFiles mergeFiles;
     public ExecutorService pool;
     public static Map<String, TermDataInMap> termsCorpusMap; //a map that includes all the terms in the corpus
-    public Map<String, DocTermDataInMap> docsCorpusMap; //a map that includes all the terms in the corpus
+    public static Map<String, DocTermDataInMap> docsCorpusMap; //a map that includes all the terms in the corpus
     public static Map<String, CityInMap> citiesInCorpus = new HashMap<>();
     public static Map<String, CityInMap> citiesInAPI = new HashMap<>();
     public ConcurrentLinkedQueue<String> queueOfTempPostingFiles;
     public static long startTime = System.nanoTime();
     static String postingFilesPath = "";
     public int IDsOfDocs = 0;
-    public Map<Integer,String> docsAndIDs;
+    public static Map<Integer,String> docsAndIDs;
     JSON_reader json_reader;
     static boolean hasException = false;
 
@@ -36,7 +36,7 @@ public class Indexer {
     public Indexer(ReadFile readFile, Parse parser, String pathToDisk)
     {
         NumberOfDocsInCorpus = 0;
-        numOfTempPostingFiles = 227;
+        numOfTempPostingFiles = 4;
         this.readFile = readFile;
         this.parser = parser;
         this.pathToDisk = pathToDisk;
@@ -67,7 +67,7 @@ public class Indexer {
         for (int i = 0; i < numOfTempPostingFiles; i++) {
             System.out.println("start loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
             int maxTermFreqPerDoc = 0;
-            List<String> listOfTexts = readFile.ReadFolder(8); //list of Documents' texts
+            List<String> listOfTexts = readFile.ReadFolder(4); //list of Documents' texts
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
             List<String> ListOfCities = readFile.getListOfCities();
             NumberOfDocsInCorpus += listOfDocsNumbers.size();
@@ -89,9 +89,32 @@ public class Indexer {
             for (int j = 0; j < listOfTexts.size(); j++) {
                 //for every text we will build temporaryMap in order to save all the terms and their frequency (tf) by Parse object
                 Map<String, Integer> temporaryMap = parser.ParsingDocument(listOfTexts.get(j), listOfDocsNumbers.get(j));
+
+
+                //This section is for finding the frequent 5 entities in a document
+                Map<String,Double> sortedTemporaryMap = new HashMap<>();
+                List<Map.Entry<String, Integer>> list = new ArrayList<>(temporaryMap.entrySet());
+                list.sort(Map.Entry.comparingByValue());
+                int counterEntities = 0;
+                double freqMax = 0;
+                for(int k = list.size()-1; k >= 0; k--)
+                {
+
+                    if(!Parse.FirstIsUpperCase(list.get(k).getKey().charAt(0)))
+                        continue;
+                    if(counterEntities == 0)
+                        freqMax = list.get(k).getValue();
+                    sortedTemporaryMap.put(list.get(k).getKey(), list.get(k).getValue()/freqMax);
+                    counterEntities++;
+
+                    if(counterEntities == 5)
+                        break;
+                }
+
+
                 //after parsing the text, we will create new record in the docs Map
                 docsCorpusMap.put(listOfDocsNumbers.get(j),
-                        new DocTermDataInMap(maxTermFreqPerDoc, temporaryMap.size(), ListOfCities.get(j)));
+                        new DocTermDataInMap(maxTermFreqPerDoc, temporaryMap.size(), ListOfCities.get(j), sortedTemporaryMap));
                 docsAndIDs.put(IDsOfDocs,listOfDocsNumbers.get(j));
                 IDsOfDocs++;
                 //loops over one text's terms and merging temporaryMap to termsCorpusMap and to postingMap as well
@@ -203,13 +226,6 @@ public class Indexer {
 
         //use thread in order to write CorpusTermMap, CorpusDocsMap and CorpusCitiesMap to a file
 
-        try {
-            WriteMapsToDisk();
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("IOException caught in lambda");
-        }
-
 
 
         //After creating all temporary posting time, it's time to merge them to one big temporary file
@@ -280,6 +296,11 @@ public class Indexer {
         for (final File fileEntry : folder.listFiles())
             twoLastFiles.add(fileEntry);
         mergeFiles.margeTwoLastFilesAndCreatePermanentPostingFiles(twoLastFiles.get(0).getPath(), twoLastFiles.get(1).getPath());
+        try {
+            WriteMapsToDisk();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         System.out.println("Finished building the Indexer - time: " + (System.nanoTime() - startTime) / 1000000000.0);
 
     }
@@ -332,6 +353,21 @@ public class Indexer {
 
         // Write object to file
         outputStream.writeObject(citiesInCorpus);
+
+        outputStream.close();
+        fileStream.close();
+
+        //writing the citiesCorpusMap to a file as an object
+        if(parser.getStemmer())
+            dictionaryFile = new File(pathToDisk+"\\IDsDocsWithStemming");
+        else
+            dictionaryFile = new File(pathToDisk+"\\IDsDocsWithoutStemming");
+
+        fileStream = new FileOutputStream(dictionaryFile);
+        outputStream = new ObjectOutputStream(fileStream);
+
+        // Write object to file
+        outputStream.writeObject(docsAndIDs);
 
         outputStream.close();
         fileStream.close();
