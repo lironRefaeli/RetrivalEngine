@@ -440,7 +440,7 @@ public class mainController {
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle("engineWindow");
-            stage.setScene(new Scene(root1, 600, 500));
+            stage.setScene(new Scene(root1, 650, 550));
             stage.show();
             boolean stemmerSelection = stemmerCheckBox.isSelected();
             engineController.setStemmerSelection(stemmerSelection);

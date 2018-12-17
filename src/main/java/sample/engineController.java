@@ -2,9 +2,15 @@ package sample;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +69,32 @@ public class engineController
     public static void setPathToDisk(String path) {
 
         pathToDisk = path;
+    }
+
+    public void openCitiesSelections(ActionEvent event) throws IOException {
+
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        Parent root1 = fxmlLoader.load(mainController.class.getResource("/citiesSelections.fxml").openStream());
+        Stage stage = new Stage();
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setTitle("engineWindow");
+        stage.setScene(new Scene(root1, 300, 500));
+        stage.show();
+
+
+    }
+
+    public void BrowseQueriesPath(ActionEvent event) {
+        JFileChooser chooser = new JFileChooser();
+        //chooser.setCurrentDirectory(new java.io.File("."));
+        chooser.setDialogTitle("Choose queries' file");
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setAcceptAllFileFilterUsed(false);
+
+        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+            searchBoxText.setText("" + chooser.getSelectedFile());
+
+
     }
 }
 
