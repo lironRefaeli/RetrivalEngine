@@ -36,7 +36,7 @@ public class Indexer {
     public Indexer(ReadFile readFile, Parse parser, String pathToDisk)
     {
         NumberOfDocsInCorpus = 0;
-        numOfTempPostingFiles = 4;
+        numOfTempPostingFiles = 227;
         this.readFile = readFile;
         this.parser = parser;
         this.pathToDisk = pathToDisk;
@@ -67,7 +67,7 @@ public class Indexer {
         for (int i = 0; i < numOfTempPostingFiles; i++) {
             System.out.println("start loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
             int maxTermFreqPerDoc = 0;
-            List<String> listOfTexts = readFile.ReadFolder(4); //list of Documents' texts
+            List<String> listOfTexts = readFile.ReadFolder(8); //list of Documents' texts
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
             List<String> ListOfCities = readFile.getListOfCities();
             NumberOfDocsInCorpus += listOfDocsNumbers.size();
