@@ -27,7 +27,7 @@ public class Indexer {
     public ConcurrentLinkedQueue<String> queueOfTempPostingFiles;
     public static long startTime = System.nanoTime();
     static String postingFilesPath = "";
-    public int IDsOfDocs = 0;
+    public int IDsOfDocs = -1;
     public static Map<Integer,String> docsAndIDs;
     JSON_reader json_reader;
     static boolean hasException = false;
@@ -58,7 +58,7 @@ public class Indexer {
 
         //connecting to API and bringing data about capital cities in the world
         try {
-            json_reader.connectionToApi();
+            json_reader.connectionToCitiesApi();
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -115,8 +115,9 @@ public class Indexer {
                 //after parsing the text, we will create new record in the docs Map
                 docsCorpusMap.put(listOfDocsNumbers.get(j),
                         new DocTermDataInMap(maxTermFreqPerDoc, temporaryMap.size(), ListOfCities.get(j), sortedTemporaryMap));
-                docsAndIDs.put(IDsOfDocs,listOfDocsNumbers.get(j));
                 IDsOfDocs++;
+                docsAndIDs.put(IDsOfDocs,listOfDocsNumbers.get(j));
+
                 //loops over one text's terms and merging temporaryMap to termsCorpusMap and to postingMap as well
                 for (String term : temporaryMap.keySet()) {
                     //for calculating maxTf
@@ -212,6 +213,7 @@ public class Indexer {
                         postingMap.put(term, postingOldData + IDsOfDocs + "~" + temporaryMap.get(term) + ",");
 
                     }
+
 
                 }//End of looping on temporary map and inserts it's values to corpusMap
 

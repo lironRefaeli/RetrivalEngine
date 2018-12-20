@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 public class Ranker {
 
     boolean withStemmer;
+    boolean withSemantic=false;
     String pathToDisk;
     Double averageDocsLength;
     double k;
@@ -25,9 +26,27 @@ public class Ranker {
 
     public Map<String,Double> RankDocumentsByQuery(Map<String,Integer> queryMap) throws IOException {
         Map<String, Double> rankedDocumentsMap = new HashMap<>();
-        Double termIDF;
-        for (String term : queryMap.keySet())
+        List<String> wordsQueryList = new ArrayList<>();
+
+        if(withSemantic)
         {
+            for (String term : queryMap.keySet())
+            {
+                wordsQueryList.addAll(JSON_reader.connectionToSynApi(term));
+            }
+        }
+        else
+        {
+            for (String term : queryMap.keySet())
+            {
+                wordsQueryList.add(term);
+            }
+        }
+
+        Double termIDF;
+        for (int j = 0; j < wordsQueryList.size(); j++)
+        {
+            String term = wordsQueryList.get(j);
             if(!Indexer.termsCorpusMap.containsKey(term))
                 continue;
            termIDF = Indexer.termsCorpusMap.get(term).idf;
