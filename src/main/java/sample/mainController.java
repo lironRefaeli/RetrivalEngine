@@ -333,12 +333,195 @@ public class mainController {
 
         }
 
+    private void LoadCorpusMap()
+    {
+        boolean stemmerSelection = stemmerCheckBox.isSelected();
+        String pathToDisk = diskPath.getText();
+        File dictionaryFile;
+        if (stemmerSelection)
+            dictionaryFile = new File(pathToDisk + "\\dictionaryWithStemming");
+        else
+            dictionaryFile = new File(pathToDisk + "\\dictionaryWithoutStemming");
+
+        FileInputStream fileStreamer;
+        try { fileStreamer = new FileInputStream(dictionaryFile);}
+        catch (FileNotFoundException e)
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("One or more of the necessary dictionaries weren't found :(");
+            alert.showAndWait();
+            return;
+        }
+
+        ObjectInputStream objectStreamer = null;
+        try {
+            objectStreamer = new ObjectInputStream(fileStreamer); }
+            catch (IOException e) { e.printStackTrace(); }
+        try {Indexer.termsCorpusMap = (Map<String, TermDataInMap>) objectStreamer.readObject();}
+        catch (IOException e) { e.printStackTrace(); }
+        catch (ClassNotFoundException e) { e.printStackTrace();}
+
+        try
+        {
+            objectStreamer.close();
+            fileStreamer.close();
+        }
+        catch (IOException e) { e.printStackTrace();}
+    }
+
+
+    private void LoadDocsMap()
+    {
+        boolean stemmerSelection = stemmerCheckBox.isSelected();
+        String pathToDisk = diskPath.getText();
+        File dictionaryFile;
+        if (stemmerSelection)
+            dictionaryFile = new File(pathToDisk + "\\CorpusDocsWithStemming");
+        else
+            dictionaryFile = new File(pathToDisk + "\\CorpusDocsWithoutStemming");
+
+        FileInputStream fileStreamer;
+        try { fileStreamer = new FileInputStream(dictionaryFile);}
+        catch (FileNotFoundException e)
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("One or more of the necessary dictionaries weren't found :(");
+            alert.showAndWait();
+            return;
+        }
+
+        ObjectInputStream objectStreamer = null;
+        try {
+            objectStreamer = new ObjectInputStream(fileStreamer); }
+        catch (IOException e) { e.printStackTrace(); }
+        try {Indexer.docsCorpusMap = (Map<String, DocTermDataInMap>) objectStreamer.readObject();}
+        catch (IOException e) { e.printStackTrace(); }
+        catch (ClassNotFoundException e) { e.printStackTrace();}
+
+        try
+        {
+            objectStreamer.close();
+            fileStreamer.close();
+        }
+        catch (IOException e) { e.printStackTrace();}
+    }
+
+    private void LoadCitiesMap()
+    {
+        boolean stemmerSelection = stemmerCheckBox.isSelected();
+        String pathToDisk = diskPath.getText();
+        File dictionaryFile;
+        if (stemmerSelection)
+            dictionaryFile = new File(pathToDisk + "\\CorpusCitiesWithStemming");
+        else
+            dictionaryFile = new File(pathToDisk + "\\CorpusCitiesWithoutStemming");
+
+        FileInputStream fileStreamer;
+        try { fileStreamer = new FileInputStream(dictionaryFile);}
+        catch (FileNotFoundException e)
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("One or more of the necessary dictionaries weren't found :(");
+            alert.showAndWait();
+            return;
+        }
+
+        ObjectInputStream objectStreamer = null;
+        try {
+            objectStreamer = new ObjectInputStream(fileStreamer); }
+        catch (IOException e) { e.printStackTrace(); }
+
+        try {Indexer.citiesInCorpus = (Map<String, CityInMap>) objectStreamer.readObject();}
+        catch (IOException e) { e.printStackTrace(); }
+        catch (ClassNotFoundException e) { e.printStackTrace();}
+
+        try
+        {
+            objectStreamer.close();
+            fileStreamer.close();
+        }
+        catch (IOException e) { e.printStackTrace();}
+    }
+
+    private void LoadIDsMap()
+    {
+        boolean stemmerSelection = stemmerCheckBox.isSelected();
+        String pathToDisk = diskPath.getText();
+        File dictionaryFile;
+        if (stemmerSelection)
+            dictionaryFile = new File(pathToDisk + "\\IDsDocsWithStemming");
+        else
+            dictionaryFile = new File(pathToDisk + "\\IDsDocsWithoutStemming");
+
+        FileInputStream fileStreamer;
+        try { fileStreamer = new FileInputStream(dictionaryFile);}
+        catch (FileNotFoundException e)
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("One or more of the necessary dictionaries weren't found :(");
+            alert.showAndWait();
+            return;
+        }
+
+        ObjectInputStream objectStreamer = null;
+        try {
+            objectStreamer = new ObjectInputStream(fileStreamer); }
+        catch (IOException e) { e.printStackTrace(); }
+
+        try {Indexer.docsAndIDs = (Map<Integer, String>) objectStreamer.readObject();}
+        catch (IOException e) { e.printStackTrace(); }
+        catch (ClassNotFoundException e) { e.printStackTrace();}
+
+        try
+        {
+            objectStreamer.close();
+            fileStreamer.close();
+        }
+        catch (IOException e) { e.printStackTrace();}
+
+    }
+
         /**
          * loading dictionary object from file to termInCorpus parameter
          * @param event
          */
-        public void LoadDictionaryFromDisk(ActionEvent event)  {
+        public void LoadDictionaryFromDisk(ActionEvent event) throws InterruptedException {
+            Thread CorpusTermThread = new Thread() {
+                public void run() {
+                    LoadCorpusMap();
+                }
+            };
+            Thread DocsThread = new Thread() {
+                public void run() {
+                    LoadDocsMap();
+                }
+            };
+            Thread CitiesThread = new Thread() {
+                public void run() {
+                    LoadCitiesMap();
+                }
+            };
+            Thread IDsThread = new Thread() {
+                public void run() {
+                    LoadIDsMap();
+                }
+            };
+            CorpusTermThread.start();
+            DocsThread.start();
+            CitiesThread.start();
+            IDsThread.start();
 
+            CorpusTermThread.join();
+            DocsThread.join();
+            CitiesThread.join();
+            IDsThread.join();
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setHeaderText("Loading the dictionaries was succeeded!");
+            alert.showAndWait();
+
+        }
+/*
                 boolean stemmerSelection = stemmerCheckBox.isSelected();
                 String pathToDisk = diskPath.getText();
                 File dictionaryFile;
@@ -420,11 +603,11 @@ public class mainController {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setHeaderText("Loading the dictionaries was succeeded!");
                 alert.showAndWait();
-
         }
+*/
 
 
-        @FXML
+    @FXML
         private void initChoiceBox(){
 
             languagesBox.setItems(languagesBoxOptions);

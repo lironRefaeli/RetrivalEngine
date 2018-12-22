@@ -56,7 +56,7 @@ public class JSON_reader {
             int counter = 0;
             synWordsResults.add(term);
             for (Object O : parsed_json) {
-                if(counter<3) {
+                if(counter < 3) {
                     synWord = (String) ((JSONObject) O).get("word");
                     System.out.println(synWord);
                     synWordsResults.add(synWord);

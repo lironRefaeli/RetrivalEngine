@@ -133,8 +133,6 @@ public class ReadFile {
                 }
             }
             listOfCities.add(city);
-
-
         }
     }
 
@@ -161,9 +159,11 @@ public class ReadFile {
         for (Element element : elements)
         {
             Query query = new Query();
-            query.queryID = element.getElementsByTag("num").text();
+            String queryIdWithNoises = element.getElementsByTag("num").text();
+            query.queryID = queryIdWithNoises.substring(8);
             query.title = element.getElementsByTag("title").text();
-            query.description = element.getElementsByTag("desc").text();
+            String descriptionWithNoises = element.getElementsByTag("desc").text();
+            query.description = descriptionWithNoises.substring(12);
             queriesList.add(query);
         }
 

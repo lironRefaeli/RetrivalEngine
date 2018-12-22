@@ -1,10 +1,7 @@
 package sample;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.io.*;
+import java.util.*;
 
 public class Searcher {
 
@@ -18,11 +15,32 @@ public class Searcher {
     }
 
     public void handleQuery(List<Query> queryList) throws IOException {
+        File file = new File(ranker.pathToDisk + "\\ResultFile.txt");
+        BufferedWriter writer;
+        writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file.getPath()),"UTF-8"),262144);
         for(int i = 0; i < queryList.size(); i++)
         {
+            String titleAndDescription = queryList.get(i).title + " " + queryList.get(i).description;
             Map<String, Integer> queryMap = parser.ParsingQuery(queryList.get(i).title);
             Map<String,Double> rankedDocumentsMap = ranker.RankDocumentsByQuery(queryMap);
+            for(String docNumber : rankedDocumentsMap.keySet())
+            {
+                WriteResultToFile(docNumber, queryList.get(i), writer);
+            }
         }
+        writer.close();
+        System.out.println("Finished writing the result file");
+    }
+
+    private void WriteResultToFile(String docNumber, Query currQuery, BufferedWriter writer)
+    {
+        String toPrint = currQuery.queryID + " 0 " + docNumber + " 1 42.38 mt";
+        try
+        {
+            writer.write(toPrint);
+            writer.newLine();
+        }
+        catch (IOException e) { e.printStackTrace();}
     }
 
 

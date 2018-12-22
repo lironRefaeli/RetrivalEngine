@@ -129,7 +129,7 @@ public class Parse {
             termToLowerCase = term.toLowerCase();
             termToUpperCase = term.toUpperCase();
 
-            if (term.equals(""))
+            if ((IsStopWord(termToLowerCase) || term.equals("")))
                 continue;
 
             //extracting nextTerm
@@ -782,8 +782,22 @@ public class Parse {
 
     //read the stop words file into list named stopWordsList
     private HashSet<String> ReadStopWordToList(String stopWordsPath) throws IOException {
+        HashSet<String> stopWordsList = new HashSet<>();
+        FileInputStream fileInputStream = new FileInputStream(stopWordsPath + "\\stop_words.txt");
+        InputStreamReader fileInputStreamReader = new InputStreamReader(fileInputStream, "UTF-8");
+        BufferedReader fileReader = new BufferedReader(fileInputStreamReader);
+        while (fileReader.ready())
+            stopWordsList.add(fileReader.readLine());
+        stopWordsList.add(fileReader.readLine()); //another one for the last word of the stop_words file
+        fileReader.close();
+        fileInputStreamReader.close();
+        fileInputStream.close();
+        return stopWordsList;
+    }
+
+        /*
         Scanner s;
-            s = new Scanner(new File(stopWordsPath));
+            s = new Scanner(new File(stopWordsPath + "stop_words.txt"));
         HashSet<String> stopWordsList = new HashSet<>();
         while (s.hasNext()) {
             stopWordsList.add(s.nextLine());
@@ -791,7 +805,7 @@ public class Parse {
         s.close();
 
         return stopWordsList;
-    }
+        */
 
     private void InitMonthsNames() {
         monthsNames = new HashSet();

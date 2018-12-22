@@ -7,19 +7,20 @@ import java.util.stream.Collectors;
 public class Ranker {
 
     boolean withStemmer;
-    boolean withSemantic=false;
+    boolean withSemantic = true;
     String pathToDisk;
     Double averageDocsLength;
     double k;
     double b;
-    List<String> listCitiesFromUser = new ArrayList<>();
+    public static List<String> listCitiesFromUser = new ArrayList<>();
+
 
     public Ranker(boolean stemmerSelection, String pathToDisk)
     {
         withStemmer = stemmerSelection;
         this.pathToDisk = pathToDisk;
         averageDocsLength = clacAverageLength(Indexer.docsCorpusMap);
-        k = 1.5;
+        k = 1.2;
         b = 0.75;
     }
 
@@ -44,14 +45,17 @@ public class Ranker {
         }
 
         Double termIDF;
+        int pointerToPostingLine;
+        int termWeight = 1;
         for (int j = 0; j < wordsQueryList.size(); j++)
         {
             String term = wordsQueryList.get(j);
             if(!Indexer.termsCorpusMap.containsKey(term))
                 continue;
            termIDF = Indexer.termsCorpusMap.get(term).idf;
-           int pointerToPostingLine = Indexer.termsCorpusMap.get(term).pointerToPostingLine;
-
+           pointerToPostingLine = Indexer.termsCorpusMap.get(term).pointerToPostingLine;
+           if(queryMap.containsKey(term))
+             termWeight = queryMap.get(term);
            File postingFile;
            if (withStemmer)
                 postingFile = new File(pathToDisk + "\\withStemming\\" + term.charAt(0) + ".txt");
@@ -78,14 +82,20 @@ public class Ranker {
                         continue;
 
                     int frequencyInDoc = Integer.parseInt(docsAndFreqInLine.get(i+1));
+                    int df = Indexer.termsCorpusMap.get(term).numOfDocuments;
 
-                    double scoreQueryAndDoc = termIDF*(frequencyInDoc*(k+1))/(frequencyInDoc+k*(1-b+b*averageDocsLength));
+                    double firstPart = Math.log10(1/((df + 0.5) / (Indexer.docsCorpusMap.size()-df + 0.5)));
+                    double secondPart = ((k + 1) * frequencyInDoc) / (frequencyInDoc + k * ((1 - b) + b * (Indexer.docsCorpusMap.get(docNumber).numOfTerms/averageDocsLength)));
+                    double scoreQueryAndDoc = firstPart * secondPart;
+
+                    //double scoreQueryAndDoc = (termIDF * (frequencyInDoc * (k+1) ))/
+                            //(frequencyInDoc+k*(1 - b + b * averageDocsLength));
 
                     double prevRank = 0.0;
                     if(rankedDocumentsMap.containsKey(docNumber))
                        prevRank = rankedDocumentsMap.get(docNumber);
 
-                    rankedDocumentsMap.put(docNumber, prevRank+scoreQueryAndDoc);
+                    rankedDocumentsMap.put(docNumber, prevRank + scoreQueryAndDoc);
 
                }
 

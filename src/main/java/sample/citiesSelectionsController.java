@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.input.DragEvent;
@@ -20,19 +21,28 @@ import java.util.List;
 
 public class citiesSelectionsController{
 
-    ObservableList<String> citiesOptions = FXCollections.observableArrayList("London","Paris");
+    //ObservableList<String> citiesOptions = FXCollections.observableArrayList("London","Paris");
     @FXML
     ListView citiesList;
+
+    @FXML
+    CheckBox londonCheckBox;
+    @FXML
+    CheckBox parisCheckBox;
 
 
     public void chooseCities(ActionEvent event) {
 
-        citiesList.setItems(citiesOptions);
-        List<String> citiesSelections = new ArrayList<>();
-        citiesSelections.addAll(citiesList.getSelectionModel().getSelectedItems());
+        boolean london = londonCheckBox.isSelected();
+        boolean paris = parisCheckBox.isSelected();
 
-        for(int i=0;i<citiesSelections.size();i++)
-            System.out.println(citiesSelections.get(i));
+        if(london)
+            Ranker.listCitiesFromUser.add("LONDON");
+        if(paris)
+            Ranker.listCitiesFromUser.add("PARIS");
+
+        for(int i=0;i<Ranker.listCitiesFromUser.size();i++)
+            System.out.println(Ranker.listCitiesFromUser.get(i));
     }
 
 
