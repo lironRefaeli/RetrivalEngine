@@ -70,6 +70,7 @@ public class Indexer {
             List<String> listOfTexts = readFile.ReadFolder(8); //list of Documents' texts
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
             List<String> ListOfCities = readFile.getListOfCities();
+            List<String> ListOfCHeaders = readFile.getListOfHeadlines();
             NumberOfDocsInCorpus += listOfDocsNumbers.size();
 
             if(parser.getStemmer())
@@ -89,6 +90,7 @@ public class Indexer {
             for (int j = 0; j < listOfTexts.size(); j++) {
                 //for every text we will build temporaryMap in order to save all the terms and their frequency (tf) by Parse object
                 Map<String, Integer> temporaryMap = parser.ParsingDocument(listOfTexts.get(j), listOfDocsNumbers.get(j));
+                Map<String, Integer>  HeadlineTemporaryMap = parser.ParsingDocument(ListOfCHeaders.get(j));
 
 
                 //This section is for finding the frequent 5 entities in a document
@@ -114,7 +116,7 @@ public class Indexer {
 
                 //after parsing the text, we will create new record in the docs Map
                 docsCorpusMap.put(listOfDocsNumbers.get(j),
-                        new DocTermDataInMap(maxTermFreqPerDoc, temporaryMap.size(), ListOfCities.get(j), sortedTemporaryMap));
+                        new DocTermDataInMap(maxTermFreqPerDoc, HeadlineTemporaryMap.keySet(), temporaryMap.size(), ListOfCities.get(j), sortedTemporaryMap));
                 IDsOfDocs++;
                 docsAndIDs.put(IDsOfDocs,listOfDocsNumbers.get(j));
 

@@ -46,16 +46,21 @@ public class Ranker {
 
         Double termIDF;
         int pointerToPostingLine;
-        int termWeight = 1;
         for (int j = 0; j < wordsQueryList.size(); j++)
         {
             String term = wordsQueryList.get(j);
-            if(!Indexer.termsCorpusMap.containsKey(term))
+            String termLowerCase = term.toLowerCase();
+            String termUpperCase = term.toUpperCase();
+            if(Indexer.termsCorpusMap.containsKey(termLowerCase))
+                term = termLowerCase;
+            else if(Indexer.termsCorpusMap.containsKey(termUpperCase))
+                term = termUpperCase;
+            else
                 continue;
+
+
            termIDF = Indexer.termsCorpusMap.get(term).idf;
            pointerToPostingLine = Indexer.termsCorpusMap.get(term).pointerToPostingLine;
-           if(queryMap.containsKey(term))
-             termWeight = queryMap.get(term);
            File postingFile;
            if (withStemmer)
                 postingFile = new File(pathToDisk + "\\withStemming\\" + term.charAt(0) + ".txt");
@@ -72,6 +77,7 @@ public class Ranker {
                }
 
                List<String>  docsAndFreqInLine = new ArrayList(Arrays.asList(line.split("~|\\*|,")));
+               Set<String> headlineOfDoc;
                String docNumber;
                for(int i = 1; i < docsAndFreqInLine.size(); i+=2)
                {
@@ -83,13 +89,19 @@ public class Ranker {
 
                     int frequencyInDoc = Integer.parseInt(docsAndFreqInLine.get(i+1));
                     int df = Indexer.termsCorpusMap.get(term).numOfDocuments;
+                    int docSize = Indexer.docsCorpusMap.get(docNumber).numOfTerms;
 
                     double firstPart = Math.log10(1/((df + 0.5) / (Indexer.docsCorpusMap.size()-df + 0.5)));
-                    double secondPart = ((k + 1) * frequencyInDoc) / (frequencyInDoc + k * ((1 - b) + b * (Indexer.docsCorpusMap.get(docNumber).numOfTerms/averageDocsLength)));
+                    double secondPart = ((k + 1) * frequencyInDoc) / (frequencyInDoc + k * ((1 - b) + b * (docSize/averageDocsLength)));
                     double scoreQueryAndDoc = firstPart * secondPart;
 
-                    //double scoreQueryAndDoc = (termIDF * (frequencyInDoc * (k+1) ))/
-                            //(frequencyInDoc+k*(1 - b + b * averageDocsLength));
+
+                    /*
+                    //for words that are on the headline of the doc
+                    headlineOfDoc = Indexer.docsCorpusMap.get(docNumber).headline;
+                    if(headlineOfDoc.contains(termLowerCase) || headlineOfDoc.contains(termUpperCase))
+                        scoreQueryAndDoc = 1.2 * scoreQueryAndDoc;
+                    */
 
                     double prevRank = 0.0;
                     if(rankedDocumentsMap.containsKey(docNumber))

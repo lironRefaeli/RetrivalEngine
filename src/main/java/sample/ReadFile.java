@@ -25,6 +25,7 @@ public class ReadFile {
     private List<String> listOfDocsNumbers; //list of all the documents' numbers in the files
     private List<String> listOfCities; //list of all the documents' cities in the files
     private List<String> listOfTexts; //list of all the documents' texts in the files
+    private List<String> listOfheadLines;
     private HashSet<String> listOfLanguages; //list of all the documents' languages in the files
 
     /**
@@ -76,6 +77,7 @@ public class ReadFile {
         listOfTexts = new ArrayList<>();
         listOfDocsNumbers = new ArrayList<>();
         listOfCities = new ArrayList<>();
+        listOfheadLines = new ArrayList<>();
 
         //reading the texts in a folder from the chunk folders.
         for (int i = nextFolderToReadIndex; i < nextFolderToReadIndex + numOfFoldersToReadFrom; i++) {
@@ -112,6 +114,8 @@ public class ReadFile {
         //first, we will separate all the documents in a file.
         Elements elements = document.getElementsByTag("DOC");
         for (Element element : elements) {
+
+            listOfheadLines.add(element.getElementsByTag("TI").text());
 
             //adding all the documents' texts in the file to the listOfTexts
             listOfTexts.add(element.getElementsByTag("TEXT").text());
@@ -183,6 +187,11 @@ public class ReadFile {
     public List<String> getListOfCities()
     {
        return listOfCities;
+    }
+
+    public List<String> getListOfHeadlines()
+    {
+        return listOfheadLines;
     }
 
     public HashSet<String> getListOfLanguages() { return listOfLanguages; }

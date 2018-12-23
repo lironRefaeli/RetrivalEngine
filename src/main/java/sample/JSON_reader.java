@@ -29,7 +29,8 @@ public class JSON_reader {
     {
         List<String> synWordsResults = new ArrayList<>();
         OkHttpClient httpClient = new OkHttpClient();
-        String url = ("https://api.datamuse.com/words?rel_syn=" + term);
+        //String url = ("https://api.datamuse.com/words?rel_syn=" + term);
+        String url = ("https://api.datamuse.com/words?ml=" + term);
         Request request = new Request.Builder().url(url).build();
         Response response = null;
         org.json.simple.parser.JSONParser json = new org.json.simple.parser.JSONParser();

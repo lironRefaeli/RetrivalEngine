@@ -34,7 +34,7 @@ public class engineController
 
         String queryText = searchBoxText.getText();
         parser = new Parse(stemmerSelection);
-        parser.LoadStopWordsList(pathToDisk);
+        parser.LoadStopWordsList(pathToDisk + "\\stop_words.txt");
         ranker = new Ranker(stemmerSelection, pathToDisk);
         List<Query> queryList = new ArrayList<>();
 

@@ -54,6 +54,13 @@ public class Parse {
         return termsAndFrequencyMap;
     }
 
+    public Map<String, Integer> ParsingDocument(String header) {
+
+        termsAndFrequencyMap = new HashMap<>();
+        BreakHeadLineToTerms(header);
+        return termsAndFrequencyMap;
+    }
+
     public Map<String, Integer> ParsingQuery(String queryString) {
 
         termsAndFrequencyMap = new HashMap<>();
@@ -75,6 +82,37 @@ public class Parse {
         }
     }
 
+    private void BreakHeadLineToTerms(String docText) {
+
+        //cleaning the document before splitting (| is separating between characters, and \\ is sometimes needed
+        docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|<|//|", "");
+
+        //splitting the document according to these delimiters - the second one is spaces
+        TermsOfDoc = new ArrayList(Arrays.asList(docText.split("\\n|\\s+|\\t|;|\\?|!|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*")));
+
+        //runs over one doc's length
+        for (int i = 0; i < TermsOfDoc.size(); i++) {
+
+            //extracting every term and saving it's lowerCase and UpperCase
+            term = TermsOfDoc.get(i);
+            cleaningTerm();
+            termToLowerCase = term.toLowerCase();
+            termToUpperCase = term.toUpperCase();
+
+            //handles with stop-words or empty strings and also next terms after current term
+            if ((IsStopWord(termToLowerCase) || term.equals("")))
+                continue;
+
+            //extracting nextTerm
+            if (i + 1 <= TermsOfDoc.size() - 1)
+                nextTerm = TermsOfDoc.get(i + 1);
+
+            //checking if term is number or String
+            if (IsNumeric(term))
+                i = HandleWithNumbers(i);
+            i = HandleWithStrings(i);
+            }
+        }
 
     private void BreakTextToTerms(String docText, String docNum) {
 
@@ -783,7 +821,7 @@ public class Parse {
     //read the stop words file into list named stopWordsList
     private HashSet<String> ReadStopWordToList(String stopWordsPath) throws IOException {
         HashSet<String> stopWordsList = new HashSet<>();
-        FileInputStream fileInputStream = new FileInputStream(stopWordsPath + "\\stop_words.txt");
+        FileInputStream fileInputStream = new FileInputStream(stopWordsPath);
         InputStreamReader fileInputStreamReader = new InputStreamReader(fileInputStream, "UTF-8");
         BufferedReader fileReader = new BufferedReader(fileInputStreamReader);
         while (fileReader.ready())
