@@ -55,11 +55,11 @@ public class JSON_reader {
             String synWord = "";
             Object[] parsed_json = ((JSONArray) object).toArray();
             int counter = 0;
-            synWordsResults.add(term);
+            //synWordsResults.add(term);
             for (Object O : parsed_json) {
                 if(counter < 3) {
                     synWord = (String) ((JSONObject) O).get("word");
-                    System.out.println(synWord);
+                   // System.out.println(synWord);
                     synWordsResults.add(synWord);
                     counter++;
                 }

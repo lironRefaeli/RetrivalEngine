@@ -91,7 +91,9 @@ public class Indexer {
                 //for every text we will build temporaryMap in order to save all the terms and their frequency (tf) by Parse object
                 Map<String, Integer> temporaryMap = parser.ParsingDocument(listOfTexts.get(j), listOfDocsNumbers.get(j));
                 Map<String, Integer>  HeadlineTemporaryMap = parser.ParsingDocument(ListOfCHeaders.get(j));
-
+                List<String> headLineOfDoc = new ArrayList<>();
+                for(String term : HeadlineTemporaryMap.keySet())
+                    headLineOfDoc.add(term);
 
                 //This section is for finding the frequent 5 entities in a document
                 Map<String,Double> sortedTemporaryMap = new HashMap<>();
@@ -116,7 +118,7 @@ public class Indexer {
 
                 //after parsing the text, we will create new record in the docs Map
                 docsCorpusMap.put(listOfDocsNumbers.get(j),
-                        new DocTermDataInMap(maxTermFreqPerDoc, HeadlineTemporaryMap.keySet(), temporaryMap.size(), ListOfCities.get(j), sortedTemporaryMap));
+                        new DocTermDataInMap(maxTermFreqPerDoc, headLineOfDoc, temporaryMap.size(), ListOfCities.get(j), sortedTemporaryMap));
                 IDsOfDocs++;
                 docsAndIDs.put(IDsOfDocs,listOfDocsNumbers.get(j));
 

@@ -333,7 +333,7 @@ public class mainController {
 
         }
 
-    private void LoadCorpusMap()
+    private void LoadCorpusMap() throws FileNotFoundException
     {
         boolean stemmerSelection = stemmerCheckBox.isSelected();
         String pathToDisk = diskPath.getText();
@@ -344,14 +344,7 @@ public class mainController {
             dictionaryFile = new File(pathToDisk + "\\dictionaryWithoutStemming");
 
         FileInputStream fileStreamer;
-        try { fileStreamer = new FileInputStream(dictionaryFile);}
-        catch (FileNotFoundException e)
-        {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setHeaderText("One or more of the necessary dictionaries weren't found :(");
-            alert.showAndWait();
-            return;
-        }
+        fileStreamer = new FileInputStream(dictionaryFile);
 
         ObjectInputStream objectStreamer = null;
         try {
@@ -370,7 +363,7 @@ public class mainController {
     }
 
 
-    private void LoadDocsMap()
+    private void LoadDocsMap() throws FileNotFoundException
     {
         boolean stemmerSelection = stemmerCheckBox.isSelected();
         String pathToDisk = diskPath.getText();
@@ -381,14 +374,7 @@ public class mainController {
             dictionaryFile = new File(pathToDisk + "\\CorpusDocsWithoutStemming");
 
         FileInputStream fileStreamer;
-        try { fileStreamer = new FileInputStream(dictionaryFile);}
-        catch (FileNotFoundException e)
-        {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setHeaderText("One or more of the necessary dictionaries weren't found :(");
-            alert.showAndWait();
-            return;
-        }
+        fileStreamer = new FileInputStream(dictionaryFile);
 
         ObjectInputStream objectStreamer = null;
         try {
@@ -406,7 +392,7 @@ public class mainController {
         catch (IOException e) { e.printStackTrace();}
     }
 
-    private void LoadCitiesMap()
+    private void LoadCitiesMap() throws FileNotFoundException
     {
         boolean stemmerSelection = stemmerCheckBox.isSelected();
         String pathToDisk = diskPath.getText();
@@ -417,14 +403,7 @@ public class mainController {
             dictionaryFile = new File(pathToDisk + "\\CorpusCitiesWithoutStemming");
 
         FileInputStream fileStreamer;
-        try { fileStreamer = new FileInputStream(dictionaryFile);}
-        catch (FileNotFoundException e)
-        {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setHeaderText("One or more of the necessary dictionaries weren't found :(");
-            alert.showAndWait();
-            return;
-        }
+        fileStreamer = new FileInputStream(dictionaryFile);
 
         ObjectInputStream objectStreamer = null;
         try {
@@ -443,7 +422,7 @@ public class mainController {
         catch (IOException e) { e.printStackTrace();}
     }
 
-    private void LoadIDsMap()
+    private void LoadIDsMap() throws FileNotFoundException
     {
         boolean stemmerSelection = stemmerCheckBox.isSelected();
         String pathToDisk = diskPath.getText();
@@ -454,14 +433,8 @@ public class mainController {
             dictionaryFile = new File(pathToDisk + "\\IDsDocsWithoutStemming");
 
         FileInputStream fileStreamer;
-        try { fileStreamer = new FileInputStream(dictionaryFile);}
-        catch (FileNotFoundException e)
-        {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setHeaderText("One or more of the necessary dictionaries weren't found :(");
-            alert.showAndWait();
-            return;
-        }
+        fileStreamer = new FileInputStream(dictionaryFile);
+
 
         ObjectInputStream objectStreamer = null;
         try {
@@ -486,6 +459,7 @@ public class mainController {
          * @param event
          */
         public void LoadDictionaryFromDisk(ActionEvent event) throws InterruptedException {
+        /*
             Thread CorpusTermThread = new Thread() {
                 public void run() {
                     LoadCorpusMap();
@@ -515,7 +489,21 @@ public class mainController {
             DocsThread.join();
             CitiesThread.join();
             IDsThread.join();
-
+            */
+            try
+            {
+                LoadCorpusMap();
+                LoadDocsMap();
+                LoadCitiesMap();
+                LoadIDsMap();
+            }
+            catch (FileNotFoundException e)
+            {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setHeaderText("One or more of the necessary dictionaries weren't found :(");
+                alert.showAndWait();
+                return;
+            }
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setHeaderText("Loading the dictionaries was succeeded!");
             alert.showAndWait();

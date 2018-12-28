@@ -164,10 +164,20 @@ public class ReadFile {
         {
             Query query = new Query();
             String queryIdWithNoises = element.getElementsByTag("num").text();
-            query.queryID = queryIdWithNoises.substring(8);
+            String startWithTheNumber = queryIdWithNoises.substring(8);
+            String[] splitted = startWithTheNumber.split("\\s+");
+            query.queryID = splitted[0];
             query.title = element.getElementsByTag("title").text();
             String descriptionWithNoises = element.getElementsByTag("desc").text();
-            query.description = descriptionWithNoises.substring(12);
+            String descAndOtherThings = descriptionWithNoises.substring(12);
+            splitted = descAndOtherThings.split("\\s+");
+            query.description = "";
+            for(int i = 1; i < splitted.length; i++)
+            {
+                if(splitted[i].equals("Narrative:"))
+                    break;
+                query.description += splitted[i] + " ";
+            }
             queriesList.add(query);
         }
 
