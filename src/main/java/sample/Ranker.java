@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 public class Ranker {
 
     boolean withStemmer;
-    boolean withSemantic = true;
+    boolean withSemantic;
     String pathToDisk;
     Double averageDocsLength;
     double k;
@@ -16,8 +16,9 @@ public class Ranker {
     Map<String, Double> rankedDocumentsMap;
 
 
-    public Ranker(boolean stemmerSelection, String pathToDisk) {
+    public Ranker(boolean stemmerSelection, boolean semanticSelection, String pathToDisk) {
         withStemmer = stemmerSelection;
+        withSemantic = semanticSelection;
         this.pathToDisk = pathToDisk;
         averageDocsLength = clacAverageLength(Indexer.docsCorpusMap);
         k = 1.2;

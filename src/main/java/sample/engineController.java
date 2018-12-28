@@ -6,6 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -25,6 +26,8 @@ public class engineController
     Parse parser;
     @FXML
     private TextField searchBoxText;
+    @FXML
+    private CheckBox semanticCheckBox;
 
     static boolean stemmerSelection;
     static String pathToDisk;
@@ -32,10 +35,11 @@ public class engineController
 
     public void searchQuery(ActionEvent actionEvent) throws IOException {
 
+        boolean semanticSelection = semanticCheckBox.isSelected();
         String queryText = searchBoxText.getText();
         parser = new Parse(stemmerSelection);
         parser.LoadStopWordsList(pathToDisk + "\\stop_words.txt");
-        ranker = new Ranker(stemmerSelection, pathToDisk);
+        ranker = new Ranker(stemmerSelection, semanticSelection, pathToDisk);
         List<Query> queryList = new ArrayList<>();
 
         //it is not a query, it is a txt file that contains several queries
@@ -54,7 +58,7 @@ public class engineController
             onlyQuery.title = queryText;
             queryList.add(onlyQuery);
         }
-        searcher = new Searcher(ranker, parser);
+        searcher = new Searcher(ranker, parser, semanticSelection);
         searcher.handleQuery(queryList);
 
 

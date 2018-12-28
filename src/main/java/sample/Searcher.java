@@ -7,15 +7,23 @@ public class Searcher {
 
     Ranker ranker;
     Parse parser;
+    boolean withSemantic;
 
-    public Searcher(Ranker ranker, Parse parser)
+    public Searcher(Ranker ranker, Parse parser, boolean semanticSelection)
     {
        this.ranker = ranker;
        this.parser = parser;
+       this.withSemantic = semanticSelection;
     }
 
     public void handleQuery(List<Query> queryList) throws IOException {
-        File file = new File(ranker.pathToDisk + "\\ResultFile.txt");
+
+        File file;
+        if(withSemantic)
+            file = new File(ranker.pathToDisk + "\\ResultFileWithSemantic.txt");
+        else
+            file = new File(ranker.pathToDisk + "\\ResultFileWithoutSemantic.txt");
+
         BufferedWriter writer;
         writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file.getPath()),"UTF-8"),262144);
         for(int i = 0; i < queryList.size(); i++)
