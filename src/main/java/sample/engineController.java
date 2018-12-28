@@ -1,13 +1,15 @@
 package sample;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -15,6 +17,8 @@ import javax.swing.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * This class is for section 2 of this project
@@ -24,13 +28,18 @@ public class engineController
     Searcher searcher;
     Ranker ranker;
     Parse parser;
+    static boolean stemmerSelection;
+    static String pathToDisk;
+
     @FXML
     private TextField searchBoxText;
     @FXML
     private CheckBox semanticCheckBox;
 
-    static boolean stemmerSelection;
-    static String pathToDisk;
+    @FXML
+    private TableView<String> resultsTable;
+
+
 
 
     public void searchQuery(ActionEvent actionEvent) throws IOException {
@@ -61,9 +70,130 @@ public class engineController
         searcher = new Searcher(ranker, parser, semanticSelection);
         searcher.handleQuery(queryList);
 
+        displayResults();
+
 
     }
 
+    public ObservableList<QureyIDAndDocNumber> getQueriesAndDocs()
+    {
+        ObservableList<QureyIDAndDocNumber> queriesAndDocs = FXCollections.observableArrayList();
+
+        for(String queryId : searcher.queryIDToRankedMap.keySet())
+        {
+            for(String docNumber : searcher.queryIDToRankedMap.get(queryId).keySet())
+            {
+                QureyIDAndDocNumber queryAndDoc = new QureyIDAndDocNumber(queryId,docNumber);
+                queriesAndDocs.add(queryAndDoc);
+            }
+        }
+
+        return queriesAndDocs;
+
+    }
+
+    public void displayResults() throws IOException {
+
+
+        if (searcher.queryIDToRankedMap != null) {
+
+            TableColumn<QureyIDAndDocNumber, String> queryColumn = new TableColumn<>("QueryId");
+            queryColumn.setMinWidth(300);
+            queryColumn.setCellValueFactory(new PropertyValueFactory<>("queryID"));
+            TableColumn<QureyIDAndDocNumber, String> docColumn = new TableColumn<>("DocNumber");
+            docColumn.setMinWidth(300);
+            docColumn.setCellValueFactory(new PropertyValueFactory<>("docNum"));
+
+
+            TableView<QureyIDAndDocNumber> table = new TableView<>();
+            table.setItems(getQueriesAndDocs());
+            table.getColumns().addAll(queryColumn, docColumn);
+
+            table.setRowFactory( tv -> {
+                TableRow<QureyIDAndDocNumber> row = new TableRow<>();
+                row.setOnMouseClicked(event -> {
+                    if (event.getClickCount() == 2 && (! row.isEmpty()) ) {
+                        QureyIDAndDocNumber rowData = row.getItem();
+                        String docNum = rowData.getDocNum();
+                        try {
+                            displayEntities(docNum);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                return row ;
+            });
+
+            VBox vbox = new VBox();
+            vbox.getChildren().addAll(table);
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            Parent root1 = fxmlLoader.load(getClass().getResource("/resultsWindow.fxml").openStream());
+            Stage stage = new Stage();
+            stage.setScene(new Scene(vbox));
+            stage.show();
+
+
+
+        }
+        else
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            //alert.setTitle("Information Dialog");
+            alert.setHeaderText("No results for this query" );
+            //alert.setContentText("s");
+            alert.showAndWait();
+        }
+    }
+
+    private void displayEntities(String docNum) throws IOException {
+
+        if (Indexer.docsCorpusMap != null) {
+
+            TableColumn<EntityAndGrade, String> entityColumn = new TableColumn<>("Entity");
+            entityColumn.setMinWidth(300);
+            entityColumn.setCellValueFactory(new PropertyValueFactory<>("entity"));
+            TableColumn<EntityAndGrade, Double> gradeColumn = new TableColumn<>("Grade");
+            gradeColumn.setMinWidth(300);
+            gradeColumn.setCellValueFactory(new PropertyValueFactory<>("grade"));
+
+
+            TableView<EntityAndGrade> table = new TableView<>();
+            table.setItems(getEntitiesAndGrades(docNum));
+            table.getColumns().addAll(entityColumn, gradeColumn);
+
+            VBox vbox = new VBox();
+            vbox.getChildren().addAll(table);
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            Parent root1 = fxmlLoader.load(getClass().getResource("/entitiesWindow.fxml").openStream());
+            Stage stage = new Stage();
+            stage.setScene(new Scene(vbox));
+            stage.show();
+
+
+
+        }
+        else
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            //alert.setTitle("Information Dialog");
+            alert.setHeaderText("No results for this query" );
+            //alert.setContentText("s");
+            alert.showAndWait();
+        }
+    }
+
+    private ObservableList<EntityAndGrade> getEntitiesAndGrades(String docNum) {
+
+        ObservableList<EntityAndGrade> entityAndGrades = FXCollections.observableArrayList();
+        for(String entity: Indexer.docsCorpusMap.get(docNum).entitiesGardes.keySet())
+        {
+            EntityAndGrade entityAndGrade = new EntityAndGrade(entity, Indexer.docsCorpusMap.get(docNum).entitiesGardes.get(entity));
+            entityAndGrades.add(entityAndGrade);
+        }
+
+        return entityAndGrades;
+    }
 
 
     public static void setStemmerSelection(boolean selected) {
@@ -100,6 +230,23 @@ public class engineController
             searchBoxText.setText("" + chooser.getSelectedFile());
 
 
+    }
+
+    public void SaveResultFiles(ActionEvent actionEvent)
+    {
+        String folderPath = "";
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Choose Result File Path");
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setAcceptAllFileFilterUsed(false);
+
+        if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION)
+            folderPath =  chooser.getSelectedFile().getPath();
+        try {
+            searcher.saveResultFile(folderPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 

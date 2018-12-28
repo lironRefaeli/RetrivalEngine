@@ -5,11 +5,189 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="400.0" prefWidth="185.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.citiesSelectionsController">
+<AnchorPane prefHeight="600.0" prefWidth="800" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.citiesSelectionsController">
    <children>
-      <ListView fx:id="citiesList" layoutY="14.0" />
-      <Button layoutX="60.0" layoutY="361.0" mnemonicParsing="false" onAction="#chooseCities" prefHeight="25.0" prefWidth="69.0" text="choose" />
-      <CheckBox fx:id="londonCheckBox" layoutX="14.0" layoutY="21.0" mnemonicParsing="false" text="London" />
-      <CheckBox fx:id="parisCheckBox" layoutX="14.0" layoutY="48.0" mnemonicParsing="false" text="Paris" />
+      <ListView fx:id="citiesList" layoutX="-2.0" layoutY="-4.0" prefHeight="608.0" prefWidth="806.0" />
+      <Button layoutX="366.0" layoutY="561.0" mnemonicParsing="false" onAction="#chooseCities" prefHeight="25.0" prefWidth="69.0" text="choose" />
+      <CheckBox fx:id="londonCheckBox" layoutX="722.0" layoutY="503.0" mnemonicParsing="false" text="London" />
+      <CheckBox fx:id="parisCheckBox" layoutX="723.0" layoutY="531.0" mnemonicParsing="false" text="Paris" />
+      <CheckBox fx:id="ABUJACheckBox" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="ABUJA" />
+      <CheckBox fx:id="ACCRACheckBox" layoutX="14.0" layoutY="34.0" mnemonicParsing="false" text="ACCRA" />
+      <CheckBox fx:id="ALGIERSCheckBox" layoutX="14.0" layoutY="54.0" mnemonicParsing="false" text="ALGIERS" />
+      <CheckBox fx:id="ALOFICheckBox" layoutX="14.0" layoutY="74.0" mnemonicParsing="false" text="ALOFI" />
+      <CheckBox fx:id="AMMANCheckBox" layoutX="14.0" layoutY="94.0" mnemonicParsing="false" text="AMMAN" />
+      <CheckBox fx:id="AMSTERDAMCheckBox" layoutX="14.0" layoutY="114.0" mnemonicParsing="false" text="AMSTERDAM" />
+      <CheckBox fx:id="ANKARACheckBox" layoutX="14.0" layoutY="134.0" mnemonicParsing="false" text="ANKARA" />
+      <CheckBox fx:id="ANTANANARIVOCheckBox" layoutX="14.0" layoutY="154.0" mnemonicParsing="false" text="ANTANANARIVO" />
+      <CheckBox fx:id="APIACheckBox" layoutX="14.0" layoutY="174.0" mnemonicParsing="false" text="APIA" />
+      <CheckBox fx:id="ASHGABATCheckBox" layoutX="14.0" layoutY="194.0" mnemonicParsing="false" text="ASHGABAT" />
+      <CheckBox fx:id="ASMARACheckBox" layoutX="14.0" layoutY="214.0" mnemonicParsing="false" text="ASMARA" />
+      <CheckBox fx:id="ATHENSCheckBox" layoutX="14.0" layoutY="234.0" mnemonicParsing="false" text="ATHENS" />
+      <CheckBox fx:id="AVARUACheckBox" layoutX="14.0" layoutY="254.0" mnemonicParsing="false" text="AVARUA" />
+      <CheckBox fx:id="BAGHDADCheckBox" layoutX="14.0" layoutY="274.0" mnemonicParsing="false" text="BAGHDAD" />
+      <CheckBox fx:id="BAKUCheckBox" layoutX="14.0" layoutY="294.0" mnemonicParsing="false" text="BAKU" />
+      <CheckBox fx:id="BAMAKOCheckBox" layoutX="14.0" layoutY="314.0" mnemonicParsing="false" text="BAMAKO" />
+      <CheckBox fx:id="BANGKOKCheckBox" layoutX="14.0" layoutY="334.0" mnemonicParsing="false" text="BANGKOK" />
+      <CheckBox fx:id="BANGUICheckBox" layoutX="14.0" layoutY="354.0" mnemonicParsing="false" text="BANGUI" />
+      <CheckBox fx:id="BANJULCheckBox" layoutX="14.0" layoutY="374.0" mnemonicParsing="false" text="BANJUL" />
+      <CheckBox fx:id="BASSETERRECheckBox" layoutX="14.0" layoutY="394.0" mnemonicParsing="false" text="BASSE-TERRE" />
+      <CheckBox fx:id="BEIJINGCheckBox" layoutX="14.0" layoutY="434.0" mnemonicParsing="false" text="BEIJING" />
+      <CheckBox fx:id="BEIRUTCheckBox" layoutX="14.0" layoutY="454.0" mnemonicParsing="false" text="BEIRUT" />
+      <CheckBox fx:id="BELGRADECheckBox" layoutX="14.0" layoutY="474.0" mnemonicParsing="false" text="BELGRADE" />
+      <CheckBox fx:id="BELMOPANCheckBox" layoutX="14.0" layoutY="494.0" mnemonicParsing="false" text="BELMOPAN" />
+      <CheckBox fx:id="BERLINCheckBox" layoutX="14.0" layoutY="514.0" mnemonicParsing="false" text="BERLIN" />
+
+      <CheckBox fx:id="BERNCheckBox" layoutX="124.0" layoutY="14.0" mnemonicParsing="false" text="BERN" />
+      <CheckBox fx:id="BISHKEKCheckBox" layoutX="124.0" layoutY="34.0" mnemonicParsing="false" text="BISHKEK" />
+      <CheckBox fx:id="BISSAUCheckBox" layoutX="124.0" layoutY="54.0" mnemonicParsing="false" text="BISSAU" />
+      <CheckBox fx:id="BRATISLAVACheckBox" layoutX="124.0" layoutY="74.0" mnemonicParsing="false" text="BRATISLAVA" />
+      <CheckBox fx:id="BRAZZAVILLECheckBox" layoutX="124.0" layoutY="94.0" mnemonicParsing="false" text="BRAZZAVILLE" />
+      <CheckBox fx:id="BRIDGETOWNCheckBox" layoutX="124.0" layoutY="114.0" mnemonicParsing="false" text="BRIDGETOWN" />
+      <CheckBox fx:id="BRUSSELSCheckBox" layoutX="124.0" layoutY="134.0" mnemonicParsing="false" text="BRUSSELS" />
+      <CheckBox fx:id="BUCHARESTCheckBox" layoutX="124.0" layoutY="154.0" mnemonicParsing="false" text="BUCHAREST" />
+      <CheckBox fx:id="BUDAPESTCheckBox" layoutX="124.0" layoutY="174.0" mnemonicParsing="false" text="BUDAPEST" />
+      <CheckBox fx:id="BUJUMBURACheckBox" layoutX="124.0" layoutY="194.0" mnemonicParsing="false" text="BUJUMBURA" />
+      <CheckBox fx:id="CAIROCheckBox" layoutX="124.0" layoutY="214.0" mnemonicParsing="false" text="CAIRO" />
+      <CheckBox fx:id="CANBERRACheckBox" layoutX="124.0" layoutY="234.0" mnemonicParsing="false" text="CANBERRA" />
+      <CheckBox fx:id="CARACASCheckBox" layoutX="124.0" layoutY="254.0" mnemonicParsing="false" text="CARACAS" />
+      <CheckBox fx:id="CASTRIESCheckBox" layoutX="124.0" layoutY="274.0" mnemonicParsing="false" text="CASTRIES" />
+      <CheckBox fx:id="CAYENNECheckBox" layoutX="124.0" layoutY="294.0" mnemonicParsing="false" text="CAYENNE" />
+      <CheckBox fx:id="COLOMBOCheckBox" layoutX="124.0" layoutY="314.0" mnemonicParsing="false" text="COLOMBO" />
+      <CheckBox fx:id="CONAKRYCheckBox" layoutX="124.0" layoutY="334.0" mnemonicParsing="false" text="CONAKRY" />
+      <CheckBox fx:id="COPENHAGENCheckBox" layoutX="124.0" layoutY="354.0" mnemonicParsing="false" text="COPENHAGEN" />
+      <CheckBox fx:id="DAKARCheckBox" layoutX="124.0" layoutY="374.0" mnemonicParsing="false" text="DAKAR" />
+      <CheckBox fx:id="DAMASCUSCheckBox" layoutX="124.0" layoutY="394.0" mnemonicParsing="false" text="DAMASCUS" />
+      <CheckBox fx:id="DHAKACheckBox" layoutX="124.0" layoutY="414.0" mnemonicParsing="false" text="DHAKA" />
+      <CheckBox fx:id="DILICheckBox" layoutX="124.0" layoutY="434.0" mnemonicParsing="false" text="DILI" />
+      <CheckBox fx:id="DJIBOUTICheckBox" layoutX="124.0" layoutY="454.0" mnemonicParsing="false" text="DJIBOUTI" />
+      <CheckBox fx:id="DODOMACheckBox" layoutX="124.0" layoutY="474.0" mnemonicParsing="false" text="DODOMA" />
+      <CheckBox fx:id="DOHACheckBox" layoutX="124.0" layoutY="494.0" mnemonicParsing="false" text="DOHA" />
+      <CheckBox fx:id="DOUGLASCheckBox" layoutX="124.0" layoutY="514.0" mnemonicParsing="false" text="DOUGLAS" />
+
+      <CheckBox fx:id="DUBLINCheckBox" layoutX="234.0" layoutY="14.0" mnemonicParsing="false" text="DUBLIN" />
+      <CheckBox fx:id="DUSHANBECheckBox" layoutX="234.0" layoutY="34.0" mnemonicParsing="false" text="DUSHANBE" />
+      <CheckBox fx:id="FREETOWNCheckBox" layoutX="234.0" layoutY="54.0" mnemonicParsing="false" text="FREETOWN" />
+      <CheckBox fx:id="GABORONECheckBox" layoutX="234.0" layoutY="74.0" mnemonicParsing="false" text="GABORONE" />
+      <CheckBox fx:id="GEORGETOWNCheckBox" layoutX="234.0" layoutY="94.0" mnemonicParsing="false" text="GEORGETOWN" />
+      <CheckBox fx:id="GIBRALTARCheckBox" layoutX="234.0" layoutY="114.0" mnemonicParsing="false" text="GIBRALTAR" />
+      <CheckBox fx:id="GUSTAVIACheckBox" layoutX="234.0" layoutY="134.0" mnemonicParsing="false" text="GUSTAVIA" />
+      <CheckBox fx:id="HAMILTONCheckBox" layoutX="234.0" layoutY="154.0" mnemonicParsing="false" text="HAMILTON" />
+      <CheckBox fx:id="HANOICheckBox" layoutX="234.0" layoutY="174.0" mnemonicParsing="false" text="HANOI" />
+      <CheckBox fx:id="HARARE" layoutX="234.0" layoutY="194.0" mnemonicParsing="false" text="HARARE" />
+      <CheckBox fx:id="HAVANA" layoutX="234.0" layoutY="214.0" mnemonicParsing="false" text="HAVANA" />
+      <CheckBox fx:id="HELSINKI" layoutX="234.0" layoutY="234.0" mnemonicParsing="false" text="HELSINKI" />
+      <CheckBox fx:id="HONIARA" layoutX="234.0" layoutY="254.0" mnemonicParsing="false" text="HONIARA" />
+      <CheckBox fx:id="ISLAMABAD" layoutX="234.0" layoutY="274.0" mnemonicParsing="false" text="ISLAMABAD" />
+      <CheckBox fx:id="JAKARTA" layoutX="234.0" layoutY="294.0" mnemonicParsing="false" text="JAKARTA" />
+      <CheckBox fx:id="JAMESTOWN" layoutX="234.0" layoutY="314.0" mnemonicParsing="false" text="JAMESTOWN" />
+      <CheckBox fx:id="JERUSALEM" layoutX="234.0" layoutY="334.0" mnemonicParsing="false" text="JERUSALEM" />
+      <CheckBox fx:id="JUBA" layoutX="234.0" layoutY="354.0" mnemonicParsing="false" text="JUBA" />
+      <CheckBox fx:id="KABUL" layoutX="234.0" layoutY="374.0" mnemonicParsing="false" text="KABUL" />
+      <CheckBox fx:id="KAMPALA" layoutX="234.0" layoutY="394.0" mnemonicParsing="false" text="KAMPALA" />
+      <CheckBox fx:id="KATHMANDU" layoutX="234.0" layoutY="414.0" mnemonicParsing="false" text="KATHMANDU" />
+      <CheckBox fx:id="KHARTOUM" layoutX="234.0" layoutY="434.0" mnemonicParsing="false" text="KHARTOUM" />
+      <CheckBox fx:id="KIEV" layoutX="234.0" layoutY="454.0" mnemonicParsing="false" text="KIEV" />
+      <CheckBox fx:id="KIGALI" layoutX="234.0" layoutY="474.0" mnemonicParsing="false" text="KIGALI" />
+      <CheckBox fx:id="KINGSTON" layoutX="234.0" layoutY="494.0" mnemonicParsing="false" text="KINGSTON" />
+      <CheckBox fx:id="KINGSTOWN" layoutX="234.0" layoutY="514.0" mnemonicParsing="false" text="KINGSTOWN" />
+
+      <CheckBox fx:id="KINSHASA" layoutX="344.0" layoutY="14.0" mnemonicParsing="false" text="KINSHASA" />
+      <CheckBox fx:id="LIBREVILLE" layoutX="344.0" layoutY="34.0" mnemonicParsing="false" text="LIBREVILLE" />
+      <CheckBox fx:id="LILONGWE" layoutX="344.0" layoutY="54.0" mnemonicParsing="false" text="LILONGWE" />
+      <CheckBox fx:id="LIMA" layoutX="344.0" layoutY="74.0" mnemonicParsing="false" text="LIMA" />
+      <CheckBox fx:id="LISBON" layoutX="344.0" layoutY="94.0" mnemonicParsing="false" text="LISBON" />
+      <CheckBox fx:id="LJUBLJANA" layoutX="344.0" layoutY="114.0" mnemonicParsing="false" text="LJUBLJANA" />
+      <CheckBox fx:id="LOBAMBA" layoutX="344.0" layoutY="134.0" mnemonicParsing="false" text="LOBAMBA" />
+      <CheckBox fx:id="LONDON" layoutX="344.0" layoutY="154.0" mnemonicParsing="false" text="LONDON" />
+      <CheckBox fx:id="LUANDA" layoutX="344.0" layoutY="174.0" mnemonicParsing="false" text="LUANDA" />
+      <CheckBox fx:id="LUSAKA" layoutX="344.0" layoutY="194.0" mnemonicParsing="false" text="LUSAKA" />
+      <CheckBox fx:id="LUXEMBOURG" layoutX="344.0" layoutY="214.0" mnemonicParsing="false" text="LUXEMBOURG" />
+      <CheckBox fx:id="MADRID" layoutX="344.0" layoutY="234.0" mnemonicParsing="false" text="MADRID" />
+      <CheckBox fx:id="MAJURO" layoutX="344.0" layoutY="254.0" mnemonicParsing="false" text="MAJURO" />
+      <CheckBox fx:id="MALABO" layoutX="344.0" layoutY="274.0" mnemonicParsing="false" text="MALABO" />
+      <CheckBox fx:id="MANAGUA" layoutX="344.0" layoutY="294.0" mnemonicParsing="false" text="MANAGUA" />
+      <CheckBox fx:id="MANAMA" layoutX="344.0" layoutY="314.0" mnemonicParsing="false" text="MANAMA" />
+      <CheckBox fx:id="MANILA" layoutX="344.0" layoutY="334.0" mnemonicParsing="false" text="MANILA" />
+      <CheckBox fx:id="MAPUTO" layoutX="344.0" layoutY="354.0" mnemonicParsing="false" text="MAPUTO" />
+      <CheckBox fx:id="MARIEHAMN" layoutX="344.0" layoutY="374.0" mnemonicParsing="false" text="MARIEHAMN" />
+      <CheckBox fx:id="MARIGOT" layoutX="344.0" layoutY="394.0" mnemonicParsing="false" text="MARIGOT" />
+      <CheckBox fx:id="MASERU" layoutX="344.0" layoutY="414.0" mnemonicParsing="false" text="MASERU" />
+      <CheckBox fx:id="MINSK" layoutX="344.0" layoutY="434.0" mnemonicParsing="false" text="MINSK" />
+      <CheckBox fx:id="MOGADISHU" layoutX="344.0" layoutY="454.0" mnemonicParsing="false" text="MOGADISHU" />
+      <CheckBox fx:id="MONACO" layoutX="344.0" layoutY="474.0" mnemonicParsing="false" text="MONACO" />
+      <CheckBox fx:id="MONROVIA" layoutX="344.0" layoutY="494.0" mnemonicParsing="false" text="MONROVIA" />
+      <CheckBox fx:id="MONTEVIDEO" layoutX="344.0" layoutY="514.0" mnemonicParsing="false" text="MONTEVIDEO" />
+
+      <CheckBox fx:id="MORONI" layoutX="454.0" layoutY="14.0" mnemonicParsing="false" text="MORONI" />
+      <CheckBox fx:id="MOSCOW" layoutX="454.0" layoutY="34.0" mnemonicParsing="false" text="MOSCOW" />
+      <CheckBox fx:id="MUSCAT" layoutX="454.0" layoutY="54.0" mnemonicParsing="false" text="MUSCAT" />
+      <CheckBox fx:id="NAIROBI" layoutX="454.0" layoutY="74.0" mnemonicParsing="false" text="NAIROBI" />
+      <CheckBox fx:id="NASSAU" layoutX="454.0" layoutY="94.0" mnemonicParsing="false" text="NASSAU" />
+      <CheckBox fx:id="NAYPYIDAW" layoutX="454.0" layoutY="114.0" mnemonicParsing="false" text="NAYPYIDAW" />
+      <CheckBox fx:id="NIAMEY" layoutX="454.0" layoutY="134.0" mnemonicParsing="false" text="NIAMEY" />
+      <CheckBox fx:id="NICOSIA" layoutX="454.0" layoutY="154.0" mnemonicParsing="false" text="NICOSIA" />
+      <CheckBox fx:id="NOUAKCHOTT" layoutX="454.0" layoutY="174.0" mnemonicParsing="false" text="NOUAKCHOTT" />
+      <CheckBox fx:id="NUUK" layoutX="454.0" layoutY="194.0" mnemonicParsing="false" text="NUUK" />
+      <CheckBox fx:id="ORANJESTAD" layoutX="454.0" layoutY="214.0" mnemonicParsing="false" text="ORANJESTAD" />
+      <CheckBox fx:id="OSLO" layoutX="454.0" layoutY="234.0" mnemonicParsing="false" text="OSLO" />
+      <CheckBox fx:id="OTTAWA" layoutX="454.0" layoutY="254.0" mnemonicParsing="false" text="OTTAWA" />
+      <CheckBox fx:id="OUAGADOUGOU" layoutX="454.0" layoutY="274.0" mnemonicParsing="false" text="OUAGADOUGOU" />
+      <CheckBox fx:id="PARAMARIBO" layoutX="454.0" layoutY="294.0" mnemonicParsing="false" text="PARAMARIBO" />
+      <CheckBox fx:id="PARIS" layoutX="454.0" layoutY="314.0" mnemonicParsing="false" text="PARIS" />
+      <CheckBox fx:id="PHILIPSBURG" layoutX="454.0" layoutY="334.0" mnemonicParsing="false" text="PHILIPSBURG" />
+      <CheckBox fx:id="PLYMOUTH" layoutX="454.0" layoutY="354.0" mnemonicParsing="false" text="PLYMOUTH" />
+      <CheckBox fx:id="PODGORICA" layoutX="454.0" layoutY="374.0" mnemonicParsing="false" text="PODGORICA" />
+      <CheckBox fx:id="PRAGUE" layoutX="454.0" layoutY="394.0" mnemonicParsing="false" text="PRAGUE" />
+      <CheckBox fx:id="PRAIA" layoutX="454.0" layoutY="414.0" mnemonicParsing="false" text="PRAIA" />
+      <CheckBox fx:id="PRETORIA" layoutX="454.0" layoutY="434.0" mnemonicParsing="false" text="PRETORIA" />
+      <CheckBox fx:id="PRISTINA" layoutX="454.0" layoutY="454.0" mnemonicParsing="false" text="PRISTINA" />
+      <CheckBox fx:id="PYONGYANG" layoutX="454.0" layoutY="474.0" mnemonicParsing="false" text="PYONGYANG" />
+      <CheckBox fx:id="QUITO" layoutX="454.0" layoutY="494.0" mnemonicParsing="false" text="QUITO" />
+      <CheckBox fx:id="RABAT" layoutX="454.0" layoutY="514.0" mnemonicParsing="false" text="RABAT" />
+
+      <CheckBox fx:id="RAMALLAH" layoutX="564.0" layoutY="14.0" mnemonicParsing="false" text="RAMALLAH" />
+      <CheckBox fx:id="RIGA" layoutX="564.0" layoutY="34.0" mnemonicParsing="false" text="RIGA" />
+      <CheckBox fx:id="RIYADH" layoutX="564.0" layoutY="54.0" mnemonicParsing="false" text="RIYADH" />
+      <CheckBox fx:id="ROME" layoutX="564.0" layoutY="74.0" mnemonicParsing="false" text="ROME" />
+      <CheckBox fx:id="ROSEAU" layoutX="564.0" layoutY="94.0" mnemonicParsing="false" text="ROSEAU" />
+      <CheckBox fx:id="SAINTDENIS" layoutX="564.0" layoutY="114.0" mnemonicParsing="false" text="SAINT-DENIS" />
+      <CheckBox fx:id="AINTPIERRE" layoutX="564.0" layoutY="134.0" mnemonicParsing="false" text="SAINT-PIERRE" />
+      <CheckBox fx:id="SAIPAN" layoutX="564.0" layoutY="154.0" mnemonicParsing="false" text="SAIPAN" />
+      <CheckBox fx:id="SANTIAGO" layoutX="564.0" layoutY="174.0" mnemonicParsing="false" text="SANTIAGO" />
+      <CheckBox fx:id="SARAJEVO" layoutX="564.0" layoutY="194.0" mnemonicParsing="false" text="SARAJEVO" />
+      <CheckBox fx:id="SEOUL" layoutX="564.0" layoutY="214.0" mnemonicParsing="false" text="SEOUL" />
+      <CheckBox fx:id="SINGAPORE" layoutX="564.0" layoutY="234.0" mnemonicParsing="false" text="SINGAPORE" />
+      <CheckBox fx:id="SKOPJE" layoutX="564.0" layoutY="254.0" mnemonicParsing="false" text="SKOPJE" />
+      <CheckBox fx:id="SOFIA" layoutX="564.0" layoutY="274.0" mnemonicParsing="false" text="SOFIA" />
+      <CheckBox fx:id="STANLEY" layoutX="564.0" layoutY="294.0" mnemonicParsing="false" text="STANLEY" />
+      <CheckBox fx:id="STOCKHOLM" layoutX="564.0" layoutY="314.0" mnemonicParsing="false" text="STOCKHOLM" />
+      <CheckBox fx:id="SUCRE" layoutX="564.0" layoutY="334.0" mnemonicParsing="false" text="SUCRE" />
+      <CheckBox fx:id="SUVA" layoutX="564.0" layoutY="354.0" mnemonicParsing="false" text="SUVA" />
+      <CheckBox fx:id="TAIPEI" layoutX="564.0" layoutY="374.0" mnemonicParsing="false" text="TAIPEI" />
+      <CheckBox fx:id="TALLINN" layoutX="564.0" layoutY="394.0" mnemonicParsing="false" text="TALLINN" />
+      <CheckBox fx:id="TASHKENT" layoutX="564.0" layoutY="414.0" mnemonicParsing="false" text="TASHKENT" />
+      <CheckBox fx:id="TBILISI" layoutX="564.0" layoutY="434.0" mnemonicParsing="false" text="TBILISI" />
+      <CheckBox fx:id="TEGUCIGALPA" layoutX="564.0" layoutY="454.0" mnemonicParsing="false" text="TEGUCIGALPA" />
+      <CheckBox fx:id="TEHRAN" layoutX="564.0" layoutY="474.0" mnemonicParsing="false" text="TEHRAN" />
+      <CheckBox fx:id="THIMPHU" layoutX="564.0" layoutY="494.0" mnemonicParsing="false" text="THIMPHU" />
+      <CheckBox fx:id="TIRANA" layoutX="564.0" layoutY="514.0" mnemonicParsing="false" text="TIRANA" />
+
+      <CheckBox fx:id="TOKYO" layoutX="674.0" layoutY="14.0" mnemonicParsing="false" text="TOKYO" />
+      <CheckBox fx:id="TRIPOLI" layoutX="674.0" layoutY="34.0" mnemonicParsing="false" text="TRIPOLI" />
+      <CheckBox fx:id="TUNIS" layoutX="674.0" layoutY="54.0" mnemonicParsing="false" text="TUNIS" />
+      <CheckBox fx:id="VADUZ" layoutX="674.0" layoutY="74.0" mnemonicParsing="false" text="VADUZ" />
+      <CheckBox fx:id="VALLETTA" layoutX="674.0" layoutY="94.0" mnemonicParsing="false" text="VALLETTA" />
+      <CheckBox fx:id="VICTORIA" layoutX="674.0" layoutY="114.0" mnemonicParsing="false" text="VICTORIA" />
+      <CheckBox fx:id="VIENNA" layoutX="674.0" layoutY="134.0" mnemonicParsing="false" text="VIENNA" />
+      <CheckBox fx:id="VIENTIANE" layoutX="674.0" layoutY="154.0" mnemonicParsing="false" text="VIENTIANE" />
+      <CheckBox fx:id="VILNIUS" layoutX="674.0" layoutY="174.0" mnemonicParsing="false" text="VILNIUS" />
+      <CheckBox fx:id="WARSAW" layoutX="674.0" layoutY="194.0" mnemonicParsing="false" text="WARSAW" />
+      <CheckBox fx:id="WELLINGTON" layoutX="674.0" layoutY="214.0" mnemonicParsing="false" text="WELLINGTON" />
+      <CheckBox fx:id="WILLEMSTAD" layoutX="674.0" layoutY="234.0" mnemonicParsing="false" text="WILLEMSTAD" />
+      <CheckBox fx:id="WINDHOEK" layoutX="674.0" layoutY="254.0" mnemonicParsing="false" text="WINDHOEK" />
+      <CheckBox fx:id="YAMOUSSOUKRO" layoutX="674.0" layoutY="274.0" mnemonicParsing="false" text="YAMOUSSOUKRO" />
+      <CheckBox fx:id="YEREVAN" layoutX="674.0" layoutY="294.0" mnemonicParsing="false" text="YEREVAN" />
+      <CheckBox fx:id="ZAGREB" layoutX="674.0" layoutY="314.0" mnemonicParsing="false" text="ZAGREB" />
+   
    </children>
 </AnchorPane>

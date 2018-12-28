@@ -11,13 +11,14 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="504.0" prefWidth="627.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.engineController">
+<AnchorPane prefHeight="504.0" prefWidth="627.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.engineController">
    <BorderPane layoutX="8.0" layoutY="164.0" prefHeight="340.0" prefWidth="619.0">
       <center>
-         <TableView prefHeight="307.0" prefWidth="619.0" BorderPane.alignment="CENTER">
+         <TableView fx:id="resultsTable" prefHeight="182.0" prefWidth="345.0" BorderPane.alignment="CENTER">
            <columns>
-             <TableColumn prefWidth="75.0" text="docNum" />
-             <TableColumn prefWidth="99.0" text="watch entities" />
+               <TableColumn prefWidth="173.0" text="queryID" />
+             <TableColumn minWidth="7.0" prefWidth="285.0" text="docNum" />
+             <TableColumn minWidth="0.0" prefWidth="157.0" text="watch entities" />
            </columns>
          </TableView>
       </center>
@@ -43,6 +44,6 @@
       </buttons>
    </ButtonBar>
    <CheckBox fx:id="semanticCheckBox" layoutX="112.0" layoutY="136.0" mnemonicParsing="false" text="semantic search" />
-   <Button layoutX="360.0" layoutY="132.0" mnemonicParsing="false" text="save solutions" />
+   <Button fx:id="SaveResultFile" layoutX="360.0" layoutY="132.0" mnemonicParsing="false" onAction="#SaveResultFiles" text="save solutions" />
 
 </AnchorPane>
