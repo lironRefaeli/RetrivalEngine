@@ -1,5 +1,9 @@
 package sample;
 
+/**
+ * class that represent an object with a queryID and a document number that retrieved for that query search
+ * only for display purposes
+ */
 public class QureyIDAndDocNumber {
 
     public String queryID;

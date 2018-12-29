@@ -10,16 +10,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
 
-//todo write in readme
-//https://stackoverflow.com/questions/29888592/errorjava-javactask-source-release-8-requires-target-release-1-8
 public class mainController {
 
         ReadFile readFile;
@@ -38,8 +34,6 @@ public class mainController {
         private CheckBox stemmerCheckBox;
         @FXML
         private ChoiceBox languagesBox;
-
-        private boolean stemmerSelection;
 
         /**
          * the function opening the searching window
@@ -109,11 +103,8 @@ public class mainController {
                  indexerThread.start();
 
 
-                try {
-                    indexerThread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                try { indexerThread.join(); }
+                catch (InterruptedException e) { e.printStackTrace(); }
 
                 //displaying statistics msg with the end of the creating of the inverted index
                 if(!Indexer.hasException)
@@ -134,22 +125,6 @@ public class mainController {
                     //alert.setContentText("s");
                     alert.showAndWait();
                 }
-
-          //  }//if index stopped in the middle of the process because of wrong disk path - display alert
-            /*
-            else
-            {
-                //opens a new window for writing the query after the inverted index and all the other relevant stuff are ready
-                FXMLLoader fxmlLoader = new FXMLLoader();
-                Parent root1 = fxmlLoader.load(getClass().getResource("/engineWindow.fxml").openStream());
-                Stage stage = new Stage();
-                stage.initModality(Modality.APPLICATION_MODAL);
-                stage.setTitle("engineWindow");
-                stage.setScene(new Scene(root1, 600, 500));
-                stage.show();
-            }
-            */
-
         }
 
 
@@ -166,8 +141,6 @@ public class mainController {
 
             if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
                 corpusPath.setText("" + chooser.getSelectedFile());
-
-
         }
 
         /**
@@ -322,148 +295,148 @@ public class mainController {
 
         }
 
-    private void LoadCorpusMap() throws FileNotFoundException {
-        boolean stemmerSelection = stemmerCheckBox.isSelected();
-        String pathToDisk = diskPath.getText();
-        File dictionaryFile;
-        if (stemmerSelection)
-            dictionaryFile = new File(pathToDisk + "\\dictionaryWithStemming");
-        else
-            dictionaryFile = new File(pathToDisk + "\\dictionaryWithoutStemming");
+        private void LoadCorpusMap() throws FileNotFoundException {
+            boolean stemmerSelection = stemmerCheckBox.isSelected();
+            String pathToDisk = diskPath.getText();
+            File dictionaryFile;
+            if (stemmerSelection)
+                dictionaryFile = new File(pathToDisk + "\\dictionaryWithStemming");
+            else
+                dictionaryFile = new File(pathToDisk + "\\dictionaryWithoutStemming");
 
-        FileInputStream fileStreamer;
-        fileStreamer = new FileInputStream(dictionaryFile);
+            FileInputStream fileStreamer;
+            fileStreamer = new FileInputStream(dictionaryFile);
 
-        ObjectInputStream objectStreamer = null;
-        try {
-            objectStreamer = new ObjectInputStream(fileStreamer); }
+            ObjectInputStream objectStreamer = null;
+            try {
+                objectStreamer = new ObjectInputStream(fileStreamer); }
+                catch (IOException e) { e.printStackTrace(); }
+            try {Indexer.termsCorpusMap = (Map<String, TermDataInMap>) objectStreamer.readObject();}
             catch (IOException e) { e.printStackTrace(); }
-        try {Indexer.termsCorpusMap = (Map<String, TermDataInMap>) objectStreamer.readObject();}
-        catch (IOException e) { e.printStackTrace(); }
-        catch (ClassNotFoundException e) { e.printStackTrace();}
+            catch (ClassNotFoundException e) { e.printStackTrace();}
 
-        try
-        {
-            objectStreamer.close();
-            fileStreamer.close();
+            try
+            {
+                objectStreamer.close();
+                fileStreamer.close();
+            }
+            catch (IOException e) { e.printStackTrace();}
         }
-        catch (IOException e) { e.printStackTrace();}
-    }
 
 
-    private void LoadDocsMap() throws FileNotFoundException {
-        boolean stemmerSelection = stemmerCheckBox.isSelected();
-        String pathToDisk = diskPath.getText();
-        File dictionaryFile;
-        if (stemmerSelection)
-            dictionaryFile = new File(pathToDisk + "\\CorpusDocsWithStemming");
-        else
-            dictionaryFile = new File(pathToDisk + "\\CorpusDocsWithoutStemming");
+        private void LoadDocsMap() throws FileNotFoundException {
+            boolean stemmerSelection = stemmerCheckBox.isSelected();
+            String pathToDisk = diskPath.getText();
+            File dictionaryFile;
+            if (stemmerSelection)
+                dictionaryFile = new File(pathToDisk + "\\CorpusDocsWithStemming");
+            else
+                dictionaryFile = new File(pathToDisk + "\\CorpusDocsWithoutStemming");
 
-        FileInputStream fileStreamer;
-        fileStreamer = new FileInputStream(dictionaryFile);
+            FileInputStream fileStreamer;
+            fileStreamer = new FileInputStream(dictionaryFile);
 
-        ObjectInputStream objectStreamer = null;
-        try {
-            objectStreamer = new ObjectInputStream(fileStreamer); }
-        catch (IOException e) { e.printStackTrace(); }
-        try {Indexer.docsCorpusMap = (Map<String, DocTermDataInMap>) objectStreamer.readObject();}
-        catch (IOException e) { e.printStackTrace(); }
-        catch (ClassNotFoundException e) { e.printStackTrace();}
+            ObjectInputStream objectStreamer = null;
+            try {
+                objectStreamer = new ObjectInputStream(fileStreamer); }
+            catch (IOException e) { e.printStackTrace(); }
+            try {Indexer.docsCorpusMap = (Map<String, DocTermDataInMap>) objectStreamer.readObject();}
+            catch (IOException e) { e.printStackTrace(); }
+            catch (ClassNotFoundException e) { e.printStackTrace();}
 
-        try
-        {
-            objectStreamer.close();
-            fileStreamer.close();
+            try
+            {
+                objectStreamer.close();
+                fileStreamer.close();
+            }
+            catch (IOException e) { e.printStackTrace();}
         }
-        catch (IOException e) { e.printStackTrace();}
-    }
 
-    private void LoadCitiesMap() throws FileNotFoundException {
-        boolean stemmerSelection = stemmerCheckBox.isSelected();
-        String pathToDisk = diskPath.getText();
-        File dictionaryFile;
-        if (stemmerSelection)
-            dictionaryFile = new File(pathToDisk + "\\CorpusCitiesWithStemming");
-        else
-            dictionaryFile = new File(pathToDisk + "\\CorpusCitiesWithoutStemming");
+        private void LoadCitiesMap() throws FileNotFoundException {
+            boolean stemmerSelection = stemmerCheckBox.isSelected();
+            String pathToDisk = diskPath.getText();
+            File dictionaryFile;
+            if (stemmerSelection)
+                dictionaryFile = new File(pathToDisk + "\\CorpusCitiesWithStemming");
+            else
+                dictionaryFile = new File(pathToDisk + "\\CorpusCitiesWithoutStemming");
 
-        FileInputStream fileStreamer;
-        fileStreamer = new FileInputStream(dictionaryFile);
+            FileInputStream fileStreamer;
+            fileStreamer = new FileInputStream(dictionaryFile);
 
 
-        ObjectInputStream objectStreamer = null;
-        try {
-            objectStreamer = new ObjectInputStream(fileStreamer); }
-        catch (IOException e) { e.printStackTrace(); }
+            ObjectInputStream objectStreamer = null;
+            try {
+                objectStreamer = new ObjectInputStream(fileStreamer); }
+            catch (IOException e) { e.printStackTrace(); }
 
-        try {Indexer.citiesInCorpus = (Map<String, CityInMap>) objectStreamer.readObject(); }
-        catch (IOException e) { e.printStackTrace(); }
-        catch (ClassNotFoundException e) { e.printStackTrace();}
+            try {Indexer.citiesInCorpus = (Map<String, CityInMap>) objectStreamer.readObject(); }
+            catch (IOException e) { e.printStackTrace(); }
+            catch (ClassNotFoundException e) { e.printStackTrace();}
 
-        try
-        {
-            objectStreamer.close();
-            fileStreamer.close();
+            try
+            {
+                objectStreamer.close();
+                fileStreamer.close();
+            }
+            catch (IOException e) { e.printStackTrace();}
         }
-        catch (IOException e) { e.printStackTrace();}
-    }
 
-    private void LoadIDsMap() throws FileNotFoundException {
-        boolean stemmerSelection = stemmerCheckBox.isSelected();
-        String pathToDisk = diskPath.getText();
-        File dictionaryFile;
-        if (stemmerSelection)
-            dictionaryFile = new File(pathToDisk + "\\IDsDocsWithStemming");
-        else
-            dictionaryFile = new File(pathToDisk + "\\IDsDocsWithoutStemming");
+        private void LoadIDsMap() throws FileNotFoundException {
+            boolean stemmerSelection = stemmerCheckBox.isSelected();
+            String pathToDisk = diskPath.getText();
+            File dictionaryFile;
+            if (stemmerSelection)
+                dictionaryFile = new File(pathToDisk + "\\IDsDocsWithStemming");
+            else
+                dictionaryFile = new File(pathToDisk + "\\IDsDocsWithoutStemming");
 
-        FileInputStream fileStreamer;
-        fileStreamer = new FileInputStream(dictionaryFile);
+            FileInputStream fileStreamer;
+            fileStreamer = new FileInputStream(dictionaryFile);
 
-        ObjectInputStream objectStreamer = null;
-        try {
-            objectStreamer = new ObjectInputStream(fileStreamer); }
-        catch (IOException e) { e.printStackTrace(); }
+            ObjectInputStream objectStreamer = null;
+            try {
+                objectStreamer = new ObjectInputStream(fileStreamer); }
+            catch (IOException e) { e.printStackTrace(); }
 
-        try {Indexer.docsAndIDs = (Map<Integer, String>) objectStreamer.readObject();}
-        catch (IOException e) { e.printStackTrace(); }
-        catch (ClassNotFoundException e) { e.printStackTrace();}
+            try {Indexer.docsAndIDs = (Map<Integer, String>) objectStreamer.readObject();}
+            catch (IOException e) { e.printStackTrace(); }
+            catch (ClassNotFoundException e) { e.printStackTrace();}
 
-        try
-        {
-            objectStreamer.close();
-            fileStreamer.close();
+            try
+            {
+                objectStreamer.close();
+                fileStreamer.close();
+            }
+            catch (IOException e) { e.printStackTrace();}
+
         }
-        catch (IOException e) { e.printStackTrace();}
-
-    }
 
         /**
-         * loading dictionary object from file to termInCorpus parameter
-         * @param event
+         * loading our 4 maps into the memory: termCorpusMap, docsCorpusMap, citiesCorpusMap and IDsAndDocsMaps
+         * every one of the function that responsible for loading a specific map, uses an objectStreamer to do so
          */
-    public void LoadDictionaryFromDisk(ActionEvent event)
-    {
-        try
+        public void LoadDictionaryFromDisk(ActionEvent event)
         {
-            LoadCorpusMap();
-            LoadDocsMap();
-            LoadCitiesMap();
-            LoadIDsMap();
-        }
-        catch (FileNotFoundException e)
-        {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setHeaderText("One or more of the necessary dictionaries weren't found :(");
+            try
+            {
+                LoadCorpusMap();
+                LoadDocsMap();
+                LoadCitiesMap();
+                LoadIDsMap();
+            }
+            catch (FileNotFoundException e)
+            {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setHeaderText("One or more of the necessary dictionaries weren't found :(");
+                alert.showAndWait();
+                return;
+            }
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setHeaderText("Loading the dictionaries was succeeded!");
             alert.showAndWait();
-            return;
-        }
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setHeaderText("Loading the dictionaries was succeeded!");
-        alert.showAndWait();
 
-    }
+        }
 
 
     @FXML
@@ -472,8 +445,11 @@ public class mainController {
         languagesBox.setItems(languagesBoxOptions);
     }
 
+    /**
+     *opens a new window for writing the query after the inverted index and all the other relevant stuff are ready
+     */
     public void OpenSearchWindow(ActionEvent actionEvent) throws IOException {
-        //opens a new window for writing the query after the inverted index and all the other relevant stuff are ready
+
         if(Indexer.termsCorpusMap != null)
         {
             FXMLLoader fxmlLoader = new FXMLLoader();

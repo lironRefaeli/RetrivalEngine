@@ -1,5 +1,8 @@
 package sample;
 
+/**
+ * represents a single query
+ */
 public class Query
 {
     static int randomQueryID = 1000;

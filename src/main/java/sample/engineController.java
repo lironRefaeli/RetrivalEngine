@@ -33,10 +33,10 @@ public class engineController
     @FXML
     private CheckBox semanticCheckBox;
 
-
-    //called when user click on "Search" button
-    //distinguishes between a written query and a file of queries
-    //start the searcher object to make the search
+    /**
+    called when user click on "Search" button
+    distinguishes between a written query and a file of queries
+    start the searcher object to make the search */
     public void searchQuery(ActionEvent actionEvent)
     {
 
@@ -87,6 +87,7 @@ public class engineController
 
     }
 
+    //returns a list of QureyIDAndDocNumber object for displayResults() function to display
     public ObservableList<QureyIDAndDocNumber> getQueriesAndDocs()
     {
         ObservableList<QureyIDAndDocNumber> queriesAndDocs = FXCollections.observableArrayList();
@@ -110,6 +111,7 @@ public class engineController
         //The map that saves all the queries ids and the documents numbers
         if (searcher.queryIDToRankedMap != null) {
 
+            //create the table's format
             TableColumn<QureyIDAndDocNumber, String> queryColumn = new TableColumn<>("QueryId");
             queryColumn.setMinWidth(300);
             queryColumn.setCellValueFactory(new PropertyValueFactory<>("queryID"));
@@ -122,6 +124,7 @@ public class engineController
             table.setItems(getQueriesAndDocs());
             table.getColumns().addAll(queryColumn, docColumn);
 
+            //on double click on one of the rows, display the entities of the doc number in that row
             table.setRowFactory( tv -> {
                 TableRow<QureyIDAndDocNumber> row = new TableRow<>();
                 row.setOnMouseClicked(event -> {
@@ -169,10 +172,13 @@ public class engineController
         }
     }
 
+    //display the user the entities of one of the retrieved documents
     private void displayEntities(String docNum) throws IOException {
 
+        //The map that contains all the documents in the corpus
         if (Indexer.docsCorpusMap != null) {
 
+            //create the table's format
             TableColumn<EntityAndGrade, String> entityColumn = new TableColumn<>("Entity");
             entityColumn.setMinWidth(300);
             entityColumn.setCellValueFactory(new PropertyValueFactory<>("entity"));
@@ -193,8 +199,6 @@ public class engineController
             stage.setScene(new Scene(vbox));
             stage.show();
 
-
-
         }
         else
         {
@@ -206,6 +210,7 @@ public class engineController
         }
     }
 
+    //returns a list of EntityAndGrade object for displayEntities() function to display for every document
     private ObservableList<EntityAndGrade> getEntitiesAndGrades(String docNum) {
 
         ObservableList<EntityAndGrade> entityAndGrades = FXCollections.observableArrayList();
@@ -219,17 +224,13 @@ public class engineController
     }
 
 
-    public static void setStemmerSelection(boolean selected) {
+    public static void setStemmerSelection(boolean selected) { stemmerSelection = selected; }
 
-        stemmerSelection = selected;
-    }
+    public static void setPathToDisk(String path) { pathToDisk = path; }
 
-    public static void setPathToDisk(String path) {
-
-        pathToDisk = path;
-    }
-
-    public void openCitiesSelections(ActionEvent event) throws IOException {
+    //opens the window with all the cities in corpus to choose from
+    public void openCitiesSelections(ActionEvent event) throws IOException
+    {
 
         FXMLLoader fxmlLoader = new FXMLLoader();
         Parent root1 = fxmlLoader.load(mainController.class.getResource("/citiesSelections.fxml").openStream());
@@ -242,7 +243,9 @@ public class engineController
 
     }
 
-    public void BrowseQueriesPath(ActionEvent event) {
+    //responsible for the "Browse" button on the Serach window
+    public void BrowseQueriesPath(ActionEvent event)
+    {
         JFileChooser chooser = new JFileChooser();
         //chooser.setCurrentDirectory(new java.io.File("."));
         chooser.setDialogTitle("Choose queries' file");
@@ -255,6 +258,7 @@ public class engineController
 
     }
 
+    //responsible for the "Save results" button on the Serach window
     public void SaveResultFiles(ActionEvent actionEvent)
     {
         String folderPath = "";

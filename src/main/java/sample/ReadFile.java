@@ -92,9 +92,6 @@ public class ReadFile {
 
     /**
      * this function is getting path of file and extracting the content of the file to the appropriate lists.
-     *
-     * @param filePath
-     * @throws IOException
      */
     private void TransferFilePathToFileContent(String filePath) {
         File f = new File(filePath);
@@ -140,6 +137,11 @@ public class ReadFile {
         }
     }
 
+    /**
+     * Reading all the queries from a file
+     * @param queriesFilePath the path where the queries file is on disk
+     * @return a list of the queries that where in that file
+     */
     public static List<Query> ReadQueries(String queriesFilePath)
     {
         List<Query> queriesList = new ArrayList<>();

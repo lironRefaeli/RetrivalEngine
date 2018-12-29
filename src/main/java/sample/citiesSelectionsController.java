@@ -1,33 +1,22 @@
 package sample;
-
-import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.input.DragEvent;
-import javafx.scene.layout.HBox;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-
 import java.util.ArrayList;
-import java.util.List;
 
+/**
+//builds a list of cities that the user chose he/she wants to find in the retrieved documents
+//This list being used in the Ranker class - if there is a document that contains a term from a query,
+//but doesn't contain one of the cities that the user chose (under the 104 tag or in the text)
+//the document wouldn't be retrieved
+ */
 public class citiesSelectionsController{
 
-    //ObservableList<String> citiesOptions = FXCollections.observableArrayList("London","Paris");
+
     @FXML
     Button chooseButton;
-    @FXML
-    ListView citiesList;
-
     @FXML
     CheckBox ABUJACheckBox;
     @FXML

@@ -24,7 +24,9 @@ import java.util.Map;
 public class JSON_reader {
 
 
-
+    /**
+     * connects to an API that gets a word and bring Synonym of that word
+     */
     public static List<String> connectionToSynApi(String term)
     {
         List<String> synWordsResults = new ArrayList<>();
@@ -68,6 +70,10 @@ public class JSON_reader {
         return synWordsResults;
         }
 
+
+    /**
+     * connects to an API that gets a word and bring words that have the same meaning to the word that API got
+     */
     public static List<String> connectionToMLApi(String term)
     {
         List<String> synWordsResults = new ArrayList<>();
@@ -112,7 +118,9 @@ public class JSON_reader {
         return synWordsResults;
     }
 
-
+    /**
+     * connects to the cities API in order to pull information such as that city's country, population and currency
+     */
     public void connectionToCitiesApi() throws JSONException {
 
         OkHttpClient httpClient = new OkHttpClient();

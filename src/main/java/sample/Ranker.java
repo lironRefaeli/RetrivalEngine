@@ -18,7 +18,8 @@ public class Ranker {
     Map<String, Double> rankedDocumentsMap;
 
 
-    public Ranker(boolean stemmerSelection, boolean semanticSelection, String pathToDisk) {
+    public Ranker(boolean stemmerSelection, boolean semanticSelection, String pathToDisk)
+    {
         withStemmer = stemmerSelection;
         withSemantic = semanticSelection;
         this.pathToDisk = pathToDisk;
@@ -27,8 +28,14 @@ public class Ranker {
         b = 0.75;
     }
 
-
-    public Map<String, Double> RankDocumentsByQuery(Map<String, Integer> queryMap, Map<String, Integer> descriptionMap) {
+    /**
+     * responsible for finding the 50 most relevant documents for a query
+     * @param queryMap contains one query's terms and their frequencies
+     * @param descriptionMap contains one description's terms and their frequencies
+     * @return a map with 50 documents (keys) and their rank (values)
+     */
+    public Map<String, Double> RankDocumentsByQuery(Map<String, Integer> queryMap, Map<String, Integer> descriptionMap)
+    {
         rankedDocumentsMap = new HashMap<>();
         List<String> wordsQueryList = new ArrayList<>();
         List<String> wordsDescriptionList = new ArrayList<>();
@@ -40,7 +47,9 @@ public class Ranker {
         {
             for (String term : queryMap.keySet())
             {
+                //the syn API
                 wordsAPIList.addAll(JSON_reader.connectionToSynApi(term));
+                //the ml API - words that have same meaning
                 wordsMlAPI.addAll(JSON_reader.connectionToMLApi(term));
                 for(int i = 0; i < wordsMlAPI.size(); i++)
                 {
@@ -59,12 +68,16 @@ public class Ranker {
         {
             for (String term : descriptionMap.keySet())
                 wordsDescriptionList.add(term);
+            //have the description's words impact on the ranks of the documents
             ClacScoreOfTermsInDescription(wordsDescriptionList);
         }
+        //have the query's words impact on the ranks of the documents
         ClacScoreOfTermsInQuery(wordsQueryList);
+        //have the API's words impact on the ranks of the documents
         if(withSemantic)
              ClacScoreOfTermsInAPI(wordsAPIList);
 
+        //This section is responsible to create a sorted map (by rank) that contains only the most 50 ranked documents
         Map<String, Double> sortedRankedDocumentMap = new LinkedHashMap<>();
         List<Map.Entry<String, Double>> list = new ArrayList<>(rankedDocumentsMap.entrySet());
         list.sort(Map.Entry.comparingByValue());
@@ -80,9 +93,12 @@ public class Ranker {
         return sortedRankedDocumentMap;
     }
 
-    private void ClacScoreOfTermsInDescription(List<String> wordsDescriptionList)  {
-        //loop that runs over ecery term in the query
-        for (int j = 0; j < wordsDescriptionList.size(); j++) {
+    private void ClacScoreOfTermsInDescription(List<String> wordsDescriptionList)
+    {
+        //loop that runs over every term in the query
+        for (int j = 0; j < wordsDescriptionList.size(); j++)
+        {
+            //check if the term is on the corpus. if not, throw it away
             String term = wordsDescriptionList.get(j);
             String termLowerCase = term.toLowerCase();
             String termUpperCase = term.toUpperCase();
@@ -93,11 +109,7 @@ public class Ranker {
             else
                 continue;
 
-           /*
-           Double termIDF;
-           termIDF = Indexer.termsCorpusMap.get(term).idf;
-           */
-
+            //bring the posting file that contains that term
             int pointerToPostingLine = Indexer.termsCorpusMap.get(term).pointerToPostingLine;
             File postingFile;
             if (withStemmer)
@@ -123,6 +135,7 @@ public class Ranker {
                 }
 
 
+                //split the posting file by the next chars
                 List<String> docsAndFreqInLine = new ArrayList(Arrays.asList(line.split("~|\\*|,")));
                 List<String> headlineOfDoc;
                 String docNumber;
@@ -159,6 +172,7 @@ public class Ranker {
                             scoreQueryAndDoc = 1.05 * scoreQueryAndDoc;
                     }
 
+                    //if the document already was ranked before, take its previous rank and add it to the new rank
                     double prevRank = 0.0;
                     if (rankedDocumentsMap.containsKey(docNumber))
                         prevRank = rankedDocumentsMap.get(docNumber);
@@ -174,8 +188,10 @@ public class Ranker {
 
     private void ClacScoreOfTermsInAPI(List<String> wordsAPIList)
     {
-        //loop that runs over ecery term in the query
-        for (int j = 0; j < wordsAPIList.size(); j++) {
+        //loop that runs over every term in the query
+        for (int j = 0; j < wordsAPIList.size(); j++)
+        {
+            //check if the term is on the corpus. if not, throw it away
             String term = wordsAPIList.get(j);
             String termLowerCase = term.toLowerCase();
             String termUpperCase = term.toUpperCase();
@@ -186,11 +202,7 @@ public class Ranker {
             else
                 continue;
 
-           /*
-           Double termIDF;
-           termIDF = Indexer.termsCorpusMap.get(term).idf;
-           */
-
+            //brings the posting file that contains that term
             int pointerToPostingLine = Indexer.termsCorpusMap.get(term).pointerToPostingLine;
             File postingFile;
             if (withStemmer)
@@ -215,6 +227,7 @@ public class Ranker {
                     return;
                 }
 
+                //split the posting file by the next chars
                 List<String> docsAndFreqInLine = new ArrayList(Arrays.asList(line.split("~|\\*|,")));
                 List<String> headlineOfDoc;
                 String docNumber;
@@ -225,10 +238,10 @@ public class Ranker {
                     docNumber = Indexer.docsAndIDs.get(Integer.parseInt(docID));
 
                     //check if the doc is relevant for the cities that the user chose(if he chose)
-                    if (listCitiesFromUser.size() > 0) {
+                    if (listCitiesFromUser.size() > 0)
+                    {
                         if (!checkIfDocIsReleventToCities(docNumber))
                             continue;
-
                     }
 
                     int frequencyInDoc = Integer.parseInt(docsAndFreqInLine.get(i + 1));
@@ -251,6 +264,7 @@ public class Ranker {
                             scoreQueryAndDoc = 1.05 * scoreQueryAndDoc;
                     }
 
+                    //if the document already was ranked before, take its previous rank and add it to the new rank
                     double prevRank = 0.0;
                     if (rankedDocumentsMap.containsKey(docNumber))
                         prevRank = rankedDocumentsMap.get(docNumber);
@@ -267,7 +281,9 @@ public class Ranker {
     private void ClacScoreOfTermsInQuery(List<String> wordsQueryList)
     {
         //loop that runs over ecery term in the query
-        for (int j = 0; j < wordsQueryList.size(); j++) {
+        for (int j = 0; j < wordsQueryList.size(); j++)
+        {
+            //check if the term is on the corpus. if not, throw it away
             String term = wordsQueryList.get(j);
             String termLowerCase = term.toLowerCase();
             String termUpperCase = term.toUpperCase();
@@ -278,11 +294,7 @@ public class Ranker {
             else
                 continue;
 
-           /*
-           Double termIDF;
-           termIDF = Indexer.termsCorpusMap.get(term).idf;
-           */
-
+            //brings the posting file that contains that term
             int pointerToPostingLine = Indexer.termsCorpusMap.get(term).pointerToPostingLine;
             File postingFile;
             if (withStemmer)
@@ -307,6 +319,7 @@ public class Ranker {
                     return;
                 }
 
+                //split the posting file by the next chars
                 List<String> docsAndFreqInLine = new ArrayList(Arrays.asList(line.split("~|\\*|,")));
                 List<String> headlineOfDoc;
                 String docNumber;
@@ -342,6 +355,7 @@ public class Ranker {
                             scoreQueryAndDoc = 1.05 * scoreQueryAndDoc;
                     }
 
+                    //if the document already was ranked before, take its previous rank and add it to the new rank
                     double prevRank = 0.0;
                     if (rankedDocumentsMap.containsKey(docNumber))
                         prevRank = rankedDocumentsMap.get(docNumber);
@@ -355,7 +369,10 @@ public class Ranker {
         }
     }
 
-
+    /**
+     * gets a document number, and return a boolean that says whether if the document contains
+     * that city name in its text or in its FP=104 tag
+     */
     private boolean checkIfDocIsReleventToCities(String docNumber)
     {
 
@@ -376,6 +393,9 @@ public class Ranker {
         return false;
     }
 
+    /**
+     * calculates the average length of document in the given corpus
+     */
     private Double clacAverageLength(Map<String,DocTermDataInMap> docsCorpusMap)
     {
         Double sumOfLnegths = 0.0;

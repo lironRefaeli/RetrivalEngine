@@ -1,14 +1,12 @@
 package sample;
-
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
-import javafx.scene.control.TableView;
-
 import java.io.*;
 import java.util.*;
 
+/**
+ * This class responsible for getting a query, find its most 50 ranked documents, show these docs to the user
+ * and save them on disk
+ */
 public class Searcher {
 
     Ranker ranker;
@@ -25,6 +23,12 @@ public class Searcher {
        this.withStemmer = withStemmer;
     }
 
+    /**
+     * This method loops over all the queries the ReadFile have found
+     * every query is parsed (also the query description) on the Parse class
+     * every query is sent to the Ranker class that returns the most 50 ranked documents for that query search
+     * @param queryList a list of Query object
+     */
     public void handleQuery(List<Query> queryList) {
         queryIDToRankedMap = new TreeMap<>();
         for(int i = 0; i < queryList.size(); i++)
@@ -50,6 +54,10 @@ public class Searcher {
         alert.showAndWait();
     }
 
+    /**
+     * saves the result file on the disk
+     * @param folderPath gets the folder that the file will be saved in
+     */
     public void saveResultFile(String folderPath) throws IOException, NullPointerException {
         File file;
         if(withSemantic && withStemmer)
@@ -92,6 +100,9 @@ public class Searcher {
 
     }
 
+    /**
+     * The format of a result file
+     */
     private void WriteResultToFile(String docNumber, String queryId, BufferedWriter writer)
     {
         String toPrint = queryId + " 0 " + docNumber + " 1 42.38 mt";

@@ -28,7 +28,8 @@ public class Parse {
     private String thirdNextTerm = "";
     private Map<String, Integer> termsAndFrequencyMap;
 
-    Parse(boolean stemmerSelection){
+    Parse(boolean stemmerSelection)
+    {
         //stemmer defenition
         this.useStemmer = stemmerSelection;
         if(useStemmer)
@@ -48,7 +49,7 @@ public class Parse {
         return useStemmer;
     }
 
-
+    //parses document's text
     public Map<String, Integer> ParsingDocument(String docText, String docNum) {
 
         termsAndFrequencyMap = new HashMap<>();
@@ -56,6 +57,7 @@ public class Parse {
         return termsAndFrequencyMap;
     }
 
+    //parses only the document's headline
     public Map<String, Integer> ParsingDocument(String header) {
 
         termsAndFrequencyMap = new HashMap<>();
@@ -63,6 +65,7 @@ public class Parse {
         return termsAndFrequencyMap;
     }
 
+    //parses queries and descriptions
     public Map<String, Integer> ParsingQuery(String queryString) {
 
         termsAndFrequencyMap = new HashMap<>();
@@ -71,7 +74,8 @@ public class Parse {
     }
 
     //delete the chars - and . from the beginning and from the end of every term
-    public void cleaningTerm() {
+    public void cleaningTerm()
+    {
 
         if(!term.equals("")) {
             char firstC = term.charAt(0);
@@ -84,7 +88,9 @@ public class Parse {
         }
     }
 
-    private void BreakHeadLineToTerms(String docText) {
+    //responsible for parsing the headlines of documents for the ranker
+    private void BreakHeadLineToTerms(String docText)
+    {
 
         //cleaning the document before splitting (| is separating between characters, and \\ is sometimes needed
         docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|<|//|", "");
@@ -116,7 +122,9 @@ public class Parse {
             }
         }
 
-    private void BreakTextToTerms(String docText, String docNum) {
+    //responsible for parsing the texts of documents for the Indexer
+    private void BreakTextToTerms(String docText, String docNum)
+    {
 
         //cleaning the document before splitting (| is separating between characters, and \\ is sometimes needed
         docText = docText.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|<|//|", "");
@@ -156,7 +164,9 @@ public class Parse {
         }
     }
 
-    private void BreakQueryToTerms(String queryString) {
+    //responsible for parsing the queries and descriptions of documents for the Ranker
+    private void BreakQueryToTerms(String queryString)
+    {
 
         queryString = queryString.replaceAll(",|\\(|\\)|'|\"|`|\\{|}|\\[|]|\\\\|#|--|\\+|---|&|\\.\\.\\.|\\.\\.|\\||=|>|<|//|", "");
         TermsOfQuery = new ArrayList(Arrays.asList(queryString.split("\\n|\\s+|\\t|;|\\?|!|:|@|\\[|]|\\(|\\)|\\{|}|_|\\*")));
@@ -837,18 +847,6 @@ public class Parse {
         return stopWordsList;
 
     }
-
-        /*
-        Scanner s;
-            s = new Scanner(new File(stopWordsPath + "stop_words.txt"));
-        HashSet<String> stopWordsList = new HashSet<>();
-        while (s.hasNext()) {
-            stopWordsList.add(s.nextLine());
-        }
-        s.close();
-
-        return stopWordsList;
-        */
 
     private void InitMonthsNames() {
         monthsNames = new HashSet();

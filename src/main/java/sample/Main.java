@@ -17,10 +17,9 @@ import java.util.Map;
  */
     public class Main extends Application {
 
-
         @Override
-        public void start(Stage primaryStage) throws Exception {
-
+        public void start(Stage primaryStage) throws Exception
+        {
             FXMLLoader fxmlLoader = new FXMLLoader();
             Parent root = fxmlLoader.load(getClass().getResource("/mainWindow.fxml").openStream());
             primaryStage.setTitle("mainWindow");
@@ -29,15 +28,12 @@ import java.util.Map;
             primaryStage.setScene(scene);
             primaryStage.show();
 
-
         }
 
 
-        public static void main(final String[] args) throws IOException {
-
-
+        public static void main(final String[] args)
+        {
             launch(args);
-
         }
     }
 
