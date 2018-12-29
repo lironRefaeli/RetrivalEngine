@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
@@ -23,12 +24,9 @@ public class citiesSelectionsController{
 
     //ObservableList<String> citiesOptions = FXCollections.observableArrayList("London","Paris");
     @FXML
+    Button chooseButton;
+    @FXML
     ListView citiesList;
-    @FXML
-    CheckBox londonCheckBox;
-    @FXML
-    CheckBox parisCheckBox;
-
 
     @FXML
     CheckBox ABUJACheckBox;
@@ -375,9 +373,6 @@ public class citiesSelectionsController{
 
 
     public void chooseCities(ActionEvent event) {
-
-        boolean london = londonCheckBox.isSelected();
-        boolean paris = parisCheckBox.isSelected();
 
         boolean ABUJA =  ABUJACheckBox.isSelected();
         boolean ACCRA =  ACCRACheckBox.isSelected();
@@ -893,11 +888,21 @@ public class citiesSelectionsController{
             Ranker.listCitiesFromUser.add("YEREVAN");
         if(ZAGREBc)
             Ranker.listCitiesFromUser.add("ZAGREB");
-
+        if(APIA)
+            Ranker.listCitiesFromUser.add("APIA");
+        if(PRAIAc)
+            Ranker.listCitiesFromUser.add("PRAIA");
+        if(QUITOc)
+            Ranker.listCitiesFromUser.add("QUITO");
+        if(RIYADHc)
+            Ranker.listCitiesFromUser.add("RIYADH");
 
 
         for(int i=0;i<Ranker.listCitiesFromUser.size();i++)
             System.out.println(Ranker.listCitiesFromUser.get(i));
+
+        Stage stage = (Stage) chooseButton.getScene().getWindow();
+        stage.close();
     }
 
 

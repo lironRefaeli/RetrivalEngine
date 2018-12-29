@@ -410,11 +410,7 @@ public class mainController {
             objectStreamer = new ObjectInputStream(fileStreamer); }
         catch (IOException e) { e.printStackTrace(); }
 
-        try {Indexer.citiesInCorpus = (Map<String, CityInMap>) objectStreamer.readObject();
-
-            for(String city: Indexer.citiesInCorpus.keySet())
-            System.out.println(city);
-        }
+        try {Indexer.citiesInCorpus = (Map<String, CityInMap>) objectStreamer.readObject(); }
         catch (IOException e) { e.printStackTrace(); }
         catch (ClassNotFoundException e) { e.printStackTrace();}
 

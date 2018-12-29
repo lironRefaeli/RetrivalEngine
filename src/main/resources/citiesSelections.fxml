@@ -5,12 +5,10 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="600.0" prefWidth="800" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.citiesSelectionsController">
+<AnchorPane xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.citiesSelectionsController">
    <children>
-      <ListView fx:id="citiesList" layoutX="-2.0" layoutY="-4.0" prefHeight="608.0" prefWidth="806.0" />
-      <Button layoutX="366.0" layoutY="561.0" mnemonicParsing="false" onAction="#chooseCities" prefHeight="25.0" prefWidth="69.0" text="choose" />
-      <CheckBox fx:id="londonCheckBox" layoutX="722.0" layoutY="503.0" mnemonicParsing="false" text="London" />
-      <CheckBox fx:id="parisCheckBox" layoutX="723.0" layoutY="531.0" mnemonicParsing="false" text="Paris" />
+      <ListView fx:id="citiesList" layoutX="-2.0" layoutY="-4.0" />
+      <Button fx:id="chooseButton" layoutX="366.0" layoutY="561.0" mnemonicParsing="false" onAction="#chooseCities" prefHeight="25.0" prefWidth="69.0" text="choose" />
       <CheckBox fx:id="ABUJACheckBox" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="ABUJA" />
       <CheckBox fx:id="ACCRACheckBox" layoutX="14.0" layoutY="34.0" mnemonicParsing="false" text="ACCRA" />
       <CheckBox fx:id="ALGIERSCheckBox" layoutX="14.0" layoutY="54.0" mnemonicParsing="false" text="ALGIERS" />
@@ -31,11 +29,11 @@
       <CheckBox fx:id="BANGUICheckBox" layoutX="14.0" layoutY="354.0" mnemonicParsing="false" text="BANGUI" />
       <CheckBox fx:id="BANJULCheckBox" layoutX="14.0" layoutY="374.0" mnemonicParsing="false" text="BANJUL" />
       <CheckBox fx:id="BASSETERRECheckBox" layoutX="14.0" layoutY="394.0" mnemonicParsing="false" text="BASSE-TERRE" />
-      <CheckBox fx:id="BEIJINGCheckBox" layoutX="14.0" layoutY="434.0" mnemonicParsing="false" text="BEIJING" />
-      <CheckBox fx:id="BEIRUTCheckBox" layoutX="14.0" layoutY="454.0" mnemonicParsing="false" text="BEIRUT" />
-      <CheckBox fx:id="BELGRADECheckBox" layoutX="14.0" layoutY="474.0" mnemonicParsing="false" text="BELGRADE" />
-      <CheckBox fx:id="BELMOPANCheckBox" layoutX="14.0" layoutY="494.0" mnemonicParsing="false" text="BELMOPAN" />
-      <CheckBox fx:id="BERLINCheckBox" layoutX="14.0" layoutY="514.0" mnemonicParsing="false" text="BERLIN" />
+      <CheckBox fx:id="BEIJINGCheckBox" layoutX="14.0" layoutY="414.0" mnemonicParsing="false" text="BEIJING" />
+      <CheckBox fx:id="BEIRUTCheckBox" layoutX="14.0" layoutY="434.0" mnemonicParsing="false" text="BEIRUT" />
+      <CheckBox fx:id="BELGRADECheckBox" layoutX="14.0" layoutY="454.0" mnemonicParsing="false" text="BELGRADE" />
+      <CheckBox fx:id="BELMOPANCheckBox" layoutX="14.0" layoutY="474.0" mnemonicParsing="false" text="BELMOPAN" />
+      <CheckBox fx:id="BERLINCheckBox" layoutX="14.0" layoutY="494.0" mnemonicParsing="false" text="BERLIN" />
 
       <CheckBox fx:id="BERNCheckBox" layoutX="124.0" layoutY="14.0" mnemonicParsing="false" text="BERN" />
       <CheckBox fx:id="BISHKEKCheckBox" layoutX="124.0" layoutY="34.0" mnemonicParsing="false" text="BISHKEK" />
