@@ -46,7 +46,7 @@
                 <TextField fx:id="diskPath" prefHeight="0.0" prefWidth="190.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                 <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                     <buttons>
-                        <ChoiceBox id="languages" fx:id="languagesBox" onContextMenuRequested="#initChoiceBox" onDragDetected="#initChoiceBox" onDragDone="#initChoiceBox" onDragDropped="#initChoiceBox" onDragEntered="#initChoiceBox" onDragExited="#initChoiceBox" onDragOver="#initChoiceBox" onInputMethodTextChanged="#initChoiceBox" onKeyPressed="#initChoiceBox" onKeyReleased="#initChoiceBox" onKeyTyped="#initChoiceBox" onMouseClicked="#initChoiceBox" onMouseDragEntered="#initChoiceBox" onMouseDragExited="#initChoiceBox" onMouseDragOver="#initChoiceBox" onMouseDragReleased="#initChoiceBox" onMouseDragged="#initChoiceBox" onMouseEntered="#initChoiceBox" onMouseExited="#initChoiceBox" onMouseMoved="#initChoiceBox" onMousePressed="#initChoiceBox" onMouseReleased="#initChoiceBox" onScroll="#initChoiceBox" onScrollFinished="#initChoiceBox" onScrollStarted="#initChoiceBox" onTouchMoved="#initChoiceBox" onTouchPressed="#initChoiceBox" onTouchReleased="#initChoiceBox" onTouchStationary="#initChoiceBox" prefWidth="150.0">
+                        <ChoiceBox id="languages" fx:id="languagesBox" onMouseClicked="#initChoiceBox" prefWidth="150.0">
                      <opaqueInsets><Insets />
                      </opaqueInsets></ChoiceBox>
                     </buttons></ButtonBar>

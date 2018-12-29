@@ -373,6 +373,7 @@ public class citiesSelectionsController{
 
 
     public void chooseCities(ActionEvent event) {
+        Ranker.listCitiesFromUser = new ArrayList<>();
 
         boolean ABUJA =  ABUJACheckBox.isSelected();
         boolean ACCRA =  ACCRACheckBox.isSelected();

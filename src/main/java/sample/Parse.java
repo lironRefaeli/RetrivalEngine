@@ -1,4 +1,6 @@
 package sample;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
+import javafx.scene.control.Alert;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.*;
@@ -814,12 +816,14 @@ public class Parse {
     }
 
     //checks if a term is in our stopwords list
-    boolean IsStopWord(String word) {
+    boolean IsStopWord(String word)
+    {
         return stopWordsList.contains(word);
     }
 
     //read the stop words file into list named stopWordsList
-    private HashSet<String> ReadStopWordToList(String stopWordsPath) throws IOException {
+    private HashSet<String> ReadStopWordToList(String stopWordsPath) throws IOException
+    {
         HashSet<String> stopWordsList = new HashSet<>();
         FileInputStream fileInputStream = new FileInputStream(stopWordsPath);
         InputStreamReader fileInputStreamReader = new InputStreamReader(fileInputStream, "UTF-8");
@@ -831,6 +835,7 @@ public class Parse {
         fileInputStreamReader.close();
         fileInputStream.close();
         return stopWordsList;
+
     }
 
         /*

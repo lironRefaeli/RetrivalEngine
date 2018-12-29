@@ -1,5 +1,4 @@
 package sample;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -12,13 +11,11 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
 import javax.swing.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+
 
 /**
  * This class is for section 2 of this project
@@ -36,29 +33,44 @@ public class engineController
     @FXML
     private CheckBox semanticCheckBox;
 
-    @FXML
-    private TableView<String> resultsTable;
 
-
-
-
-    public void searchQuery(ActionEvent actionEvent) throws IOException {
+    //called when user click on "Search" button
+    //distinguishes between a written query and a file of queries
+    //start the searcher object to make the search
+    public void searchQuery(ActionEvent actionEvent)
+    {
 
         boolean semanticSelection = semanticCheckBox.isSelected();
         String queryText = searchBoxText.getText();
         parser = new Parse(stemmerSelection);
-        parser.LoadStopWordsList(pathToDisk + "\\stop_words.txt");
+        try{parser.LoadStopWordsList(pathToDisk + "\\stop_words.txt");}
+        catch (IOException e)
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("Could not find the stop_words file in the specified folder");
+            alert.showAndWait();
+            return;
+        }
         ranker = new Ranker(stemmerSelection, semanticSelection, pathToDisk);
         List<Query> queryList = new ArrayList<>();
 
+        //The user didnt write anything in the search line
+        if(queryText.length() == 0)
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("please enter a query or a text file that contains queries");
+            alert.showAndWait();
+            return;
+        }
         //it is not a query, it is a txt file that contains several queries
-        if(queryText.length() > 4 && queryText.substring(queryText.length()-4).equals(".txt"))
+        else if(queryText.length() > 4 && queryText.substring(queryText.length()-4).equals(".txt"))
         {
             queryList = ReadFile.ReadQueries(queryText);
             if(queryList == null)
                 return;
 
         }
+        //A written query
         else
         {
             Query onlyQuery = new Query();
@@ -67,9 +79,9 @@ public class engineController
             onlyQuery.title = queryText;
             queryList.add(onlyQuery);
         }
-        searcher = new Searcher(ranker, parser, semanticSelection);
+        //start the searcher to handle the query/queries
+        searcher = new Searcher(ranker, parser, semanticSelection, stemmerSelection);
         searcher.handleQuery(queryList);
-
         displayResults();
 
 
@@ -92,9 +104,10 @@ public class engineController
 
     }
 
-    public void displayResults() throws IOException {
+    //display the user the result the searcher found
+    public void displayResults() {
 
-
+        //The map that saves all the queries ids and the documents numbers
         if (searcher.queryIDToRankedMap != null) {
 
             TableColumn<QureyIDAndDocNumber, String> queryColumn = new TableColumn<>("QueryId");
@@ -128,7 +141,17 @@ public class engineController
             VBox vbox = new VBox();
             vbox.getChildren().addAll(table);
             FXMLLoader fxmlLoader = new FXMLLoader();
-            Parent root1 = fxmlLoader.load(getClass().getResource("/resultsWindow.fxml").openStream());
+            try
+            {
+                Parent root1 = fxmlLoader.load(getClass().getResource("/resultsWindow.fxml").openStream());
+            }
+            catch (IOException e)
+            {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setHeaderText("Had a problem with opening the results window");
+                alert.showAndWait();
+                return;
+            }
             Stage stage = new Stage();
             stage.setScene(new Scene(vbox));
             stage.show();
@@ -213,7 +236,7 @@ public class engineController
         Stage stage = new Stage();
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setTitle("engineWindow");
-        stage.setScene(new Scene(root1, 300, 500));
+        stage.setScene(new Scene(root1, 800, 600));
         stage.show();
 
 
@@ -223,7 +246,7 @@ public class engineController
         JFileChooser chooser = new JFileChooser();
         //chooser.setCurrentDirectory(new java.io.File("."));
         chooser.setDialogTitle("Choose queries' file");
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setAcceptAllFileFilterUsed(false);
 
         if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
@@ -242,11 +265,11 @@ public class engineController
 
         if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION)
             folderPath =  chooser.getSelectedFile().getPath();
-        try {
-            searcher.saveResultFile(folderPath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        try { searcher.saveResultFile(folderPath); }
+        catch (IOException e) { }
+        catch (NullPointerException e) { }
+
     }
 }
 

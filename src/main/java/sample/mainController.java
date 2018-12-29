@@ -89,20 +89,9 @@ public class mainController {
 
                 //creating parser with path to stop words file (it's place is in the corpus' folder) and the stemmer selection
                 //in order to know if to use stemming
-                try
-                {
-                    parser = new Parse( stemmerSelection);
-                    parser.LoadStopWordsList(pathToCorpus + "\\stop_words.txt");
-                }
-                catch (IOException e)
-                {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    //alert.setTitle("Information Dialog");
-                    alert.setHeaderText("Stop words txt file is missing in the corpus folder");
-                    //alert.setContentText("s");
-                    alert.showAndWait();
-                    return;
-                }
+                parser = new Parse( stemmerSelection);
+                parser.LoadStopWordsList(pathToCorpus + "\\stop_words.txt");
+
                 //creating index and sending to his constructor readfile object, parser object and disk path
                 indexer = new Indexer(readFile, parser, pathToDisk);
 
@@ -333,8 +322,7 @@ public class mainController {
 
         }
 
-    private void LoadCorpusMap() throws FileNotFoundException
-    {
+    private void LoadCorpusMap() throws FileNotFoundException {
         boolean stemmerSelection = stemmerCheckBox.isSelected();
         String pathToDisk = diskPath.getText();
         File dictionaryFile;
@@ -363,8 +351,7 @@ public class mainController {
     }
 
 
-    private void LoadDocsMap() throws FileNotFoundException
-    {
+    private void LoadDocsMap() throws FileNotFoundException {
         boolean stemmerSelection = stemmerCheckBox.isSelected();
         String pathToDisk = diskPath.getText();
         File dictionaryFile;
@@ -392,8 +379,7 @@ public class mainController {
         catch (IOException e) { e.printStackTrace();}
     }
 
-    private void LoadCitiesMap() throws FileNotFoundException
-    {
+    private void LoadCitiesMap() throws FileNotFoundException {
         boolean stemmerSelection = stemmerCheckBox.isSelected();
         String pathToDisk = diskPath.getText();
         File dictionaryFile;
@@ -404,6 +390,7 @@ public class mainController {
 
         FileInputStream fileStreamer;
         fileStreamer = new FileInputStream(dictionaryFile);
+
 
         ObjectInputStream objectStreamer = null;
         try {
@@ -422,8 +409,7 @@ public class mainController {
         catch (IOException e) { e.printStackTrace();}
     }
 
-    private void LoadIDsMap() throws FileNotFoundException
-    {
+    private void LoadIDsMap() throws FileNotFoundException {
         boolean stemmerSelection = stemmerCheckBox.isSelected();
         String pathToDisk = diskPath.getText();
         File dictionaryFile;
@@ -434,7 +420,6 @@ public class mainController {
 
         FileInputStream fileStreamer;
         fileStreamer = new FileInputStream(dictionaryFile);
-
 
         ObjectInputStream objectStreamer = null;
         try {
@@ -458,149 +443,34 @@ public class mainController {
          * loading dictionary object from file to termInCorpus parameter
          * @param event
          */
-        public void LoadDictionaryFromDisk(ActionEvent event) throws InterruptedException {
-        /*
-            Thread CorpusTermThread = new Thread() {
-                public void run() {
-                    LoadCorpusMap();
-                }
-            };
-            Thread DocsThread = new Thread() {
-                public void run() {
-                    LoadDocsMap();
-                }
-            };
-            Thread CitiesThread = new Thread() {
-                public void run() {
-                    LoadCitiesMap();
-                }
-            };
-            Thread IDsThread = new Thread() {
-                public void run() {
-                    LoadIDsMap();
-                }
-            };
-            CorpusTermThread.start();
-            DocsThread.start();
-            CitiesThread.start();
-            IDsThread.start();
-
-            CorpusTermThread.join();
-            DocsThread.join();
-            CitiesThread.join();
-            IDsThread.join();
-            */
-            try
-            {
-                LoadCorpusMap();
-                LoadDocsMap();
-                LoadCitiesMap();
-                LoadIDsMap();
-            }
-            catch (FileNotFoundException e)
-            {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setHeaderText("One or more of the necessary dictionaries weren't found :(");
-                alert.showAndWait();
-                return;
-            }
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setHeaderText("Loading the dictionaries was succeeded!");
+    public void LoadDictionaryFromDisk(ActionEvent event)
+    {
+        try
+        {
+            LoadCorpusMap();
+            LoadDocsMap();
+            LoadCitiesMap();
+            LoadIDsMap();
+        }
+        catch (FileNotFoundException e)
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("One or more of the necessary dictionaries weren't found :(");
             alert.showAndWait();
-
+            return;
         }
-/*
-                boolean stemmerSelection = stemmerCheckBox.isSelected();
-                String pathToDisk = diskPath.getText();
-                File dictionaryFile;
-                File docsFile;
-                File citiesFile;
-                File IDsFile;
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setHeaderText("Loading the dictionaries was succeeded!");
+        alert.showAndWait();
 
-                if (stemmerSelection)
-                {
-                    dictionaryFile = new File(pathToDisk + "\\dictionaryWithStemming");
-                    docsFile = new File(pathToDisk + "\\CorpusDocsWithStemming");
-                    citiesFile = new File(pathToDisk + "\\CorpusCitiesWithStemming");
-                    IDsFile = new File(pathToDisk + "\\IDsDocsWithStemming");
-                }
-
-
-                else
-                {
-                    dictionaryFile = new File(pathToDisk + "\\dictionaryWithoutStemming");
-                    docsFile = new File(pathToDisk + "\\CorpusDocsWithoutStemming");
-                    citiesFile = new File(pathToDisk + "\\CorpusCitiesWithoutStemming");
-                    IDsFile = new File(pathToDisk + "\\IDsDocsWithoutStemming");
-                }
-
-                FileInputStream fileStreamer;
-                FileInputStream fileStreamerDocs;
-                FileInputStream fileStreamerCities;
-                FileInputStream fileStreamerIDs;
-
-                try {
-                    fileStreamer = new FileInputStream(dictionaryFile);
-                    fileStreamerDocs = new FileInputStream(docsFile);
-                    fileStreamerCities = new FileInputStream(citiesFile);
-                    fileStreamerIDs = new FileInputStream(IDsFile);
-                } catch (FileNotFoundException e) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setHeaderText("One or more of the necessary dictionaries weren't found :(");
-                    alert.showAndWait();
-                    return;
-                }
-                ObjectInputStream objectStreamer = null;
-                ObjectInputStream objectStreamerDocs = null;
-                ObjectInputStream objectStreamerCities = null;
-                ObjectInputStream objectStreamerIDs = null;
-                try {
-                    objectStreamer = new ObjectInputStream(fileStreamer);
-                    objectStreamerDocs = new ObjectInputStream(fileStreamerDocs);
-                    objectStreamerCities = new ObjectInputStream(fileStreamerCities);
-                    objectStreamerIDs = new ObjectInputStream(fileStreamerIDs);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                // Read objects
-                try {
-                    Indexer.termsCorpusMap = (Map<String, TermDataInMap>) objectStreamer.readObject();
-                    Indexer.docsCorpusMap = (Map<String, DocTermDataInMap>) objectStreamerDocs.readObject();
-                    Indexer.citiesInCorpus = (Map<String, CityInMap>) objectStreamerCities.readObject();
-                    Indexer.docsAndIDs = (Map<Integer, String>) objectStreamerIDs.readObject();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-
-                try {
-                    objectStreamer.close();
-                    objectStreamerDocs.close();
-                    objectStreamerCities.close();
-                    objectStreamerIDs.close();
-                    fileStreamer.close();
-                    fileStreamerDocs.close();
-                    fileStreamerCities.close();
-                    fileStreamerIDs.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setHeaderText("Loading the dictionaries was succeeded!");
-                alert.showAndWait();
-        }
-*/
+    }
 
 
     @FXML
-        private void initChoiceBox(){
-
-            languagesBox.setItems(languagesBoxOptions);
-            //languagesBox.setValue("English");
-        }
+    private void initChoiceBox()
+    {
+        languagesBox.setItems(languagesBoxOptions);
+    }
 
     public void OpenSearchWindow(ActionEvent actionEvent) throws IOException {
         //opens a new window for writing the query after the inverted index and all the other relevant stuff are ready
@@ -611,7 +481,7 @@ public class mainController {
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle("engineWindow");
-            stage.setScene(new Scene(root1, 650, 550));
+            stage.setScene(new Scene(root1, 650, 250));
             stage.show();
             boolean stemmerSelection = stemmerCheckBox.isSelected();
             engineController.setStemmerSelection(stemmerSelection);

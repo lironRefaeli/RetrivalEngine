@@ -4,25 +4,13 @@
 <?import javafx.scene.control.ButtonBar?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.text.Font?>
 
 <AnchorPane prefHeight="504.0" prefWidth="627.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.engineController">
-   <BorderPane layoutX="8.0" layoutY="164.0" prefHeight="340.0" prefWidth="619.0">
-      <center>
-         <TableView fx:id="resultsTable" prefHeight="182.0" prefWidth="345.0" BorderPane.alignment="CENTER">
-           <columns>
-               <TableColumn prefWidth="173.0" text="queryID" />
-             <TableColumn minWidth="7.0" prefWidth="285.0" text="docNum" />
-             <TableColumn minWidth="0.0" prefWidth="157.0" text="watch entities" />
-           </columns>
-         </TableView>
-      </center>
-   </BorderPane>
+   <BorderPane layoutX="8.0" layoutY="164.0" prefHeight="340.0" prefWidth="619.0" />
 
     <Label layoutX="165.0" layoutY="22.0" text="Search Window">
         <font>
@@ -31,19 +19,18 @@
     </Label>
 
     <TextField fx:id="searchBoxText" layoutX="29.0" layoutY="91.0" prefHeight="30.0" prefWidth="415.0" />
-   <Button layoutX="236.0" layoutY="132.0" mnemonicParsing="false" onAction="#searchQuery" prefHeight="25.0" prefWidth="102.0" text="Search" />
+   <Button layoutX="279.0" layoutY="132.0" mnemonicParsing="false" onAction="#searchQuery" prefHeight="25.0" prefWidth="102.0" text="Search" />
    <ButtonBar layoutX="522.0" layoutY="144.0" prefHeight="40.0" prefWidth="75.0" />
  <Button layoutX="451.0" layoutY="94.0" mnemonicParsing="false" onAction="#BrowseQueriesPath" prefHeight="25.0" prefWidth="67.0" text="browse" />
    <ButtonBar layoutX="504.0" layoutY="86.0" prefHeight="40.0" prefWidth="114.0">
       <buttons>
          <ButtonBar prefHeight="40.0" prefWidth="102.0">
-           <buttons>
-             <Button mnemonicParsing="false" onAction="#openCitiesSelections" prefHeight="25.0" prefWidth="114.0" text="choose cities" />
-           </buttons>
-         </ButtonBar>
+            <buttons>
+               <Button fx:id="SaveResultFile" mnemonicParsing="false" onAction="#SaveResultFiles" text="save solutions" />
+            </buttons></ButtonBar>
       </buttons>
    </ButtonBar>
-   <CheckBox fx:id="semanticCheckBox" layoutX="112.0" layoutY="136.0" mnemonicParsing="false" text="semantic search" />
-   <Button fx:id="SaveResultFile" layoutX="360.0" layoutY="132.0" mnemonicParsing="false" onAction="#SaveResultFiles" text="save solutions" />
+   <CheckBox fx:id="semanticCheckBox" layoutX="29.0" layoutY="136.0" mnemonicParsing="false" text="semantic search" />
+ <Button layoutX="145.0" layoutY="132.0" mnemonicParsing="false" onAction="#openCitiesSelections" prefHeight="25.0" prefWidth="114.0" text="choose cities" />
 
 </AnchorPane>

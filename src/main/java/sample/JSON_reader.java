@@ -29,6 +29,49 @@ public class JSON_reader {
     {
         List<String> synWordsResults = new ArrayList<>();
         OkHttpClient httpClient = new OkHttpClient();
+        String url = ("https://api.datamuse.com/words?rel_syn=" + term);
+        //String url = ("https://api.datamuse.com/words?ml=" + term);
+        Request request = new Request.Builder().url(url).build();
+        Response response = null;
+        org.json.simple.parser.JSONParser json = new org.json.simple.parser.JSONParser();
+        try {
+            response = httpClient.newCall(request).execute();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Object object = null;
+        try {
+            try {
+                //the object includes data from json object after parsering it
+                object = json.parse(response.body().string());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (object != null) {
+            String synWord = "";
+            Object[] parsed_json = ((JSONArray) object).toArray();
+            int counter = 0;
+            for (Object O : parsed_json) {
+                if(counter < 3) {
+                    synWord = (String) ((JSONObject) O).get("word");
+                    synWordsResults.add(synWord);
+                    counter++;
+                }
+                else
+                    break;
+            }
+        }
+        return synWordsResults;
+        }
+
+    public static List<String> connectionToMLApi(String term)
+    {
+        List<String> synWordsResults = new ArrayList<>();
+        OkHttpClient httpClient = new OkHttpClient();
         //String url = ("https://api.datamuse.com/words?rel_syn=" + term);
         String url = ("https://api.datamuse.com/words?ml=" + term);
         Request request = new Request.Builder().url(url).build();
@@ -55,11 +98,10 @@ public class JSON_reader {
             String synWord = "";
             Object[] parsed_json = ((JSONArray) object).toArray();
             int counter = 0;
-            //synWordsResults.add(term);
             for (Object O : parsed_json) {
-                if(counter < 3) {
+                if(counter < 3)
+                {
                     synWord = (String) ((JSONObject) O).get("word");
-                   // System.out.println(synWord);
                     synWordsResults.add(synWord);
                     counter++;
                 }
@@ -68,7 +110,7 @@ public class JSON_reader {
             }
         }
         return synWordsResults;
-        }
+    }
 
 
     public void connectionToCitiesApi() throws JSONException {
