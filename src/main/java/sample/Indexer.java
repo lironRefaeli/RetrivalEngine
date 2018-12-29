@@ -36,7 +36,7 @@ public class Indexer {
     public Indexer(ReadFile readFile, Parse parser, String pathToDisk)
     {
         NumberOfDocsInCorpus = 0;
-        numOfTempPostingFiles = 4;
+        numOfTempPostingFiles = 227;
         this.readFile = readFile;
         this.parser = parser;
         this.pathToDisk = pathToDisk;
@@ -67,7 +67,7 @@ public class Indexer {
         for (int i = 0; i < numOfTempPostingFiles; i++) {
             System.out.println("start loop number: " + i + " time: " + (System.nanoTime() - startTime) / 1000000000.0);
             int maxTermFreqPerDoc = 0;
-            List<String> listOfTexts = readFile.ReadFolder(4); //list of Documents' texts
+            List<String> listOfTexts = readFile.ReadFolder(8); //list of Documents' texts
             List<String> listOfDocsNumbers = readFile.getDocNumbersList();
             List<String> ListOfCities = readFile.getListOfCities();
             List<String> ListOfCHeaders = readFile.getListOfHeadlines();
@@ -96,7 +96,7 @@ public class Indexer {
                     headLineOfDoc.add(term);
 
                 //This section is for finding the frequent 5 entities in a document
-                Map<String,Double> sortedTemporaryMap = new HashMap<>();
+                Map<String,Double> entitiesMap = new HashMap<>();
                 List<Map.Entry<String, Integer>> list = new ArrayList<>(temporaryMap.entrySet());
                 list.sort(Map.Entry.comparingByValue());
                 int counterEntities = 0;
@@ -108,7 +108,7 @@ public class Indexer {
                         continue;
                     if(counterEntities == 0)
                         freqMax = list.get(k).getValue();
-                    sortedTemporaryMap.put(list.get(k).getKey(), list.get(k).getValue()/freqMax);
+                    entitiesMap.put(list.get(k).getKey(), list.get(k).getValue()/freqMax);
                     counterEntities++;
 
                     if(counterEntities == 5)
@@ -118,7 +118,7 @@ public class Indexer {
 
                 //after parsing the text, we will create new record in the docs Map
                 docsCorpusMap.put(listOfDocsNumbers.get(j),
-                        new DocTermDataInMap(maxTermFreqPerDoc, headLineOfDoc, temporaryMap.size(), ListOfCities.get(j), sortedTemporaryMap));
+                        new DocTermDataInMap(maxTermFreqPerDoc, headLineOfDoc, temporaryMap.size(), ListOfCities.get(j), entitiesMap));
                 IDsOfDocs++;
                 docsAndIDs.put(IDsOfDocs,listOfDocsNumbers.get(j));
 

@@ -174,6 +174,14 @@ public class mainController {
                 String IDsPath;
                 boolean stemmerSelection = stemmerCheckBox.isSelected();
 
+                if(pathToDisk.equals(""))
+                {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setHeaderText("please fill the disk path first");
+                    alert.showAndWait();
+                    return;
+                }
+
                 if(stemmerSelection) {
                     postingFolderPath = pathToDisk + "\\withStemming";
                     dictionaryFilePath = pathToDisk + "\\dictionaryWithStemming";
@@ -189,12 +197,40 @@ public class mainController {
                     IDsPath = pathToDisk + "\\IDsDocsWithoutStemming";
 
                 }
+
                 //delete dictionary file
                 File dictionaryFile = new File(dictionaryFilePath);
+                if(!dictionaryFile.exists())
+                {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setHeaderText("one of the files does not exists in the specified folder");
+                    alert.showAndWait();
+                    return;
+                }
                 File citiesFile = new File(corpusCitiesPath);
+                if(!citiesFile.exists())
+                {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setHeaderText("one of the files does not exists in the specified folder");
+                    alert.showAndWait();
+                    return;
+                }
                 File docsFile = new File(corpusDocsPath);
+                if(!docsFile.exists())
+                {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setHeaderText("one of the files does not exists in the specified folder");
+                    alert.showAndWait();
+                    return;
+                }
                 File IDsFile = new File(IDsPath);
-
+                if(!IDsFile.exists())
+                {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setHeaderText("one of the files does not exists in the specified folder");
+                    alert.showAndWait();
+                    return;
+                }
                 dictionaryFile.delete();
                 citiesFile.delete();
                 docsFile.delete();
@@ -229,9 +265,7 @@ public class mainController {
 
 
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                //alert.setTitle("Information Dialog");
-                alert.setHeaderText("Reset the engine was succeeded");
-                //alert.setContentText("s");
+                alert.setHeaderText("Reset engine was succeeded");
                 alert.showAndWait();
             }
 

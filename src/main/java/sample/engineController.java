@@ -82,7 +82,9 @@ public class engineController
         //start the searcher to handle the query/queries
         searcher = new Searcher(ranker, parser, semanticSelection, stemmerSelection);
         searcher.handleQuery(queryList);
-        displayResults();
+
+        if(searcher.queryIDToRankedMap.size() > 0)
+             displayResults();
 
 
     }

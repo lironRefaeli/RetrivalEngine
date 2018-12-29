@@ -45,13 +45,25 @@ public class Searcher {
             {
                 rankedDocumentsMap = ranker.RankDocumentsByQuery(queryMap, null);
             }
-            queryIDToRankedMap.put(queryList.get(i).queryID, rankedDocumentsMap);
+            if(rankedDocumentsMap.size() > 0)
+                queryIDToRankedMap.put(queryList.get(i).queryID, rankedDocumentsMap);
 
         }
+        if(queryIDToRankedMap.size() > 0)
+        {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setHeaderText("Finished Searching");
+            alert.showAndWait();
+            return;
+        }
+        else
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("No results were found");
+            alert.showAndWait();
+            return;
+        }
 
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setHeaderText("Finished Searching");
-        alert.showAndWait();
     }
 
     /**

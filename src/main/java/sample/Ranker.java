@@ -126,13 +126,7 @@ public class Ranker {
                         br.readLine();
                     line = br.readLine();
                 }
-                catch (IOException e)
-                {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setHeaderText("Could not find the posting file of the letter " + term.charAt(0));
-                    alert.showAndWait();
-                    return;
-                }
+                catch (IOException e) { return;}
 
 
                 //split the posting file by the next chars
@@ -219,13 +213,8 @@ public class Ranker {
                         br.readLine();
                     line = br.readLine();
                 }
-                catch (IOException e)
-                {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setHeaderText("Could not find the posting file of the letter " + term.charAt(0));
-                    alert.showAndWait();
-                    return;
-                }
+                catch (IOException e){return;}
+
 
                 //split the posting file by the next chars
                 List<String> docsAndFreqInLine = new ArrayList(Arrays.asList(line.split("~|\\*|,")));
