@@ -21,6 +21,7 @@ public class mainController {
         ReadFile readFile;
         Parse parser;
         Indexer indexer;
+        static boolean dictionaryWithStemming = false;
         ObservableList<String> languagesBoxOptions = FXCollections.observableArrayList("English","French","Vietnamese","Rusian","Albanian","Polish","Latvian","Lithuanian","Tamil",
         "Indonesian","Arabic","Kirundi","German","Tigrigna","Slovenian","Malay","Cambodia","Spanish","Norwegian","Bengali","Japanse", "Amharic", "Ukrainian", "Czech", "Macedonian", "Chinese", "Italian", "Slovene",
                 "Swedish", "Korean", "Danish", "Hungarian" , "Afrikaans", "Turkish", "Kazakh", "Georgian", "Hindi", "Bulgarian", "Hebrew", "Kinyarwanda", "Thai", "International", "Cambodian", "Tagalog"
@@ -466,6 +467,9 @@ public class mainController {
                 alert.showAndWait();
                 return;
             }
+            boolean stemmerSelection = stemmerCheckBox.isSelected();
+            if(stemmerSelection)
+                dictionaryWithStemming = true;
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setHeaderText("Loading the dictionaries was succeeded!");
             alert.showAndWait();

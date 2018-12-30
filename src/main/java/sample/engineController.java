@@ -39,7 +39,6 @@ public class engineController
     start the searcher object to make the search */
     public void searchQuery(ActionEvent actionEvent)
     {
-
         boolean semanticSelection = semanticCheckBox.isSelected();
         String queryText = searchBoxText.getText();
         parser = new Parse(stemmerSelection);
@@ -51,7 +50,7 @@ public class engineController
             alert.showAndWait();
             return;
         }
-        ranker = new Ranker(stemmerSelection, semanticSelection, pathToDisk);
+        ranker = new Ranker(stemmerSelection, mainController.dictionaryWithStemming, semanticSelection, pathToDisk);
         List<Query> queryList = new ArrayList<>();
 
         //The user didnt write anything in the search line

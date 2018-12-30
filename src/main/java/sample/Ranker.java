@@ -10,6 +10,7 @@ public class Ranker {
 
     boolean withStemmer;
     boolean withSemantic;
+    boolean dictionaryWithStemming;
     String pathToDisk;
     Double averageDocsLength;
     double k;
@@ -18,9 +19,10 @@ public class Ranker {
     Map<String, Double> rankedDocumentsMap;
 
 
-    public Ranker(boolean stemmerSelection, boolean semanticSelection, String pathToDisk)
+    public Ranker(boolean stemmerSelection, boolean dictionaryWithStemming, boolean semanticSelection, String pathToDisk)
     {
         withStemmer = stemmerSelection;
+        this.dictionaryWithStemming = dictionaryWithStemming;
         withSemantic = semanticSelection;
         this.pathToDisk = pathToDisk;
         averageDocsLength = clacAverageLength(Indexer.docsCorpusMap);
@@ -112,10 +114,18 @@ public class Ranker {
             //bring the posting file that contains that term
             int pointerToPostingLine = Indexer.termsCorpusMap.get(term).pointerToPostingLine;
             File postingFile;
-            if (withStemmer)
+            if (withStemmer && dictionaryWithStemming)
                 postingFile = new File(pathToDisk + "\\withStemming\\" + term.charAt(0) + ".txt");
-            else
+            else if (!withStemmer && !dictionaryWithStemming)
                 postingFile = new File(pathToDisk + "\\withoutStemming\\" + term.charAt(0) + ".txt");
+            else if(!withStemmer && dictionaryWithStemming)
+            {
+                return;
+            }
+            else
+            {
+                return;
+            }
 
             if (postingFile != null) {
                 //read the line of that term from the posting files (reads docs numbers and frequency in doc)
@@ -199,10 +209,18 @@ public class Ranker {
             //brings the posting file that contains that term
             int pointerToPostingLine = Indexer.termsCorpusMap.get(term).pointerToPostingLine;
             File postingFile;
-            if (withStemmer)
+            if (withStemmer && dictionaryWithStemming)
                 postingFile = new File(pathToDisk + "\\withStemming\\" + term.charAt(0) + ".txt");
-            else
+            else if (!withStemmer && !dictionaryWithStemming)
                 postingFile = new File(pathToDisk + "\\withoutStemming\\" + term.charAt(0) + ".txt");
+            else if(!withStemmer && dictionaryWithStemming)
+            {
+                return;
+            }
+            else
+            {
+                return;
+            }
 
             if (postingFile != null) {
                 //read the line of that term from the posting files (reads docs numbers and frequency in doc)
@@ -286,10 +304,24 @@ public class Ranker {
             //brings the posting file that contains that term
             int pointerToPostingLine = Indexer.termsCorpusMap.get(term).pointerToPostingLine;
             File postingFile;
-            if (withStemmer)
+            if (withStemmer && dictionaryWithStemming)
                 postingFile = new File(pathToDisk + "\\withStemming\\" + term.charAt(0) + ".txt");
-            else
+            else if (!withStemmer && !dictionaryWithStemming)
                 postingFile = new File(pathToDisk + "\\withoutStemming\\" + term.charAt(0) + ".txt");
+            else if(!withStemmer && dictionaryWithStemming)
+            {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setHeaderText("The dictionaries are with stemming. please check the 'with stemming' checkbox");
+                alert.showAndWait();
+                return;
+            }
+            else
+            {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setHeaderText("The dictionaries are without stemming. please uncheck the 'with stemming' checkbox");
+                alert.showAndWait();
+                return;
+            }
 
             if (postingFile != null) {
                 //read the line of that term from the posting files (reads docs numbers and frequency in doc)
